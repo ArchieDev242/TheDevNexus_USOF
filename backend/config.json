@@ -1,0 +1,29 @@
+{
+    "database": 
+    {
+        "host": "localhost",
+        "user": "mkopychko",
+        "password": "securepass",
+        "dbName": "USOF"
+    },
+    
+    "email": 
+    {
+        "user": "noreplydevnexus@gmail.com",
+        "pass": "asxoqhnmkbfxgntw",
+        "display_name": "Dev Nexus Support",
+        "display_address": "noreply@thedevnexus.org"
+    },
+
+    "server": 
+    {
+        "port": 3000,
+        "base_url": "http://localhost:3000"
+    },
+
+    "jwt":
+    {
+        "secret": "securepass",
+        "expiresIn": "2h"
+    }
+}

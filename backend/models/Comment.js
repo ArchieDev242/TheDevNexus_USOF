@@ -1,0 +1,362 @@
+const database = require('./database');
+const Permission = require('./Permission');
+
+class Comment 
+{
+    constructor(commentData) 
+    {
+        this.id = commentData?.id;
+        this.post_id = commentData?.post_id;
+        this.author_id = commentData?.author_id;
+        this.content = commentData?.content;
+        this.status = commentData?.status || 'active';
+        this.publish_date = commentData?.publish_date;
+    }
+
+    async create() 
+    {
+        try 
+        {
+            const query = `
+                INSERT INTO comments (post_id, author_id, content, status)
+                VALUES (?, ?, ?, ?)
+            `;
+            
+            const result = await database.query(query, [
+                this.post_id,
+                this.author_id,
+                this.content,
+                this.status
+            ]);
+            
+            this.id = result.insertId;
+            return this;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error creating comment: ${error.message}`);
+        }
+    }
+
+    static async can_view(user) 
+    {
+        try 
+        {
+            return await Permission.check_user_permission(user, Permission.PERMISSIONS.READ_COMMENTS);
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error checking view permission: ${error.message}`);
+        }
+    }
+
+    static async can_create(user) 
+    {
+        try 
+        {
+            if (!user) return false;
+            return await Permission.check_user_permission(user, Permission.PERMISSIONS.CREATE_COMMENTS);
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error checking create permission: ${error.message}`);
+        }
+    }
+
+    async can_edit(user) 
+    {
+        try 
+        {
+            if (!user) return false;
+            
+            const is_owner = this.author_id === user.id;
+            const can_edit_own = await Permission.check_user_permission(user, Permission.PERMISSIONS.EDIT_OWN_COMMENTS);
+            const can_edit_any = await Permission.check_user_permission(user, Permission.PERMISSIONS.EDIT_ANY_COMMENTS);
+            
+            return (is_owner && can_edit_own) || can_edit_any;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error checking edit permission: ${error.message}`);
+        }
+    }
+
+    async can_delete(user) 
+    {
+        try 
+        {
+            if(!user) return false;
+            
+            const is_owner = this.author_id === user.id;
+            const can_delete_own = await Permission.check_user_permission(user, Permission.PERMISSIONS.DELETE_OWN_COMMENTS);
+            const can_delete_any = await Permission.check_user_permission(user, Permission.PERMISSIONS.DELETE_ANY_COMMENTS);
+            
+            return (is_owner && can_delete_own) || can_delete_any;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error checking delete permission: ${error.message}`);
+        }
+    }
+
+    async can_like(user) 
+    {
+        try 
+        {
+            if(!user) return false;
+            return await Permission.check_user_permission(user, Permission.PERMISSIONS.LIKE_COMMENTS);
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error checking like permission: ${error.message}`);
+        }
+    }
+
+    static async find_by_id(id) 
+    {
+        try 
+        {
+            const query = `
+                SELECT c.*, u.login as author_login, u.full_name as author_name
+                FROM comments c
+                JOIN users u ON c.author_id = u.id
+                WHERE c.id = ?
+            `;
+            
+            const rows = await database.query(query, [id]);
+            
+            if(rows.length === 0) return null;
+            
+            const comment = new Comment(rows[0]);
+            comment.author_login = rows[0].author_login;
+            comment.author_name = rows[0].author_name;
+            
+            return comment;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error finding comment by ID: ${error.message}`);
+        }
+    }
+
+    static async find_by_post_id(postId) 
+    {
+        try 
+        {
+            const query = `
+                SELECT c.*, u.login as author_login, u.full_name as author_name
+                FROM comments c
+                JOIN users u ON c.author_id = u.id
+                WHERE c.post_id = ? AND c.status = 'active'
+                ORDER BY c.publish_date ASC
+            `;
+            
+            const rows = await database.query(query, [postId]);
+            
+            return rows.map(row => {
+                const comment = new Comment(row);
+                comment.author_login = row.author_login;
+                comment.author_name = row.author_name;
+                return comment;
+            });
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error finding comments by post ID: ${error.message}`);
+        }
+    }
+
+    static async find_all() 
+    {
+        try 
+        {
+            const query = `
+                SELECT c.*, u.login as author_login, u.full_name as author_name, p.title as post_title
+                FROM comments c
+                JOIN users u ON c.author_id = u.id
+                JOIN posts p ON c.post_id = p.id
+                ORDER BY c.publish_date DESC
+            `;
+            
+            const rows = await database.query(query);
+            
+            return rows.map(row => {
+                const comment = new Comment(row);
+                comment.author_login = row.author_login;
+                comment.author_name = row.author_name;
+                comment.post_title = row.post_title;
+                return comment;
+            });
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error finding all comments: ${error.message}`);
+        }
+    }
+
+    static async find_by_author(authorId) 
+    {
+        try 
+        {
+            const query = `
+                SELECT c.*, u.login as author_login, u.full_name as author_name, p.title as post_title
+                FROM comments c
+                JOIN users u ON c.author_id = u.id
+                JOIN posts p ON c.post_id = p.id
+                WHERE c.author_id = ?
+                ORDER BY c.publish_date DESC
+            `;
+            
+            const rows = await database.query(query, [authorId]);
+            
+            return rows.map(row => {
+                const comment = new Comment(row);
+                comment.author_login = row.author_login;
+                comment.author_name = row.author_name;
+                comment.post_title = row.post_title;
+                return comment;
+            });
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error finding comments by author: ${error.message}`);
+        }
+    }
+
+    async update(updateData) 
+    {
+        try 
+        {
+            const fields = [];
+            const values = [];
+            
+            Object.keys(updateData).forEach(key => {
+                if(updateData[key] !== undefined && key !== 'id') 
+                {
+                    fields.push(`${key} = ?`);
+                    values.push(updateData[key]);
+                }
+            });
+            
+            if(fields.length === 0) throw new Error('No fields to update');
+            
+            values.push(this.id);
+            
+            const query = `UPDATE comments SET ${fields.join(', ')} WHERE id = ?`;
+            await database.query(query, values);
+            
+            Object.assign(this, updateData);
+            
+            return this;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error updating comment: ${error.message}`);
+        }
+    }
+
+    async delete() 
+    {
+        try 
+        {
+            const query = 'DELETE FROM comments WHERE id = ?';
+            await database.query(query, [this.id]);
+            
+            return true;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error deleting comment: ${error.message}`);
+        }
+    }
+
+    async get_likes_count() 
+    {
+        try 
+        {
+            const query = `
+                SELECT 
+                    SUM(CASE WHEN type = 'like' THEN 1 ELSE 0 END) as likes,
+                    SUM(CASE WHEN type = 'dislike' THEN 1 ELSE 0 END) as dislikes
+                FROM likes 
+                WHERE comment_id = ?
+            `;
+            
+            const rows = await database.query(query, [this.id]);
+            
+            return {
+                likes: rows[0]?.likes || 0,
+                dislikes: rows[0]?.dislikes || 0
+            };
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error getting comment likes count: ${error.message}`);
+        }
+    }
+
+    async change_status(status) 
+    {
+        try 
+        {
+            if(!['active', 'inactive'].includes(status)) throw new Error('Invalid status. Must be "active" or "inactive"');
+            
+            await this.update({ status });
+            return this;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error changing comment status: ${error.message}`);
+        }
+    }
+
+    async activate() 
+    {
+        return await this.change_status('active');
+    }
+
+    async deactivate() 
+    {
+        return await this.change_status('inactive');
+    }
+
+    belongs_to_user(userId) 
+    {
+        return this.author_id === userId;
+    }
+
+    static async find_by_post_id_with_likes(postId) 
+    {
+        try 
+        {
+            const query = `
+                SELECT c.*, u.login as author_login, u.full_name as author_name,
+                       COALESCE(SUM(CASE WHEN l.type = 'like' THEN 1 ELSE 0 END), 0) as likes,
+                       COALESCE(SUM(CASE WHEN l.type = 'dislike' THEN 1 ELSE 0 END), 0) as dislikes
+                FROM comments c
+                JOIN users u ON c.author_id = u.id
+                LEFT JOIN likes l ON c.id = l.comment_id
+                WHERE c.post_id = ? AND c.status = 'active'
+                GROUP BY c.id
+                ORDER BY c.publish_date ASC
+            `;
+            
+            const rows = await database.query(query, [postId]);
+            
+            return rows.map(row => {
+                const comment = new Comment(row);
+                comment.author_login = row.author_login;
+                comment.author_name = row.author_name;
+                comment.likes = row.likes;
+                comment.dislikes = row.dislikes;
+                return comment;
+            });
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error finding comments with likes: ${error.message}`);
+        }
+    }
+}
+
+module.exports = Comment;
