@@ -1,2 +1,4 @@
 # TheDevNexus_USOF
-USOF backend with frontend 
+USOF backend with frontend
+
+npm run start

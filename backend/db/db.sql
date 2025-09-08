@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS likes(
 );
 
 -- test categories for gamedev
-INSERT INTO categories (title, description) VALUES
+INSERT IGNORE INTO categories (title, description) VALUES
 ('Unreal Engine', 'Питання та відповіді по розробці ігор на Unreal Engine 4/5'),
 ('Unity', 'Обговорення розробки ігор на Unity Engine'),
 ('Godot', 'Спільнота розробників Godot Engine'),
@@ -101,18 +101,18 @@ INSERT INTO categories (title, description) VALUES
 ('Custom Engines', 'Розробка власних ігрових рушіїв на OpenGL, Vulkan, DirectX та з нуля');
 
 -- test admin user
-INSERT INTO users (login, password, full_name, email, role, email_verified) VALUES
+INSERT IGNORE INTO users (login, password, full_name, email, role, email_verified) VALUES
 ('admin', '$2b$10$rGK.Fc8VQFvQJPzQzWQwCuY7yE8s6v7vq5v9x3Q1o5Q1o5Q1o5Q1o5', 'Admin User', 'admin@devnexus.org', 'admin', TRUE);
 
 -- Insert test users
-INSERT INTO users (login, password, full_name, email, email_verified) VALUES
+INSERT IGNORE INTO users (login, password, full_name, email, email_verified) VALUES
 ('gamedev_ukr', '$2b$10$rGK.Fc8VQFvQJPzQzWQwCuY7yE8s6v7vq5v9x3Q1o5Q1o5Q1o5Q1o5', 'Олександр Петренко', 'alex@example.com', TRUE),
 ('unity_master', '$2b$10$rGK.Fc8VQFvQJPzQzWQwCuY7yE8s6v7vq5v9x3Q1o5Q1o5Q1o5Q1o5', 'Марія Іваненко', 'maria@example.com', TRUE),
 ('indie_dev', '$2b$10$rGK.Fc8VQFvQJPzQzWQwCuY7yE8s6v7vq5v9x3Q1o5Q1o5Q1o5Q1o5', 'Дмитро Коваленко', 'dmytro@example.com', TRUE),
 ('artist_2d', '$2b$10$rGK.Fc8VQFvQJPzQzWQwCuY7yE8s6v7vq5v9x3Q1o5Q1o5Q1o5Q1o5', 'Анна Сидоренко', 'anna@example.com', TRUE);
 
 -- test posts
-INSERT INTO posts (author_id, title, content, status) VALUES
+INSERT IGNORE INTO posts (author_id, title, content, status) VALUES
 (2, 'Як оптимізувати рендеринг в Unreal Engine 5?', 'Маю проблеми з продуктивністю у великому рівні. Які налаштування краще використовувати?', 'active'),
 (3, 'Unity vs Unreal для інді-розробника', 'Не можу визначитися з вибором движка для свого першого проєкту. Що порадите?', 'active'),
 (4, 'Проблеми з анімацією персонажа в Godot', 'Анімація не відтворюється правильно. Ось код...', 'active'),
@@ -121,7 +121,7 @@ INSERT INTO posts (author_id, title, content, status) VALUES
 (3, 'Створення візуальної новели в Ren''Py', 'Початківець у створенні VN - з чого почати?', 'active');
 
 -- Link posts with categories
-INSERT INTO post_categories (post_id, category_id) VALUES
+INSERT IGNORE INTO post_categories (post_id, category_id) VALUES
 (1, 1), -- Unreal Engine
 (2, 1), (2, 2), -- Unity and Unreal
 (3, 3), -- Godot
@@ -130,7 +130,7 @@ INSERT INTO post_categories (post_id, category_id) VALUES
 (6, 4); -- Ren'Py
 
 -- Insert test comments
-INSERT INTO comments (post_id, author_id, content) VALUES
+INSERT IGNORE INTO comments (post_id, author_id, content) VALUES
 (1, 3, 'Спробуй використовувати LOD систему та Nanite virtualized geometry'),
 (1, 4, 'Також варто оптимізувати матеріали та texture streaming'),
 (2, 2, 'Для інді Unity простіший у вивченні, але Unreal має кращу графіку'),
@@ -138,7 +138,7 @@ INSERT INTO comments (post_id, author_id, content) VALUES
 (4, 3, 'Супер стаття! Дуже корисно для початківців');
 
 -- Insert test likes
-INSERT INTO likes (author_id, post_id, type) VALUES
+INSERT IGNORE INTO likes (author_id, post_id, type) VALUES
 (2, 1, 'like'),
 (3, 1, 'like'),
 (4, 2, 'like'),
@@ -146,21 +146,21 @@ INSERT INTO likes (author_id, post_id, type) VALUES
 (2, 3, 'like'),
 (3, 4, 'like');
 
-INSERT INTO likes (author_id, comment_id, type) VALUES
+INSERT IGNORE INTO likes (author_id, comment_id, type) VALUES
 (4, 1, 'like'),
 (5, 2, 'like'),
 (3, 3, 'like');
 
 -- Налаштування дозволів для ролей
 -- Permissions for guests
-INSERT INTO role_permissions (role_type, permission) VALUES
+INSERT IGNORE INTO role_permissions (role_type, permission) VALUES
 ('guest', 'read_posts'),
 ('guest', 'read_comments'),
 ('guest', 'read_categories'),
 ('guest', 'view_user_profiles');
 
 -- Permissions for registered users
-INSERT INTO role_permissions (role_type, permission) VALUES
+INSERT IGNORE INTO role_permissions (role_type, permission) VALUES
 ('user', 'read_posts'),
 ('user', 'read_comments'),
 ('user', 'read_categories'),
@@ -176,7 +176,7 @@ INSERT INTO role_permissions (role_type, permission) VALUES
 ('user', 'upload_avatar');
 
 -- Permissions for administrators
-INSERT INTO role_permissions (role_type, permission) VALUES
+INSERT IGNORE INTO role_permissions (role_type, permission) VALUES
 ('admin', 'read_posts'),
 ('admin', 'read_comments'),
 ('admin', 'read_categories'),
