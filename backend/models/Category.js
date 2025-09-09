@@ -1,5 +1,5 @@
-const database = require('./database');
-const Permission = require('./Permission');
+import dbConnect from '../utils/dbConnect.js';
+import Permission from './Permission.js';
 
 class Category 
 {
@@ -20,12 +20,12 @@ class Category
                 VALUES (?, ?)
             `;
             
-            const result = await database.query(query, [
+            const result = await dbConnect.makeRequest(query, [
                 this.title,
                 this.description
             ]);
             
-            this.id = result.insertId;
+            this.id = result[0].insertId;
             return this;
         } 
         catch(error) 
@@ -39,7 +39,8 @@ class Category
         try 
         {
             const query = 'SELECT * FROM categories WHERE id = ?';
-            const rows = await database.query(query, [id]);
+            const result = await dbConnect.makeRequest(query, [id]);
+            const rows = result[0];
             
             if(rows.length === 0) return null;
             
@@ -56,7 +57,8 @@ class Category
         try 
         {
             const query = 'SELECT * FROM categories ORDER BY title ASC';
-            const rows = await database.query(query);
+            const result = await dbConnect.makeRequest(query);
+            const rows = result[0];
             
             return rows.map(row => new Category(row));
         } 
@@ -71,7 +73,8 @@ class Category
         try 
         {
             const query = 'SELECT * FROM categories WHERE title = ?';
-            const rows = await database.query(query, [title]);
+            const result = await dbConnect.makeRequest(query, [title]);
+            const rows = result[0];
             
             if(rows.length === 0) return null;
             
@@ -103,7 +106,7 @@ class Category
             values.push(this.id);
             
             const query = `UPDATE categories SET ${fields.join(', ')} WHERE id = ?`;
-            await database.query(query, values);
+            await dbConnect.makeRequest(query, values);
             
             Object.assign(this, updateData);
             
@@ -120,7 +123,7 @@ class Category
         try 
         {
             const query = 'DELETE FROM categories WHERE id = ?';
-            await database.query(query, [this.id]);
+            await dbConnect.makeRequest(query, [this.id]);
             
             return true;
         } 
@@ -141,7 +144,8 @@ class Category
                 WHERE pc.category_id = ? AND p.status = 'active'
             `;
             
-            const rows = await database.query(query, [this.id]);
+            const result = await dbConnect.makeRequest(query, [this.id]);
+            const rows = result[0];
             return rows[0].count;
         } 
         catch(error) 
@@ -163,7 +167,8 @@ class Category
                 ORDER BY c.title ASC
             `;
             
-            const rows = await database.query(query);
+            const result = await dbConnect.makeRequest(query);
+            const rows = result[0];
             
             return rows.map(row => {
                 const category = new Category(row);
@@ -239,7 +244,8 @@ class Category
             `;
             
             const searchPattern = `%${searchTerm}%`;
-            const rows = await database.query(query, [searchPattern, searchPattern]);
+            const result = await dbConnect.makeRequest(query, [searchPattern, searchPattern]);
+            const rows = result[0];
             
             return rows.map(row => new Category(row));
         } 
@@ -250,4 +256,4 @@ class Category
     }
 }
 
-module.exports = Category;
+export default Category;

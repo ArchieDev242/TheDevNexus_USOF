@@ -1,4 +1,4 @@
-const database = require('./database');
+import dbConnect from '../utils/dbConnect.js';
 
 class GuestSession 
 {
@@ -21,13 +21,13 @@ class GuestSession
                 VALUES (?, ?, ?)
             `;
             
-            const result = await database.query(query, [
+            const result = await dbConnect.makeRequest(query, [
                 this.session_token,
                 this.ip_address,
                 this.user_agent
             ]);
             
-            this.id = result.insertId;
+            this.id = result[0].insertId;
             return this;
         } 
         catch(error) 
@@ -41,7 +41,8 @@ class GuestSession
         try 
         {
             const query = 'SELECT * FROM guest_sessions WHERE session_token = ?';
-            const rows = await database.query(query, [token]);
+            const result = await dbConnect.makeRequest(query, [token]);
+            const rows = result[0];
             
             if(rows.length === 0) return null;
             
@@ -58,7 +59,8 @@ class GuestSession
         try 
         {
             const query = 'SELECT * FROM guest_sessions WHERE id = ?';
-            const rows = await database.query(query, [id]);
+            const result = await dbConnect.makeRequest(query, [id]);
+            const rows = result[0];
             
             if(rows.length === 0) return null;
             
@@ -75,7 +77,7 @@ class GuestSession
         try 
         {
             const query = 'UPDATE guest_sessions SET last_activity = CURRENT_TIMESTAMP WHERE id = ?';
-            await database.query(query, [this.id]);
+            await dbConnect.makeRequest(query, [this.id]);
             
             return this;
         } 
@@ -90,7 +92,7 @@ class GuestSession
         try 
         {
             const query = 'DELETE FROM guest_sessions WHERE id = ?';
-            await database.query(query, [this.id]);
+            await dbConnect.makeRequest(query, [this.id]);
             
             return true;
         } 
@@ -109,8 +111,9 @@ class GuestSession
                 WHERE last_activity < DATE_SUB(NOW(), INTERVAL ? HOUR)
             `;
             
-            const result = await database.query(query, [hours]);
-            return result.affectedRows;
+            const result = await dbConnect.makeRequest(query, [hours]);
+            const rows = result[0];
+            return result[0].affectedRows;
         } 
         catch(error) 
         {
@@ -128,7 +131,8 @@ class GuestSession
                 WHERE last_activity > DATE_SUB(NOW(), INTERVAL 1 HOUR)
             `;
             
-            const rows = await database.query(query);
+            const result = await dbConnect.makeRequest(query);
+            const rows = result[0];
             return rows[0].count;
         } 
         catch(error) 
@@ -176,4 +180,4 @@ class GuestSession
     }
 }
 
-module.exports = GuestSession;
+export default GuestSession;

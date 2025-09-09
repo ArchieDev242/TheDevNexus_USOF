@@ -1,25 +1,34 @@
-import mysql from 'mysql2';
-import config from '../config.json' assert {type: 'json'};
+import mysql from 'mysql2/promise';
+import config from '../config.json' with { type: 'json' };
 
-export default class dbConnect {
+class dbConnect {
 
-    static async makeRequest(sql, values = null) {
-        try {
-            const db = await this.connectToDataBase();
-            let result = await db.promise().execute(sql, values).catch(reason => { throw new Error(reason.sqlMessage) });
-            db.end();
+    static async makeRequest(sql, values = null) 
+    {
+        try 
+        {
+            const connection = await this.connectToDataBase();
+            const [result] = await connection.execute(sql, values);
+            await connection.end();
 
-            return result;
-        } catch (err) {
+            return [result];
+        } catch(err) 
+        {
             throw err;
         }
     }
 
-    static async connectToDataBase() {
-        const db = mysql.createConnection(config.database);
-        db.connect((err) => {
-            if (err) return console.error("Error: " + err.message);
+    static async connectToDataBase() 
+    {
+        const connection = await mysql.createConnection({
+            host: config.database.host,
+            user: config.database.user,
+            password: config.database.password,
+            database: config.database.database
         });
-        return db;
+        
+        return connection;
     }
 }
+
+export default dbConnect;

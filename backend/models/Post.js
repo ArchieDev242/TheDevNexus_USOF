@@ -1,5 +1,5 @@
-const database = require('./database');
-const Permission = require('./Permission');
+import dbConnect from '../utils/dbConnect.js';
+import Permission from './Permission.js';
 
 class Post 
 {
@@ -23,14 +23,14 @@ class Post
                 VALUES (?, ?, ?, ?)
             `;
             
-            const result = await database.query(query, [
+            const result = await dbConnect.makeRequest(query, [
                 this.author_id,
                 this.title,
                 this.content,
                 this.status
             ]);
             
-            this.id = result.insertId;
+            this.id = result[0].insertId;
             return this;
         } 
         catch(error) 
@@ -39,7 +39,6 @@ class Post
         }
     }
 
-    // Методи для перевірки дозволів
     static async can_view(user) 
     {
         try 
@@ -56,7 +55,8 @@ class Post
     {
         try 
         {
-            if (!user) return false;
+            if(!user) return false;
+            
             return await Permission.check_user_permission(user, Permission.PERMISSIONS.CREATE_POSTS);
         } 
         catch(error) 
@@ -69,7 +69,7 @@ class Post
     {
         try 
         {
-            if (!user) return false;
+            if(!user) return false;
             
             const isOwner = this.author_id === user.id;
             const canEditOwn = await Permission.check_user_permission(user, Permission.PERMISSIONS.EDIT_OWN_POSTS);
@@ -87,7 +87,7 @@ class Post
     {
         try 
         {
-            if (!user) return false;
+            if(!user) return false;
             
             const isOwner = this.author_id === user.id;
             const canDeleteOwn = await Permission.check_user_permission(user, Permission.PERMISSIONS.DELETE_OWN_POSTS);
@@ -105,7 +105,7 @@ class Post
     {
         try 
         {
-            if (!user) return false;
+            if(!user) return false;
             return await Permission.check_user_permission(user, Permission.PERMISSIONS.LIKE_POSTS);
         } 
         catch(error) 
@@ -130,7 +130,8 @@ class Post
                 WHERE p.id = ?
             `;
             
-            const rows = await database.query(query, [id]);
+            const result = await dbConnect.makeRequest(query, [id]);
+            const rows = result[0];
             
             if (rows.length === 0) return null;
             
@@ -159,7 +160,8 @@ class Post
                 LIMIT ? OFFSET ?
             `;
             
-            const rows = await database.query(query, [limit, offset]);
+            const result = await dbConnect.makeRequest(query, [limit, offset]);
+            const rows = result[0];
             
             return rows.map(row => {
                 const post = new Post(row);
@@ -186,7 +188,8 @@ class Post
                 LIMIT ? OFFSET ?
             `;
             
-            const rows = await database.query(query, [limit, offset]);
+            const result = await dbConnect.makeRequest(query, [limit, offset]);
+            const rows = result[0];
             
             return rows.map(row => {
                 const post = new Post(row);
@@ -216,7 +219,8 @@ class Post
             
             query += " ORDER BY p.publish_date DESC";
             
-            const rows = await database.query(query, [authorId]);
+            const result = await dbConnect.makeRequest(query, [authorId]);
+            const rows = result[0];
             
             return rows.map(row => {
                 const post = new Post(row);
@@ -245,7 +249,8 @@ class Post
                 LIMIT ? OFFSET ?
             `;
             
-            const rows = await database.query(query, [categoryId, limit, offset]);
+            const result = await dbConnect.makeRequest(query, [categoryId, limit, offset]);
+            const rows = result[0];
             
             return rows.map(row => {
                 const post = new Post(row);
@@ -280,7 +285,7 @@ class Post
             values.push(this.id);
             
             const query = `UPDATE posts SET ${fields.join(', ')} WHERE id = ?`;
-            await database.query(query, values);
+            await dbConnect.makeRequest(query, values);
             
             Object.assign(this, updateData);
             
@@ -297,7 +302,7 @@ class Post
         try 
         {
             const query = 'DELETE FROM posts WHERE id = ?';
-            await database.query(query, [this.id]);
+            await dbConnect.makeRequest(query, [this.id]);
             
             return true;
         } 
@@ -311,7 +316,7 @@ class Post
     {
         try 
         {
-            await database.query('DELETE FROM post_categories WHERE post_id = ?', [this.id]);
+            await dbConnect.makeRequest('DELETE FROM post_categories WHERE post_id = ?', [this.id]);
             
             if(categoryIds && categoryIds.length > 0) 
             {
@@ -320,7 +325,7 @@ class Post
                 const flat_values = values.flat();
                 
                 const query = `INSERT INTO post_categories (post_id, category_id) VALUES ${placeholders}`;
-                await database.query(query, flat_values);
+                await dbConnect.makeRequest(query, flat_values);
             }
             
             return true;
@@ -342,7 +347,8 @@ class Post
                 WHERE pc.post_id = ?
             `;
             
-            const rows = await database.query(query, [this.id]);
+            const result = await dbConnect.makeRequest(query, [this.id]);
+            const rows = result[0];
             return rows;
         } 
         catch(error) 
@@ -363,7 +369,8 @@ class Post
                 WHERE post_id = ?
             `;
             
-            const rows = await database.query(query, [this.id]);
+            const result = await dbConnect.makeRequest(query, [this.id]);
+            const rows = result[0];
             
             return {
                 likes: rows[0]?.likes || 0,
@@ -393,7 +400,8 @@ class Post
                 LIMIT ? OFFSET ?
             `;
             
-            const rows = await database.query(query, [limit, offset]);
+            const result = await dbConnect.makeRequest(query, [limit, offset]);
+            const rows = result[0];
             
             return rows.map(row => {
                 const post = new Post(row);
@@ -423,7 +431,8 @@ class Post
                 LIMIT ? OFFSET ?
             `;
             
-            const rows = await database.query(query, [startDate, endDate, limit, offset]);
+            const result = await dbConnect.makeRequest(query, [startDate, endDate, limit, offset]);
+            const rows = result[0];
             
             return rows.map(row => {
                 const post = new Post(row);
@@ -439,4 +448,4 @@ class Post
     }
 }
 
-module.exports = Post;
+export default Post;

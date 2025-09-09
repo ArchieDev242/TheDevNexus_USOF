@@ -1,5 +1,5 @@
-const database = require('./database');
-const Permission = require('./Permission');
+import dbConnect from '../utils/dbConnect.js';
+import Permission from './Permission.js';
 
 class Like 
 {
@@ -26,14 +26,14 @@ class Like
                 VALUES (?, ?, ?, ?)
             `;
             
-            const result = await database.query(query, [
+            const result = await dbConnect.makeRequest(query, [
                 this.author_id,
                 this.post_id,
                 this.comment_id,
                 this.type
             ]);
             
-            this.id = result.insertId;
+            this.id = result[0].insertId;
             return this;
         } 
         catch(error) 
@@ -42,12 +42,12 @@ class Like
         }
     }
 
-    // Методи для перевірки дозволів
     static async can_like_post(user) 
     {
         try 
         {
-            if (!user) return false;
+            if(!user) return false;
+            
             return await Permission.check_user_permission(user, Permission.PERMISSIONS.LIKE_POSTS);
         } 
         catch(error) 
@@ -60,7 +60,8 @@ class Like
     {
         try 
         {
-            if (!user) return false;
+            if(!user) return false;
+            
             return await Permission.check_user_permission(user, Permission.PERMISSIONS.LIKE_COMMENTS);
         } 
         catch(error) 
@@ -73,7 +74,8 @@ class Like
     {
         try 
         {
-            if (!user) return false;
+            if(!user) return false;
+            
             return this.author_id === user.id || user.is_admin();
         } 
         catch(error) 
@@ -102,9 +104,10 @@ class Like
                 throw new Error('Either post_id or comment_id must be provided');
             }
 
-            const rows = await database.query(query, params);
+            const result = await dbConnect.makeRequest(query, params);
+            const rows = result[0];
             
-            if (rows.length === 0) return null;
+            if(rows.length === 0) return null;
             
             return new Like(rows[0]);
         } 
@@ -119,7 +122,8 @@ class Like
         try 
         {
             const query = 'SELECT * FROM likes WHERE id = ?';
-            const rows = await database.query(query, [id]);
+            const result = await dbConnect.makeRequest(query, [id]);
+            const rows = result[0];
             
             if(rows.length === 0) return null;
             
@@ -143,7 +147,8 @@ class Like
                 ORDER BY l.publish_date DESC
             `;
             
-            const rows = await database.query(query, [postId]);
+            const result = await dbConnect.makeRequest(query, [postId]);
+            const rows = result[0];
             
             return rows.map(row => {
                 const like = new Like(row);
@@ -170,7 +175,8 @@ class Like
                 ORDER BY l.publish_date DESC
             `;
             
-            const rows = await database.query(query, [commentId]);
+            const result = await dbConnect.makeRequest(query, [commentId]);
+            const rows = result[0];
             
             return rows.map(row => {
                 const like = new Like(row);
@@ -206,7 +212,8 @@ class Like
                 ORDER BY l.publish_date DESC
             `;
             
-            const rows = await database.query(query, [authorId]);
+            const result = await dbConnect.makeRequest(query, [authorId]);
+            const rows = result[0];
             
             return rows.map(row => {
                 const like = new Like(row);
@@ -226,7 +233,7 @@ class Like
         try 
         {
             const query = 'DELETE FROM likes WHERE id = ?';
-            await database.query(query, [this.id]);
+            await dbConnect.makeRequest(query, [this.id]);
             
             return true;
         } 
@@ -241,9 +248,10 @@ class Like
         try 
         {
             const query = 'DELETE FROM likes WHERE author_id = ? AND post_id = ?';
-            const result = await database.query(query, [authorId, postId]);
+            const result = await dbConnect.makeRequest(query, [authorId, postId]);
+            const rows = result[0];
             
-            return result.affectedRows > 0;
+            return result[0].affectedRows > 0;
         } 
         catch(error) 
         {
@@ -256,9 +264,10 @@ class Like
         try 
         {
             const query = 'DELETE FROM likes WHERE author_id = ? AND comment_id = ?';
-            const result = await database.query(query, [authorId, commentId]);
+            const result = await dbConnect.makeRequest(query, [authorId, commentId]);
+            const rows = result[0];
             
-            return result.affectedRows > 0;
+            return result[0].affectedRows > 0;
         } 
         catch(error) 
         {
@@ -270,16 +279,11 @@ class Like
     {
         try 
         {
-            if (!user) throw new Error('User authentication required for liking');
+            if(!user) throw new Error('User authentication required for liking');
             
-            // Перевіряємо дозволи
-            if (postId && !(await this.can_like_post(user))) {
-                throw new Error('No permission to like posts');
-            }
+            if(postId && !(await this.can_like_post(user))) throw new Error('No permission to like posts');
             
-            if (commentId && !(await this.can_like_comment(user))) {
-                throw new Error('No permission to like comments');
-            }
+            if(commentId && !(await this.can_like_comment(user))) throw new Error('No permission to like comments');
 
             const like = new Like({
                 author_id: user.id,
@@ -298,7 +302,7 @@ class Like
                     return { action: 'removed', like: null };
                 } else 
                 {
-                    await database.query('UPDATE likes SET type = ? WHERE id = ?', [type, existing.id]);
+                    await dbConnect.makeRequest('UPDATE likes SET type = ? WHERE id = ?', [type, existing.id]);
                     existing.type = type;
                     return { action: 'updated', like: existing };
                 }
@@ -327,7 +331,8 @@ class Like
                 WHERE post_id = ?
             `;
             
-            const rows = await database.query(query, [postId]);
+            const result = await dbConnect.makeRequest(query, [postId]);
+            const rows = result[0];
             
             return {
                 likes: rows[0]?.likes || 0,
@@ -354,7 +359,8 @@ class Like
                 WHERE comment_id = ?
             `;
             
-            const rows = await database.query(query, [commentId]);
+            const result = await dbConnect.makeRequest(query, [commentId]);
+            const rows = result[0];
             
             return {
                 likes: rows[0]?.likes || 0,
@@ -374,4 +380,4 @@ class Like
     }
 }
 
-module.exports = Like;
+export default Like;

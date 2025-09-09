@@ -1,5 +1,5 @@
-const database = require('./database');
-const Permission = require('./Permission');
+import dbConnect from '../utils/dbConnect.js';
+import Permission from './Permission.js';
 
 class Comment 
 {
@@ -22,14 +22,14 @@ class Comment
                 VALUES (?, ?, ?, ?)
             `;
             
-            const result = await database.query(query, [
+            const result = await dbConnect.makeRequest(query, [
                 this.post_id,
                 this.author_id,
                 this.content,
                 this.status
             ]);
             
-            this.id = result.insertId;
+            this.id = result[0].insertId;
             return this;
         } 
         catch(error) 
@@ -54,7 +54,8 @@ class Comment
     {
         try 
         {
-            if (!user) return false;
+            if(!user) return false;
+            
             return await Permission.check_user_permission(user, Permission.PERMISSIONS.CREATE_COMMENTS);
         } 
         catch(error) 
@@ -67,7 +68,7 @@ class Comment
     {
         try 
         {
-            if (!user) return false;
+            if(!user) return false;
             
             const is_owner = this.author_id === user.id;
             const can_edit_own = await Permission.check_user_permission(user, Permission.PERMISSIONS.EDIT_OWN_COMMENTS);
@@ -123,7 +124,8 @@ class Comment
                 WHERE c.id = ?
             `;
             
-            const rows = await database.query(query, [id]);
+            const result = await dbConnect.makeRequest(query, [id]);
+            const rows = result[0];
             
             if(rows.length === 0) return null;
             
@@ -151,7 +153,8 @@ class Comment
                 ORDER BY c.publish_date ASC
             `;
             
-            const rows = await database.query(query, [postId]);
+            const result = await dbConnect.makeRequest(query, [postId]);
+            const rows = result[0];
             
             return rows.map(row => {
                 const comment = new Comment(row);
@@ -178,7 +181,8 @@ class Comment
                 ORDER BY c.publish_date DESC
             `;
             
-            const rows = await database.query(query);
+            const result = await dbConnect.makeRequest(query);
+            const rows = result[0];
             
             return rows.map(row => {
                 const comment = new Comment(row);
@@ -207,7 +211,8 @@ class Comment
                 ORDER BY c.publish_date DESC
             `;
             
-            const rows = await database.query(query, [authorId]);
+            const result = await dbConnect.makeRequest(query, [authorId]);
+            const rows = result[0];
             
             return rows.map(row => {
                 const comment = new Comment(row);
@@ -243,7 +248,7 @@ class Comment
             values.push(this.id);
             
             const query = `UPDATE comments SET ${fields.join(', ')} WHERE id = ?`;
-            await database.query(query, values);
+            await dbConnect.makeRequest(query, values);
             
             Object.assign(this, updateData);
             
@@ -260,7 +265,7 @@ class Comment
         try 
         {
             const query = 'DELETE FROM comments WHERE id = ?';
-            await database.query(query, [this.id]);
+            await dbConnect.makeRequest(query, [this.id]);
             
             return true;
         } 
@@ -282,7 +287,8 @@ class Comment
                 WHERE comment_id = ?
             `;
             
-            const rows = await database.query(query, [this.id]);
+            const result = await dbConnect.makeRequest(query, [this.id]);
+            const rows = result[0];
             
             return {
                 likes: rows[0]?.likes || 0,
@@ -341,7 +347,8 @@ class Comment
                 ORDER BY c.publish_date ASC
             `;
             
-            const rows = await database.query(query, [postId]);
+            const result = await dbConnect.makeRequest(query, [postId]);
+            const rows = result[0];
             
             return rows.map(row => {
                 const comment = new Comment(row);
@@ -359,4 +366,4 @@ class Comment
     }
 }
 
-module.exports = Comment;
+export default Comment;

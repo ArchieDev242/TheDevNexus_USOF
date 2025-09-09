@@ -1,6 +1,6 @@
-const database = require('./database');
-const bcrypt = require('bcrypt');
-const Permission = require('./Permission');
+import dbConnect from '../utils/dbConnect.js';
+import bcrypt from 'bcrypt';
+import Permission from './Permission.js';
 
 class User 
 {
@@ -32,7 +32,7 @@ class User
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             `;
             
-            const result = await database.query(query, [
+            const result = await dbConnect.makeRequest(query, [
                 this.login,
                 hashedPassword,
                 this.full_name,
@@ -42,7 +42,7 @@ class User
                 this.verification_token
             ]);
             
-            this.id = result.insertId;
+            this.id = result[0].insertId;
             return this;
         } 
         catch(error) 
@@ -56,7 +56,8 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE id = ?';
-            const rows = await database.query(query, [id]);
+            const result = await dbConnect.makeRequest(query, [id]);
+            const rows = result[0];
             
             if(rows.length === 0) return null;
             
@@ -73,7 +74,8 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE login = ?';
-            const rows = await database.query(query, [login]);
+            const result = await dbConnect.makeRequest(query, [login]);
+            const rows = result[0];
             
             if(rows.length === 0) return null;
             
@@ -90,7 +92,8 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE email = ?';
-            const rows = await database.query(query, [email]);
+            const result = await dbConnect.makeRequest(query, [email]);
+            const rows = result[0];
             
             if(rows.length === 0) return null;
             
@@ -107,7 +110,8 @@ class User
         try 
         {
             const query = 'SELECT * FROM users ORDER BY created_at DESC';
-            const rows = await database.query(query);
+            const result = await dbConnect.makeRequest(query);
+            const rows = result[0];
             
             return rows.map(row => new User(row));
         } 
@@ -132,12 +136,12 @@ class User
                 }
             });
             
-            if (fields.length === 0) throw new Error('No fields to update');
+            if(fields.length === 0) throw new Error('No fields to update');
             
             values.push(this.id);
             
             const query = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
-            await database.query(query, values);
+            await dbConnect.makeRequest(query, values);
             
             Object.assign(this, updateData);
             
@@ -154,7 +158,7 @@ class User
         try 
         {
             const query = 'DELETE FROM users WHERE id = ?';
-            await database.query(query, [this.id]);
+            await dbConnect.makeRequest(query, [this.id]);
             
             return true;
         } 
@@ -226,9 +230,10 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE reset_token = ?';
-            const rows = await database.query(query, [token]);
+            const result = await dbConnect.makeRequest(query, [token]);
+            const rows = result[0];
             
-            if (rows.length === 0) return null;
+            if(rows.length === 0) return null;
             
             return new User(rows[0]);
         } 
@@ -243,7 +248,8 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE verification_token = ?';
-            const rows = await database.query(query, [token]);
+            const result = await dbConnect.makeRequest(query, [token]);
+            const rows = result[0];
             
             if(rows.length === 0) return null;
             
@@ -361,7 +367,8 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE role = ? ORDER BY created_at DESC';
-            const rows = await database.query(query, [role]);
+            const result = await dbConnect.makeRequest(query, [role]);
+            const rows = result[0];
             
             return rows.map(row => new User(row));
         } 
@@ -384,7 +391,8 @@ class User
                 GROUP BY role
             `;
             
-            const rows = await database.query(query);
+            const result = await dbConnect.makeRequest(query);
+            const rows = result[0];
             return rows;
         } 
         catch(error) 
@@ -394,4 +402,4 @@ class User
     }
 }
 
-module.exports = User;
+export default User;

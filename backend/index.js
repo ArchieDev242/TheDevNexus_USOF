@@ -1,21 +1,19 @@
 import dbConnect from './utils/dbConnect.js';
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import multer from 'multer';
+import session from 'express-session';
+import router from 'router';
+import config from './config.json' with { type: 'json' };
+import bodyParser from 'body-parser';
+import path from 'path';
 
-const express = require('express');
-const cors = require('cors');
-const cookie_parser = require('cookie-parser');
-const multer = require('multer');
-const session = require('express-session');
-const router = require('router');
-const configPort = require('./config.json');//include config port
-
-const body_parser = require('body-parser');
-const path = require('path');
-
-const port = configPort.server.port;//get port from config.js
+const port = config.server.port;//get port from config.js
 const app = express();
 
 //midlleware
-app.use(cookie_parser());
+app.use(cookieParser());
 app.use(express.json());
 app.use(multer);
 app.use(cors);

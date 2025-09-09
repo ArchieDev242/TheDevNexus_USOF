@@ -1,5 +1,5 @@
-const mysql = require('mysql2/promise');
-const config = require('../config.json');
+import mysql from 'mysql2/promise';
+import config from '../config.json' with { type: 'json' };
 
 class DataBase
 {
@@ -59,15 +59,17 @@ class DataBase
 }
 
 const database = new DataBase();
-const User = require('./User');
-const Post = require('./Post');
-const Comment = require('./Comment');
-const Like = require('./Like');
-const Category = require('./Category');
-const Permission = require('./Permission');
-const GuestSession = require('./GuestSession');
 
-module.exports = {
+import User from './User.js';
+import Post from './Post.js';
+import Comment from './Comment.js';
+import Like from './Like.js';
+import Category from './Category.js';
+import Permission from './Permission.js';
+import GuestSession from './GuestSession.js';
+
+export {
+    database,
     User,
     Post,
     Comment,
