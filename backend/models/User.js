@@ -1,6 +1,7 @@
 import dbConnect from '../utils/dbConnect.js';
-import bcrypt from 'bcrypt';
 import Permission from './Permission.js';
+
+import bcrypt from 'bcrypt';
 
 class User 
 {
@@ -21,32 +22,36 @@ class User
         this.updated_at = userData?.updated_at;
     }
 
-    async create() 
-    {
-        try 
-        {
+    async create() {
+        try {
             const hashedPassword = await bcrypt.hash(this.password, 10);
-            
+
+            const plainToken = `${this.login}-${Date.now()}-${Math.random()}`; // generate random token (plain) 
+
+            this.verification_token = await bcrypt.hash(plainToken, 10);//hash code with bcrypt
+
             const query = `
                 INSERT INTO users (login, password, full_name, email, profile_picture, role, verification_token)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             `;
-            
+
             const result = await dbConnect.makeRequest(query, [
                 this.login,
                 hashedPassword,
                 this.full_name,
                 this.email,
-                this.profile_picture,
-                this.role,
+                this.profile_picture ?? 'default_avatar.png',
+                this.role ?? 'user',
                 this.verification_token
             ]);
-            
+
+            console.log('Вставка в БД:', this.login, this.email);
+            console.log('Plain token (отправить пользователю):', plainToken);
+            console.log('Hashed token (в БД):', this.verification_token);
+
             this.id = result[0].insertId;
-            return this;
-        } 
-        catch(error) 
-        {
+            return { user: this, plainToken };
+        } catch (error) {
             throw new Error(`Error creating user: ${error.message}`);
         }
     }
