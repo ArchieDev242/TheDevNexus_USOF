@@ -2,8 +2,8 @@ import express from 'express';
 
 import {
   register,
-  verifyEmail,
-  login
+  login,
+  verifyEmail
 } from '../controllers/authController.js';
 
 const router = express.Router();

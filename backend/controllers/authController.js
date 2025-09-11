@@ -1,5 +1,6 @@
 import userModel from '../models/User.js';
 import config from '../config.json' with { type: 'json' };
+import dbConnect from '../utils/dbConnect.js';
 
 import bcrypt from 'bcrypt';
 import nodemailer from 'nodemailer';
@@ -21,7 +22,7 @@ export const register = async (req, res) => {
         const { plainToken } = await user.create(); // create() должен вернуть plainToken
 
         // link for accept
-        const verificationLink = `http://127.0.0.1:3000/users/verify?token=${encodeURIComponent(plainToken)}&email=${encodeURIComponent(email)}`;
+        const verificationLink = `http://127.0.0.1:3000/api/verify?token=${encodeURIComponent(plainToken)}&email=${encodeURIComponent(email)}`;
 
         // send mail
         const transporter = nodemailer.createTransport({
@@ -78,11 +79,11 @@ export const login = async (req, res) => {
         }
 
         // verify email
-        // console.log('Email verified status:', user.email_verified);
-        // if (!user.email_verified) {
-        //     console.warn('Email not verified');
-        //     return res.status(403).json({ error: 'Email не подтверждён' });
-        // }
+        console.log('Email verified status:', user.email_verified);
+        if (!user.email_verified) {
+            console.warn('Email not verified');
+            return res.status(403).json({ error: 'Email не подтверждён' });
+        }
 
         // generic JWT
         const token = jwt.sign(
@@ -113,35 +114,37 @@ export const verifyEmail = async (req, res) => {
         const { token, email } = req.query;
 
         if (!token || !email) {
-            return res.status(400).json({ error: 'Missing token or email' });
+            return res.status(400).send('Отсутствует токен или email');
         }
 
-        // hash token
         const [rows] = await dbConnect.makeRequest(
-            'SELECT verification_token FROM users WHERE email = ?',
+            'SELECT verification_token, email_verified FROM users WHERE email = ?',
             [email]
         );
 
         if (!rows.length) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).send('Пользователь не найден');
         }
 
-        const hashedToken = rows[0].verification_token;
-        
-        const isMatch = await bcrypt.compare(token, hashedToken);
+        const user = rows[0];
+
+        if (user.email_verified) {
+            return res.send('Email уже подтверждён');
+        }
+
+        const isMatch = await bcrypt.compare(token, user.verification_token);
 
         if (!isMatch) {
-            return res.status(400).json({ error: 'Invalid or expired token' });
+            return res.status(400).send('Неверный или устаревший токен');
         }
 
-        // update status user
         await dbConnect.makeRequest(
             'UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE email = ?',
             [email]
         );
 
-        res.json({ message: 'Email успешно подтверждён!' });
+        res.send('Email успешно подтверждён!');
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).send('Внутренняя ошибка сервера');
     }
 };
