@@ -1,0 +1,12 @@
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial; margin: 40px; color: #111; }
+.box { max-width: 420px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; }
+.title { font-size: 20px; font-weight: 600; margin: 0 0 8px; }
+.muted { color: #6b7280; font-size: 14px; margin: 0 0 16px; }
+.status { padding: 12px; border-radius: 8px; margin-bottom: 16px; }
+.status.info { background: #eff6ff; color: #1e40af; }
+.status.error { background: #fef2f2; color: #991b1b; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+label { font-size: 14px; color: #374151; }
+input { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+button { width: 100%; background:#111827; color: white; border: none; border-radius: 8px; padding: 10px 12px; cursor: pointer; font-size: 14px; }
+button:disabled { background: #9ca3af; cursor: not-allowed; }

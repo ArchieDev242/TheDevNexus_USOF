@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import Permission from '../models/Permission.js';
 import GuestSession from '../models/GuestSession.js';
+import { config } from '../config.json' with { type: 'json' };
 
 class AuthMiddleware 
 {
@@ -21,8 +22,16 @@ class AuthMiddleware
                 
                 try 
                 {
-                    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                    req.user = await User.find_by_id(decoded.userId);
+                    const decoded = jwt.verify(token, config.jwt.secret);
+                    const user = await User.find_by_id(decoded.id);
+                    // Инвалидация токена если пароль менялся после его выдачи
+                    if (user && user.password_changed_at && decoded.iat) {
+                        const pwdChangedAtSec = Math.floor(new Date(user.password_changed_at).getTime() / 1000);
+                        if (decoded.iat < pwdChangedAtSec) {
+                            throw new Error('Token issued before password change');
+                        }
+                    }
+                    req.user = user;
                 } catch(jwtError) 
                 {
                     console.log('Invalid JWT token:', jwtError.message);

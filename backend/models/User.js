@@ -17,7 +17,9 @@ class User
         this.role = userData?.role || 'user';
         this.email_verified = userData?.email_verified || false;
         this.verification_token = userData?.verification_token;
-        this.reset_token = userData?.reset_token;
+        this.reset_token_hash = userData?.reset_token_hash;
+        this.reset_token_expires_at = userData?.reset_token_expires_at;
+        this.password_changed_at = userData?.password_changed_at;
         this.created_at = userData?.created_at;
         this.updated_at = userData?.updated_at;
     }
@@ -26,7 +28,7 @@ class User
         try {
             const hashedPassword = await bcrypt.hash(this.password, 10);
 
-            const plainToken = `${this.login}-${Date.now()}-${Math.random()}`; // generate random token (plain) 
+            const plainToken = await bcrypt.genSalt(10); // generate random token (plain)
 
             this.verification_token = await bcrypt.hash(plainToken, 10);//hash code with bcrypt
 
@@ -185,17 +187,13 @@ class User
         }
     }
 
-    async update_password(newPassword) 
-    {
-        try 
-        {
+    async update_password(newPassword) {
+        try {
             const hashedPassword = await bcrypt.hash(newPassword, 10);
-            await this.update({ password: hashedPassword });
-            
+            const changedAt = new Date();
+            await this.update({ password: hashedPassword, password_changed_at: changedAt });
             return true;
-        } 
-        catch(error) 
-        {
+        } catch (error) {
             throw new Error(`Error updating password: ${error.message}`);
         }
     }
@@ -217,34 +215,34 @@ class User
         }
     }
 
-    async set_reset_token(token) 
-    {
-        try 
-        {
-            await this.update({ reset_token: token });
+    async set_reset_token(plainToken, ttlMinutes = 30) {
+        try {
+            const hash = await bcrypt.hash(plainToken, 10);
+            const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
+            await this.update({ reset_token_hash: hash, reset_token_expires_at: expiresAt });
             return true;
-        } 
-        catch(error) 
-        {
+        } catch (error) {
             throw new Error(`Error setting reset token: ${error.message}`);
         }
     }
 
-    static async find_by_reset_token(token) 
-    {
-        try 
-        {
-            const query = 'SELECT * FROM users WHERE reset_token = ?';
-            const result = await dbConnect.makeRequest(query, [token]);
-            const rows = result[0];
-            
-            if(rows.length === 0) return null;
-            
-            return new User(rows[0]);
-        } 
-        catch(error) 
-        {
-            throw new Error(`Error finding user by reset token: ${error.message}`);
+    async clear_reset_token() {
+        try {
+            await this.update({ reset_token_hash: null, reset_token_expires_at: null });
+            return true;
+        } catch (error) {
+            throw new Error(`Error clearing reset token: ${error.message}`);
+        }
+    }
+
+    async verify_reset_token(plainToken) {
+        try {
+            if (!this.reset_token_hash || !this.reset_token_expires_at) return false;
+            const now = new Date();
+            if (new Date(this.reset_token_expires_at) < now) return false;
+            return await bcrypt.compare(plainToken, this.reset_token_hash);
+        } catch (error) {
+            throw new Error(`Error verifying reset token: ${error.message}`);
         }
     }
 

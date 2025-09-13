@@ -36,7 +36,7 @@ export const register = async (req, res) => {
         });
 
         await transporter.sendMail({
-            from: '"USOF" <your_email@gmail.com>',
+            from: `USOF <${config.email.user}>`,
             to: email,
             subject: 'Подтверждение регистрации',
             html: `
@@ -146,5 +146,125 @@ export const verifyEmail = async (req, res) => {
         res.send('Email успешно подтверждён!');
     } catch (err) {
         res.status(500).send('Внутренняя ошибка сервера');
+    }
+};
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const genericMsg = 'If the email exists, a reset link was sent';
+
+        if (!email) return res.status(200).json({ message: genericMsg });
+
+        const user = await userModel.find_by_email(email);
+        if (!user) return res.status(200).json({ message: genericMsg });
+        // only users
+        if (user.role !== 'user') {
+            return res.status(200).json({ message: genericMsg });
+        }
+
+        if (!user.email_verified) {
+            return res.status(200).json({ message: genericMsg });
+        }
+
+        const plainToken = await bcrypt.genSalt(10);
+        const tokenHash = await bcrypt.hash(plainToken, 10);
+        const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
+        await dbConnect.makeRequest(
+            'UPDATE users SET reset_token_hash = ?, reset_token_expires_at = ? WHERE id = ?',
+            [tokenHash, expiresAt, user.id]
+        );
+
+    const resetLink = `http://127.0.0.1:3000/reset-password#token=${encodeURIComponent(plainToken)}&email=${encodeURIComponent(email)}`;
+
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            auth: {
+                user: config.email.user,
+                pass: config.email.pass
+            }
+        });
+
+        await transporter.sendMail({
+            from: `USOF <${config.email.user}>`,
+            to: email,
+            subject: 'Сброс пароля',
+            html: `
+                <h1>Сброс пароля</h1>
+                <p>Для сброса пароля перейдите по ссылке (действительна 30 минут):</p>
+                <a href="${resetLink}">${resetLink}</a>
+            `
+        });
+
+        return res.status(200).json({ message: genericMsg });
+    } catch (err) {
+        return res.status(200).json({ message: 'If the email exists, a reset link was sent' });
+    }
+};
+
+export const verifyResetToken = async (req, res) => {
+    try {
+        const { token, email } = req.body;
+        if (!token || !email) {
+            return res.status(400).json({ error: 'Отсутствует токен или email' });
+        }
+        const [rows] = await dbConnect.makeRequest(
+            'SELECT role, email_verified, reset_token_hash, reset_token_expires_at FROM users WHERE email = ?',
+            [email]
+        );
+        if (!rows.length) return res.status(404).json({ error: 'Неверный токен или email' });
+
+        const { role, email_verified, reset_token_hash: hash, reset_token_expires_at: expiresAt } = rows[0];
+        if (role !== 'user') return res.status(403).json({ error: 'Доступ запрещён' });
+        if (!email_verified) return res.status(403).json({ error: 'Email не подтверждён' });
+        if (!hash || !expiresAt) return res.status(400).json({ error: 'Неверный или устаревший токен' });
+
+        const notExpired = new Date(expiresAt) > new Date();
+        const ok = notExpired && (await bcrypt.compare(token, hash));
+        if (!ok) return res.status(400).json({ error: 'Неверный или устаревший токен' });
+
+        return res.status(200).json({ message: 'Токен валиден' });
+    } catch (err) {
+        return res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { email, token, newPassword } = req.body;
+        if (!email || !token || !newPassword) {
+            return res.status(400).json({ error: 'email, token и newPassword обязательны' });
+        }
+        if (typeof newPassword !== 'string' || newPassword.length < 8) {
+            return res.status(400).json({ error: 'Пароль должен быть не менее 8 символов' });
+        }
+
+        const [rows] = await dbConnect.makeRequest(
+            'SELECT id, role, email_verified, reset_token_hash, reset_token_expires_at FROM users WHERE email = ?',
+            [email]
+        );
+        if (!rows.length) return res.status(400).json({ error: 'Неверные данные' });
+        const { id: userId, role, email_verified, reset_token_hash: hash, reset_token_expires_at: expiresAt } = rows[0];
+        if (role !== 'user') return res.status(403).json({ error: 'Доступ запрещён' });
+        if (!email_verified) return res.status(403).json({ error: 'Email не подтверждён' });
+        if (!hash || !expiresAt) return res.status(400).json({ error: 'Неверный или устаревший токен' });
+
+        const notExpired = new Date(expiresAt) > new Date();
+        const ok = notExpired && (await bcrypt.compare(token, hash));
+        if (!ok) return res.status(400).json({ error: 'Неверный или устаревший токен' });
+
+        const newHash = await bcrypt.hash(newPassword, 10);
+        const changedAt = new Date();
+        await dbConnect.makeRequest(
+            'UPDATE users SET password = ?, password_changed_at = ?, reset_token_hash = NULL, reset_token_expires_at = NULL WHERE id = ?',
+            [newHash, changedAt, userId]
+        );
+
+        return res.status(200).json({ message: 'Пароль успешно обновлён' });
+    } catch (err) {
+        return res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 };

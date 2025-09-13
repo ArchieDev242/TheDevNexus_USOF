@@ -9,6 +9,7 @@ import multer from 'multer';
 import session from 'express-session';
 import bodyParser from 'body-parser';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 const port = config.server.port; //get port from config.js
 const app = express();
@@ -22,8 +23,21 @@ app.use(upload.none());
 app.use(session({ secret: 'key', resave: false, saveUninitialized: true }));
 
 app.use((req, res, next) => {
-  console.log('Запрос:', req.method, req.url);
+  const url = new URL(req.protocol + '://' + req.get('host') + req.originalUrl);
+  if (url.searchParams.has('token')) {
+    url.searchParams.set('token', '***');
+  }
+  console.log('Запрос:', req.method, url.pathname + (url.search ? url.search : ''));
   next();
+});
+
+// Resolve __dirname for ESM and serve static assets
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Explicit route for reset-password page
+app.post('/reset-password', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
 });
 
 app.use("/api", router);

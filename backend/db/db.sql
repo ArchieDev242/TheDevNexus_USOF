@@ -12,10 +12,12 @@ CREATE TABLE IF NOT EXISTS users(
     email VARCHAR(100) NOT NULL UNIQUE,
     profile_picture VARCHAR(255) DEFAULT 'default_avatar.png',
     rating INT DEFAULT 0,
-    role ENUM('user', 'admin') DEFAULT 'user',
+    role ENUM('user', 'admin', 'guest') DEFAULT 'guest',
     email_verified BOOLEAN DEFAULT FALSE,
     verification_token VARCHAR(255),
-    reset_token VARCHAR(255),
+    reset_token_hash VARCHAR(255),
+    reset_token_expires_at DATETIME,
+    password_changed_at DATETIME,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
