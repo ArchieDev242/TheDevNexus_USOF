@@ -19,7 +19,6 @@
 ```
 {
   "email": "5233crimson@mechanicspedia.com",
-  "token": "6fda2892eb62ccd35a3631229e4698985fa3df8c92590a2150f49d70a85780dc",
   "newPassword": "12345678"
 }
 ```
