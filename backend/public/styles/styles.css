@@ -10,3 +10,6 @@ label { font-size: 14px; color: #374151; }
 input { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
 button { width: 100%; background:#111827; color: white; border: none; border-radius: 8px; padding: 10px 12px; cursor: pointer; font-size: 14px; }
 button:disabled { background: #9ca3af; cursor: not-allowed; }
+
+.spinner { display:inline-block; width:16px; height:16px; border:2px solid #fff; border-right-color: transparent; border-radius:50%; vertical-align: middle; margin-left:8px; animation: spin .75s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

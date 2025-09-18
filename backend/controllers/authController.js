@@ -85,16 +85,23 @@ export const login = async (req, res) => {
             return res.status(403).json({ error: 'Email не подтверждён' });
         }
 
-        // generic JWT
+        // Issue JWT and set as HttpOnly cookie
         const token = jwt.sign(
             { id: user.id, role: user.role },
             config.jwt.secret,
-            {expiresIn: config.jwt.expiresIn}
+            { expiresIn: config.jwt.expiresIn }
         );
+        const isProd = process.env.NODE_ENV === 'production';
+        res.cookie('auth', token, {
+            httpOnly: true,
+            secure: isProd,
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 2 * 60 * 60 * 1000 // sync with expiresIn 2h
+        });
 
         res.json({
             message: 'Вход выполнен успешно',
-            token,
             user: {
                 id: user.id,
                 login: user.login,
@@ -264,6 +271,15 @@ export const resetPassword = async (req, res) => {
         );
 
         return res.status(200).json({ message: 'Пароль успешно обновлён' });
+    } catch (err) {
+        return res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+    }
+};
+
+export const logout = async (req, res) => {
+    try {
+        res.clearCookie('auth', { path: '/' });
+        return res.status(200).json({ message: 'Выход выполнен' });
     } catch (err) {
         return res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }

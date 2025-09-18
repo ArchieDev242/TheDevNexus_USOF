@@ -13,18 +13,16 @@ class AuthMiddleware
             req.user = null; // guest by default
             req.guestSession = null;
             
-            // check JWT token for registered users
+            // check JWT token (prefer HttpOnly cookie)
+            const cookieToken = req.cookies?.auth;
             const auth_header = req.headers.authorization;
-            
-            if(auth_header && auth_header.startsWith('Bearer ')) 
-                {
-                const token = auth_header.substring(7);
-                
-                try 
-                {
+            const bearerToken = auth_header && auth_header.startsWith('Bearer ') ? auth_header.substring(7) : null;
+            const token = cookieToken || bearerToken;
+
+            if (token) {
+                try {
                     const decoded = jwt.verify(token, config.jwt.secret);
                     const user = await User.find_by_id(decoded.id);
-                    // Инвалидация токена если пароль менялся после его выдачи
                     if (user && user.password_changed_at && decoded.iat) {
                         const pwdChangedAtSec = Math.floor(new Date(user.password_changed_at).getTime() / 1000);
                         if (decoded.iat < pwdChangedAtSec) {
@@ -32,8 +30,7 @@ class AuthMiddleware
                         }
                     }
                     req.user = user;
-                } catch(jwtError) 
-                {
+                } catch (jwtError) {
                     console.log('Invalid JWT token:', jwtError.message);
                 }
             }

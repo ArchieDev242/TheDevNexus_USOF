@@ -40,6 +40,19 @@ app.get('/reset-password', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
 });
 
+// Pages: register and login
+app.get('/register', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'register-form.html'));
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login-form.html'));
+});
+
+app.get('/forgot-password', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'forgot-password.html'));
+});
+
 app.use("/api", router);
 
 app.listen(port, () => {
