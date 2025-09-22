@@ -2,3 +2,23 @@
 USOF backend with frontend
 
 npm run start
+
+настройка .env (удалить при публикации в паблик):
+```
+DB_HOST=localhost
+DB_USER=mkopychko
+DB_PASS=securepass
+DB_NAME=USOF
+EMAIL_USER=noreplydevnexus@gmail.com
+EMAIL_PASS=asxoqhnmkbfxgntw
+EMAIL_DISPLAY_NAME=Dev Nexus Support
+EMAIL_DISPLAY_ADDRESS=noreply@thedevnexus.org
+PORT=3000
+BASE_URL=http://localhost:3000
+JWT_SECRET=securepass
+JWT_EXPIRES_IN=2h
+
+ADMIN_PORT=4001
+ADMIN_COOKIE_SECRET=very-secure-admin-cookie-secret-change-this-in-production
+ADMIN_SESSION_SECRET=very-secure-admin-session-secret-change-this-in-production
+```

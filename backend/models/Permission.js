@@ -14,7 +14,7 @@ class Permission
         try 
         {
             const query = 'SELECT permission FROM role_permissions WHERE role_type = ?';
-            const result = await dbConnect.makeRequest(query, [roleType]);
+            const result = await dbConnect.make_request(query, [roleType]);
             const rows = result[0];
             
             return rows.map(row => row.permission);
@@ -30,7 +30,7 @@ class Permission
         try 
         {
             const query = 'SELECT COUNT(*) as count FROM role_permissions WHERE role_type = ? AND permission = ?';
-            const result = await dbConnect.makeRequest(query, [roleType, permission]);
+            const result = await dbConnect.make_request(query, [roleType, permission]);
             const rows = result[0];
             
             return rows[0].count > 0;
@@ -59,7 +59,7 @@ class Permission
         try 
         {
             const query = 'INSERT INTO role_permissions (role_type, permission) VALUES (?, ?)';
-            await dbConnect.makeRequest(query, [roleType, permission]);
+            await dbConnect.make_request(query, [roleType, permission]);
             
             return true;
         } 
@@ -74,7 +74,7 @@ class Permission
         try 
         {
             const query = 'DELETE FROM role_permissions WHERE role_type = ? AND permission = ?';
-            await dbConnect.makeRequest(query, [roleType, permission]);
+            await dbConnect.make_request(query, [roleType, permission]);
             
             return true;
         } 
@@ -89,7 +89,7 @@ class Permission
         try 
         {
             const query = 'SELECT * FROM role_permissions ORDER BY role_type, permission';
-            const result = await dbConnect.makeRequest(query);
+            const result = await dbConnect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => new Permission(row));

@@ -104,14 +104,14 @@ INSERT IGNORE INTO categories (title, description) VALUES
 
 -- test admin user
 INSERT IGNORE INTO users (login, password, full_name, email, role, email_verified) VALUES
-('admin', '$2b$10$rGK.Fc8VQFvQJPzQzWQwCuY7yE8s6v7vq5v9x3Q1o5Q1o5Q1o5Q1o5', 'Admin User', 'admin@devnexus.org', 'admin', TRUE);
+('admin', 'ZJKQ4DGx8Z0k38Eu934r9NDhTCQ21m7NFUJlYE4kM81ySsrEhs', 'Admin User', 'admin@devnexus.org', 'admin', TRUE);
 
 -- Insert test users
 INSERT IGNORE INTO users (login, password, full_name, email, email_verified) VALUES
-('gamedev_ukr', '$2b$10$rGK.Fc8VQFvQJPzQzWQwCuY7yE8s6v7vq5v9x3Q1o5Q1o5Q1o5Q1o5', 'Олександр Петренко', 'alex@example.com', TRUE),
-('unity_master', '$2b$10$rGK.Fc8VQFvQJPzQzWQwCuY7yE8s6v7vq5v9x3Q1o5Q1o5Q1o5Q1o5', 'Марія Іваненко', 'maria@example.com', TRUE),
-('indie_dev', '$2b$10$rGK.Fc8VQFvQJPzQzWQwCuY7yE8s6v7vq5v9x3Q1o5Q1o5Q1o5Q1o5', 'Дмитро Коваленко', 'dmytro@example.com', TRUE),
-('artist_2d', '$2b$10$rGK.Fc8VQFvQJPzQzWQwCuY7yE8s6v7vq5v9x3Q1o5Q1o5Q1o5Q1o5', 'Анна Сидоренко', 'anna@example.com', TRUE);
+('gamedev_ukr', 'bNtqeaGMsrMW5Ehfn2Z7Vxs0Fhe3o83oy53', 'Олександр Петренко', 'alex@example.com', TRUE),
+('unity_master', 'Mh3j4V2Iks7m02kx4ikea9I0Lm898ZAO4t4', 'Марія Іваненко', 'maria@example.com', TRUE),
+('indie_dev', 'qOk07w63u7C282l5ImL055PP0JnMzE1Y42I67WF6', 'Дмитро Коваленко', 'dmytro@example.com', TRUE),
+('artist_2d', 'rwwOysP13rvF2M5mG5l2w7Q3FCOITWQgpe', 'Анна Сидоренко', 'anna@example.com', TRUE);
 
 -- test posts
 INSERT IGNORE INTO posts (author_id, title, content, status) VALUES

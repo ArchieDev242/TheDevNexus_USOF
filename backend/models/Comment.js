@@ -22,7 +22,7 @@ class Comment
                 VALUES (?, ?, ?, ?)
             `;
             
-            const result = await dbConnect.makeRequest(query, [
+            const result = await dbConnect.make_request(query, [
                 this.post_id,
                 this.author_id,
                 this.content,
@@ -124,7 +124,7 @@ class Comment
                 WHERE c.id = ?
             `;
             
-            const result = await dbConnect.makeRequest(query, [id]);
+            const result = await dbConnect.make_request(query, [id]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -153,7 +153,7 @@ class Comment
                 ORDER BY c.publish_date ASC
             `;
             
-            const result = await dbConnect.makeRequest(query, [postId]);
+            const result = await dbConnect.make_request(query, [postId]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -181,7 +181,7 @@ class Comment
                 ORDER BY c.publish_date DESC
             `;
             
-            const result = await dbConnect.makeRequest(query);
+            const result = await dbConnect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => {
@@ -211,7 +211,7 @@ class Comment
                 ORDER BY c.publish_date DESC
             `;
             
-            const result = await dbConnect.makeRequest(query, [authorId]);
+            const result = await dbConnect.make_request(query, [authorId]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -248,7 +248,7 @@ class Comment
             values.push(this.id);
             
             const query = `UPDATE comments SET ${fields.join(', ')} WHERE id = ?`;
-            await dbConnect.makeRequest(query, values);
+            await dbConnect.make_request(query, values);
             
             Object.assign(this, updateData);
             
@@ -265,7 +265,7 @@ class Comment
         try 
         {
             const query = 'DELETE FROM comments WHERE id = ?';
-            await dbConnect.makeRequest(query, [this.id]);
+            await dbConnect.make_request(query, [this.id]);
             
             return true;
         } 
@@ -287,7 +287,7 @@ class Comment
                 WHERE comment_id = ?
             `;
             
-            const result = await dbConnect.makeRequest(query, [this.id]);
+            const result = await dbConnect.make_request(query, [this.id]);
             const rows = result[0];
             
             return {
@@ -347,7 +347,7 @@ class Comment
                 ORDER BY c.publish_date ASC
             `;
             
-            const result = await dbConnect.makeRequest(query, [postId]);
+            const result = await dbConnect.make_request(query, [postId]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -362,6 +362,21 @@ class Comment
         catch(error) 
         {
             throw new Error(`Error finding comments with likes: ${error.message}`);
+        }
+    }
+
+    async update_status(status) 
+    {
+        try 
+        {
+            const query = `UPDATE comments SET status = ? WHERE id = ?`;
+            await dbConnect.make_request(query, [status, this.id]);
+            this.status = status;
+            return true;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error updating comment status: ${error.message}`);
         }
     }
 }

@@ -1,13 +1,14 @@
 import mysql from 'mysql2/promise';
-import config from '../config.json' with { type: 'json' };
+import config from '../config.js';
 
-class dbConnect {
+class dbConnect 
+{
 
-    static async makeRequest(sql, values = null) 
+    static async make_request(sql, values = null) 
     {
         try 
         {
-            const connection = await this.connectToDataBase();
+            const connection = await this.connect_to_db();
             const [result] = await connection.execute(sql, values);
             await connection.end();
 
@@ -18,7 +19,7 @@ class dbConnect {
         }
     }
 
-    static async connectToDataBase() 
+    static async connect_to_db() 
     {
         const connection = await mysql.createConnection({
             host: config.database.host,
@@ -28,6 +29,20 @@ class dbConnect {
         });
         
         return connection;
+    }
+
+    static async connect() 
+    {
+        try {
+            const connection = await this.connect_to_db();
+            await connection.ping();
+            await connection.end();
+            return true;
+        } catch(error) 
+        {
+            console.error('Database connection failed:', error);
+            throw error;
+        }
     }
 }
 

@@ -24,7 +24,7 @@
         if (!email) { setStatus('error','Введите email'); return; }
         withSpinner(true);
         try {
-        const r = await fetch('/api/password/forgot', {
+        const r = await fetch('/api/auth/password-reset', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
         });

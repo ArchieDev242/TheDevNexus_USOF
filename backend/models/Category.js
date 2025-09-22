@@ -20,7 +20,7 @@ class Category
                 VALUES (?, ?)
             `;
             
-            const result = await dbConnect.makeRequest(query, [
+            const result = await dbConnect.make_request(query, [
                 this.title,
                 this.description
             ]);
@@ -39,7 +39,7 @@ class Category
         try 
         {
             const query = 'SELECT * FROM categories WHERE id = ?';
-            const result = await dbConnect.makeRequest(query, [id]);
+            const result = await dbConnect.make_request(query, [id]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -57,7 +57,7 @@ class Category
         try 
         {
             const query = 'SELECT * FROM categories ORDER BY title ASC';
-            const result = await dbConnect.makeRequest(query);
+            const result = await dbConnect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => new Category(row));
@@ -73,7 +73,7 @@ class Category
         try 
         {
             const query = 'SELECT * FROM categories WHERE title = ?';
-            const result = await dbConnect.makeRequest(query, [title]);
+            const result = await dbConnect.make_request(query, [title]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -106,7 +106,7 @@ class Category
             values.push(this.id);
             
             const query = `UPDATE categories SET ${fields.join(', ')} WHERE id = ?`;
-            await dbConnect.makeRequest(query, values);
+            await dbConnect.make_request(query, values);
             
             Object.assign(this, updateData);
             
@@ -123,7 +123,7 @@ class Category
         try 
         {
             const query = 'DELETE FROM categories WHERE id = ?';
-            await dbConnect.makeRequest(query, [this.id]);
+            await dbConnect.make_request(query, [this.id]);
             
             return true;
         } 
@@ -144,7 +144,7 @@ class Category
                 WHERE pc.category_id = ? AND p.status = 'active'
             `;
             
-            const result = await dbConnect.makeRequest(query, [this.id]);
+            const result = await dbConnect.make_request(query, [this.id]);
             const rows = result[0];
             return rows[0].count;
         } 
@@ -167,7 +167,7 @@ class Category
                 ORDER BY c.title ASC
             `;
             
-            const result = await dbConnect.makeRequest(query);
+            const result = await dbConnect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => {
@@ -199,6 +199,7 @@ class Category
         try 
         {
             if(!user) return false;
+
             return await Permission.check_user_permission(user, Permission.PERMISSIONS.CREATE_CATEGORIES);
         } 
         catch(error) 
@@ -212,6 +213,7 @@ class Category
         try 
         {
             if(!user) return false;
+
             return await Permission.check_user_permission(user, Permission.PERMISSIONS.EDIT_CATEGORIES);
         } 
         catch(error) 
@@ -225,6 +227,7 @@ class Category
         try 
         {
             if(!user) return false;
+            
             return await Permission.check_user_permission(user, Permission.PERMISSIONS.DELETE_CATEGORIES);
         } 
         catch(error) 
@@ -243,8 +246,8 @@ class Category
                 ORDER BY title ASC
             `;
             
-            const searchPattern = `%${searchTerm}%`;
-            const result = await dbConnect.makeRequest(query, [searchPattern, searchPattern]);
+            const search_pattern = `%${searchTerm}%`;
+            const result = await dbConnect.make_request(query, [search_pattern, search_pattern]);
             const rows = result[0];
             
             return rows.map(row => new Category(row));

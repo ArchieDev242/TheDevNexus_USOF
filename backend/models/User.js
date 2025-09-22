@@ -37,7 +37,7 @@ class User
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             `;
 
-            const result = await dbConnect.makeRequest(query, [
+            const result = await dbConnect.make_request(query, [
                 this.login,
                 hashedPassword,
                 this.full_name,
@@ -63,7 +63,7 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE id = ?';
-            const result = await dbConnect.makeRequest(query, [id]);
+            const result = await dbConnect.make_request(query, [id]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -81,7 +81,7 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE login = ?';
-            const result = await dbConnect.makeRequest(query, [login]);
+            const result = await dbConnect.make_request(query, [login]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -99,7 +99,7 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE email = ?';
-            const result = await dbConnect.makeRequest(query, [email]);
+            const result = await dbConnect.make_request(query, [email]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -117,7 +117,7 @@ class User
         try 
         {
             const query = 'SELECT * FROM users ORDER BY created_at DESC';
-            const result = await dbConnect.makeRequest(query);
+            const result = await dbConnect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => new User(row));
@@ -148,7 +148,7 @@ class User
             values.push(this.id);
             
             const query = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
-            await dbConnect.makeRequest(query, values);
+            await dbConnect.make_request(query, values);
             
             Object.assign(this, updateData);
             
@@ -165,7 +165,7 @@ class User
         try 
         {
             const query = 'DELETE FROM users WHERE id = ?';
-            await dbConnect.makeRequest(query, [this.id]);
+            await dbConnect.make_request(query, [this.id]);
             
             return true;
         } 
@@ -251,7 +251,7 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE verification_token = ?';
-            const result = await dbConnect.makeRequest(query, [token]);
+            const result = await dbConnect.make_request(query, [token]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -370,7 +370,7 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE role = ? ORDER BY created_at DESC';
-            const result = await dbConnect.makeRequest(query, [role]);
+            const result = await dbConnect.make_request(query, [role]);
             const rows = result[0];
             
             return rows.map(row => new User(row));
@@ -394,13 +394,28 @@ class User
                 GROUP BY role
             `;
             
-            const result = await dbConnect.makeRequest(query);
+            const result = await dbConnect.make_request(query);
             const rows = result[0];
             return rows;
         } 
         catch(error) 
         {
             throw new Error(`Error getting user stats: ${error.message}`);
+        }
+    }
+
+    async update_role(role) 
+    {
+        try 
+        {
+            const query = `UPDATE users SET role = ? WHERE id = ?`;
+            await dbConnect.make_request(query, [role, this.id]);
+            this.role = role;
+            return true;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error updating user role: ${error.message}`);
         }
     }
 }

@@ -23,7 +23,7 @@ class Post
                 VALUES (?, ?, ?, ?)
             `;
             
-            const result = await dbConnect.makeRequest(query, [
+            const result = await dbConnect.make_request(query, [
                 this.author_id,
                 this.title,
                 this.content,
@@ -130,7 +130,7 @@ class Post
                 WHERE p.id = ?
             `;
             
-            const result = await dbConnect.makeRequest(query, [id]);
+            const result = await dbConnect.make_request(query, [id]);
             const rows = result[0];
             
             if (rows.length === 0) return null;
@@ -157,10 +157,10 @@ class Post
                 JOIN users u ON p.author_id = u.id
                 WHERE p.status = 'active'
                 ORDER BY p.publish_date DESC
-                LIMIT ? OFFSET ?
+                LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
             `;
             
-            const result = await dbConnect.makeRequest(query, [limit, offset]);
+            const result = await dbConnect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => {
@@ -185,10 +185,10 @@ class Post
                 FROM posts p
                 JOIN users u ON p.author_id = u.id
                 ORDER BY p.publish_date DESC
-                LIMIT ? OFFSET ?
+                LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
             `;
             
-            const result = await dbConnect.makeRequest(query, [limit, offset]);
+            const result = await dbConnect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => {
@@ -219,7 +219,7 @@ class Post
             
             query += " ORDER BY p.publish_date DESC";
             
-            const result = await dbConnect.makeRequest(query, [authorId]);
+            const result = await dbConnect.make_request(query, [authorId]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -249,7 +249,7 @@ class Post
                 LIMIT ? OFFSET ?
             `;
             
-            const result = await dbConnect.makeRequest(query, [categoryId, limit, offset]);
+            const result = await dbConnect.make_request(query, [categoryId, limit, offset]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -285,7 +285,7 @@ class Post
             values.push(this.id);
             
             const query = `UPDATE posts SET ${fields.join(', ')} WHERE id = ?`;
-            await dbConnect.makeRequest(query, values);
+            await dbConnect.make_request(query, values);
             
             Object.assign(this, updateData);
             
@@ -302,7 +302,7 @@ class Post
         try 
         {
             const query = 'DELETE FROM posts WHERE id = ?';
-            await dbConnect.makeRequest(query, [this.id]);
+            await dbConnect.make_request(query, [this.id]);
             
             return true;
         } 
@@ -316,7 +316,7 @@ class Post
     {
         try 
         {
-            await dbConnect.makeRequest('DELETE FROM post_categories WHERE post_id = ?', [this.id]);
+            await dbConnect.make_request('DELETE FROM post_categories WHERE post_id = ?', [this.id]);
             
             if(categoryIds && categoryIds.length > 0) 
             {
@@ -325,7 +325,7 @@ class Post
                 const flat_values = values.flat();
                 
                 const query = `INSERT INTO post_categories (post_id, category_id) VALUES ${placeholders}`;
-                await dbConnect.makeRequest(query, flat_values);
+                await dbConnect.make_request(query, flat_values);
             }
             
             return true;
@@ -347,7 +347,7 @@ class Post
                 WHERE pc.post_id = ?
             `;
             
-            const result = await dbConnect.makeRequest(query, [this.id]);
+            const result = await dbConnect.make_request(query, [this.id]);
             const rows = result[0];
             return rows;
         } 
@@ -369,7 +369,7 @@ class Post
                 WHERE post_id = ?
             `;
             
-            const result = await dbConnect.makeRequest(query, [this.id]);
+            const result = await dbConnect.make_request(query, [this.id]);
             const rows = result[0];
             
             return {
@@ -397,10 +397,10 @@ class Post
                 WHERE p.status = 'active'
                 GROUP BY p.id
                 ORDER BY like_score DESC, p.publish_date DESC
-                LIMIT ? OFFSET ?
+                LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
             `;
             
-            const result = await dbConnect.makeRequest(query, [limit, offset]);
+            const result = await dbConnect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => {
@@ -431,7 +431,7 @@ class Post
                 LIMIT ? OFFSET ?
             `;
             
-            const result = await dbConnect.makeRequest(query, [startDate, endDate, limit, offset]);
+            const result = await dbConnect.make_request(query, [startDate, endDate, limit, offset]);
             const rows = result[0];
             
             return rows.map(row => {

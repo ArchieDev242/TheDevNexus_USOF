@@ -36,7 +36,7 @@
         }
         withSpinner(true);
         try {
-        const r = await fetch('/api/register', {
+        const r = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

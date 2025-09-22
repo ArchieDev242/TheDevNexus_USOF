@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import Permission from '../models/Permission.js';
 import GuestSession from '../models/GuestSession.js';
-import { config } from '../config.json' with { type: 'json' };
+import config from '../config.js';
 
 class AuthMiddleware 
 {
@@ -14,23 +14,27 @@ class AuthMiddleware
             req.guestSession = null;
             
             // check JWT token (prefer HttpOnly cookie)
-            const cookieToken = req.cookies?.auth;
+            const cookie_token = req.cookies?.auth;
             const auth_header = req.headers.authorization;
-            const bearerToken = auth_header && auth_header.startsWith('Bearer ') ? auth_header.substring(7) : null;
-            const token = cookieToken || bearerToken;
+            const bearer_token = auth_header && auth_header.startsWith('Bearer ') ? auth_header.substring(7) : null;
+            const token = cookie_token || bearer_token;
 
-            if (token) {
-                try {
+            if(token) 
+                {
+                try 
+                {
                     const decoded = jwt.verify(token, config.jwt.secret);
                     const user = await User.find_by_id(decoded.id);
-                    if (user && user.password_changed_at && decoded.iat) {
-                        const pwdChangedAtSec = Math.floor(new Date(user.password_changed_at).getTime() / 1000);
-                        if (decoded.iat < pwdChangedAtSec) {
-                            throw new Error('Token issued before password change');
-                        }
+                
+                    if(user && user.password_changed_at && decoded.iat) 
+                        {
+                        const pwd_changed_at_sec = Math.floor(new Date(user.password_changed_at).getTime() / 1000);
+                        
+                        if(decoded.iat < pwd_changed_at_sec) throw new Error('Token issued before password change');
                     }
                     req.user = user;
-                } catch (jwtError) {
+                } catch(jwtError) 
+                {
                     console.log('Invalid JWT token:', jwtError.message);
                 }
             }
@@ -43,10 +47,7 @@ class AuthMiddleware
                     {
                     req.guestSession = await GuestSession.find_by_token(session_token);
                     
-                    if(req.guestSession) 
-                        {
-                        await req.guestSession.update_activity();
-                    }
+                    if(req.guestSession) await req.guestSession.update_activity();
                 }
                 
                 // if guest session not exists, create a new one
@@ -78,7 +79,8 @@ class AuthMiddleware
     static require_permission(permission) 
     {
         return async (req, res, next) => {
-            try {
+            try 
+            {
                 const has_permission = await Permission.check_user_permission(req.user, permission);
                 
                 if(!has_permission) 

@@ -12,7 +12,7 @@
     }
 
     async function verify(token, email) {
-        const r = await fetch('/api/password/verify', {
+        const r = await fetch('/api/auth/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token, email })
@@ -63,7 +63,7 @@
                 return;
             }
             try {
-                const r = await fetch('/api/password/reset', {
+                const r = await fetch(`/api/auth/password-reset/${token}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, token, newPassword: pwd.value })

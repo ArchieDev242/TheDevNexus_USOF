@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TheDevNexus USOF - Головна</title>
+    <link rel = "stylesheet" href = "styles/styles.css">
+    <link rel = "stylesheet" href = "styles/main.css">
+</head>
+<body>
+    <div class = "container">
+        <header class="header">
+            <h1>TheDevNexus USOF</h1>
+            <p class="subtitle">Форум для розробників</p>
+        </header>
+
+        <main class = "main-content">
+            <div class = "welcome-section">
+                <h2>Ласкаво просимо!</h2>
+                <p>Приєднуйтесь до спільноти розробників, діліться знаннями та знаходьте відповіді на свої питання.</p>
+            </div>
+
+            <div class = "auth-buttons">
+                <button class = "btn btn-primary" onclick = "openLoginForm()">
+                    🔑 Увійти
+                </button>
+                <button class = "btn btn-secondary" onclick = "openRegisterForm()">
+                    📝 Зареєструватися
+                </button>
+            </div>
+
+            <div class = "quick-actions">
+                <h3>Швидкі дії:</h3>
+                <div class = "action-buttons">
+                    <button class = "btn btn-outline" onclick = "viewPosts()">
+                        📖 Переглянути пости
+                    </button>
+                    <button class = "btn btn-outline" onclick = "viewCategories()">
+                        📁 Категорії
+                    </button>
+                    <button class = "btn btn-outline" onclick = "viewUsers()">
+                        👥 Користувачі
+                    </button>
+                </div>
+            </div>
+
+            <div class = "guest-info">
+                <h4>Як гість ви можете:</h4>
+                <ul>
+                    <li>✅ Переглядати пости та коментарі</li>
+                    <li>✅ Читати профілі користувачів</li>
+                    <li>✅ Шукати по форуму</li>
+                    <li>❌ Створювати пости (потрібна реєстрація)</li>
+                    <li>❌ Коментувати (потрібна реєстрація)</li>
+                    <li>❌ Ставити лайки (потрібна реєстрація)</li>
+                </ul>
+            </div>
+        </main>
+
+        <footer class = "footer">
+            <p>&copy; 2025 TheDevNexus USOF. Створено з ❤️ для розробників.</p>
+        </footer>
+    </div>
+
+    <div id = "loginModal" class = "modal">
+        <div class = "modal-content">
+            <span class = "close" onclick = "closeModal('loginModal')">&times;</span>
+            <iframe src = "login-form.html" width = "100%" height = "400px" frameborder = "0"></iframe>
+        </div>
+    </div>
+
+    <div id = "registerModal" class = "modal">
+        <div class = "modal-content">
+            <span class = "close" onclick = "closeModal('registerModal')">&times;</span>
+            <iframe src = "register-form.html" width = "100%" height = "500px" frameborder = "0"></iframe>
+        </div>
+    </div>
+
+    <script src = "js/main.js"></script>
+</body>
+</html>

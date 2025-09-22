@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TheDevNexus USOF Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .header p { font-size: 1.1rem; opacity: 0.9; }
+        
+        .nav { 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 15px; 
+            padding: 20px; 
+            margin-bottom: 30px; 
+            backdrop-filter: blur(10px);
+        }
+        .nav-buttons { 
+            display: flex; 
+            gap: 15px; 
+            justify-content: center; 
+            flex-wrap: wrap; 
+        }
+        .nav-btn { 
+            background: rgba(255,255,255,0.2); 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            font-weight: 500;
+        }
+        .nav-btn:hover { 
+            background: rgba(255,255,255,0.3); 
+            transform: translateY(-2px); 
+        }
+        
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 30px; 
+        }
+        .stat-card { 
+            background: rgba(255,255,255,0.15); 
+            border-radius: 15px; 
+            padding: 25px; 
+            text-align: center; 
+            color: white; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            backdrop-filter: blur(10px);
+        }
+        .stat-card:hover { 
+            background: rgba(255,255,255,0.25); 
+            transform: translateY(-5px); 
+        }
+        .stat-number { 
+            font-size: 2.5rem; 
+            font-weight: bold; 
+            margin-bottom: 10px; 
+        }
+        .stat-label { 
+            font-size: 1.1rem; 
+            opacity: 0.9; 
+        }
+        
+        .content-area { 
+            background: rgba(255,255,255,0.95); 
+            border-radius: 15px; 
+            padding: 30px; 
+            min-height: 400px; 
+            backdrop-filter: blur(10px);
+        }
+        
+        .loading { 
+            text-align: center; 
+            padding: 50px; 
+            font-size: 1.2rem; 
+            color: #666; 
+        }
+        
+        .content-section h2 { 
+            color: #333; 
+            margin-bottom: 20px; 
+            font-size: 1.8rem; 
+        }
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+        }
+        th, td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #ddd; 
+        }
+        th { 
+            background: #f5f5f5; 
+            font-weight: 600; 
+            color: #333; 
+        }
+        tr:hover { 
+            background: #f9f9f9; 
+        }
+        
+        .btn { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin: 2px; 
+            font-size: 0.9rem; 
+            transition: background 0.3s ease;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-warning:hover { background: #e0a800; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        
+        .actions-cell { min-width: 200px; }
+        
+        .role-admin { 
+            background: #dc3545; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 0.8rem; 
+        }
+        .role-user { 
+            background: #007bff; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 0.8rem; 
+        }
+        
+        .status-active { 
+            background: #28a745; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 0.8rem; 
+        }
+        .status-inactive { 
+            background: #6c757d; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 0.8rem; 
+        }
+        .status-pending { 
+            background: #ffc107; 
+            color: #212529; 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 0.8rem; 
+        }
+        
+        .error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin: 20px 0; 
+            border: 1px solid #f5c6cb; 
+        }
+        
+        .actions { 
+            text-align: center; 
+            margin-top: 30px; 
+        }
+
+        @media (max-width: 768px) {
+            .nav-buttons { flex-direction: column; }
+            .stats-grid { grid-template-columns: 1fr; }
+            table { font-size: 0.9rem; }
+            .actions-cell { min-width: 150px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 TheDevNexus USOF</h1>
+            <p>Панель адміністрування</p>
+        </div>
+        
+        <div class="nav">
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="loadDashboard()">📊 Головна</button>
+                <button class="nav-btn" onclick="loadUsers()">👥 Користувачі</button>
+                <button class="nav-btn" onclick="loadPosts()">📝 Пости</button>
+                <button class="nav-btn" onclick="loadComments()">💬 Коментарі</button>
+                <button class="nav-btn" onclick="loadCategories()">📁 Категорії</button>
+            </div>
+        </div>
+        
+        <div class="stats-grid" id="stats">
+            <div class="stat-card" onclick="loadUsers()">
+                <div class="stat-number" id="userCount">-</div>
+                <div class="stat-label">👥 Користувачі</div>
+            </div>
+            <div class="stat-card" onclick="loadPosts()">
+                <div class="stat-number" id="postCount">-</div>
+                <div class="stat-label">📝 Пости</div>
+            </div>
+            <div class="stat-card" onclick="loadComments()">
+                <div class="stat-number" id="commentCount">-</div>
+                <div class="stat-label">💬 Коментарі</div>
+            </div>
+            <div class="stat-card" onclick="loadCategories()">
+                <div class="stat-number" id="categoryCount">-</div>
+                <div class="stat-label">📁 Категорії</div>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div id="content">
+                <div class="content-section">
+                    <h2>👋 Ласкаво просимо до панелі адміністрування</h2>
+                    <p>Оберіть розділ для керування контентом:</p>
+                    <div class="actions">
+                        <button class="btn" onclick="loadUsers()">Переглянути користувачів</button>
+                        <button class="btn" onclick="loadPosts()">Переглянути пости</button>
+                        <button class="btn" onclick="loadComments()">Переглянути коментарі</button>
+                        <button class="btn" onclick="loadCategories()">Переглянути категорії</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load statistics on page load
+        window.onload = function() {
+            loadStats();
+        };
+
+        function showLoading() {
+            document.getElementById('content').innerHTML = '<div class="loading">⏳ Завантаження...</div>';
+        }
+
+        function showError(message) {
+            document.getElementById('content').innerHTML = `<div class="error">❌ ${message}</div>`;
+        }
+
+        function loadStats() {
+            fetch('/admin/api/stats')
+                .then(response => response.json())
+                .then(stats => {
+                    document.getElementById('userCount').textContent = stats.users || 0;
+                    document.getElementById('postCount').textContent = stats.posts || 0;
+                    document.getElementById('commentCount').textContent = stats.comments || 0;
+                    document.getElementById('categoryCount').textContent = stats.categories || 0;
+                })
+                .catch(error => {
+                    console.error('Error loading stats:', error);
+                });
+        }
+
+        function loadDashboard() {
+            document.getElementById('content').innerHTML = `
+                <div class="content-section">
+                    <h2>👋 Ласкаво просимо до панелі адміністрування</h2>
+                    <p>Оберіть розділ для керування контентом:</p>
+                    <div class="actions">
+                        <button class="btn" onclick="loadUsers()">Переглянути користувачів</button>
+                        <button class="btn" onclick="loadPosts()">Переглянути пости</button>
+                        <button class="btn" onclick="loadComments()">Переглянути коментарі</button>
+                        <button class="btn" onclick="loadCategories()">Переглянути категорії</button>
+                    </div>
+                </div>
+            `;
+            loadStats();
+        }
+
+        function loadUsers() {
+            showLoading();
+            fetch('/admin/api/users')
+                .then(response => response.json())
+                .then(response => {
+                    const users = response.data || response;
+                    let html = '<div class="content-section"><h2>👥 Користувачі</h2>';
+                    html += '<table><tr><th>ID</th><th>Логін</th><th>Ім\'я</th><th>Email</th><th>Роль</th><th>Рейтинг</th><th>Верифіковано</th><th>Дії</th></tr>';
+                    
+                    users.forEach(user => {
+                        html += `<tr>
+                            <td>${user.id}</td>
+                            <td>${user.login}</td>
+                            <td>${user.full_name}</td>
+                            <td>${user.email}</td>
+                            <td><span class="role-${user.role}">${user.role}</span></td>
+                            <td>${user.rating}</td>
+                            <td>${user.email_verified ? '✅' : '❌'}</td>
+                            <td class="actions-cell">
+                                <button class="btn btn-warning" onclick="toggleUserRole(${user.id}, '${user.role === 'admin' ? 'user' : 'admin'}')">
+                                    ${user.role === 'admin' ? 'Зробити користувачем' : 'Зробити адміном'}
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteUser(${user.id})">Видалити</button>
+                            </td>
+                        </tr>`;
+                    });
+                    
+                    html += '</table></div>';
+                    document.getElementById('content').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading users:', error);
+                    showError('Помилка завантаження користувачів');
+                });
+        }
+
+        function loadPosts() {
+            showLoading();
+            fetch('/admin/api/posts')
+                .then(response => response.json())
+                .then(response => {
+                    const posts = response.data || response;
+                    let html = '<div class="content-section"><h2>📝 Пости</h2>';
+                    html += '<table><tr><th>ID</th><th>Заголовок</th><th>Автор</th><th>Категорії</th><th>Статус</th><th>Дата</th><th>Дії</th></tr>';
+                    
+                    posts.forEach(post => {
+                        html += `<tr>
+                            <td>${post.id}</td>
+                            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${post.title}</td>
+                            <td>${post.author_name || 'N/A'}</td>
+                            <td>${post.category_names || 'Без категорії'}</td>
+                            <td><span class="status-${post.status}">${post.status}</span></td>
+                            <td>${new Date(post.publish_date).toLocaleDateString()}</td>
+                            <td class="actions-cell">
+                                <button class="btn btn-warning" onclick="togglePostStatus(${post.id}, '${post.status === 'active' ? 'inactive' : 'active'}')">
+                                    ${post.status === 'active' ? 'Деактивувати' : 'Активувати'}
+                                </button>
+                                <button class="btn btn-danger" onclick="deletePost(${post.id})">Видалити</button>
+                            </td>
+                        </tr>`;
+                    });
+                    
+                    html += '</table></div>';
+                    document.getElementById('content').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading posts:', error);
+                    showError('Помилка завантаження постів');
+                });
+        }
+
+        function loadComments() {
+            showLoading();
+            fetch('/admin/api/comments')
+                .then(response => response.json())
+                .then(response => {
+                    const comments = response.data || response;
+                    let html = '<div class="content-section"><h2>💬 Коментарі</h2>';
+                    html += '<table><tr><th>ID</th><th>Контент</th><th>Автор</th><th>Пост</th><th>Статус</th><th>Дата</th><th>Дії</th></tr>';
+                    
+                    comments.forEach(comment => {
+                        html += `<tr>
+                            <td>${comment.id}</td>
+                            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${comment.content.substring(0, 50)}...</td>
+                            <td>${comment.author_name || 'N/A'}</td>
+                            <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${comment.post_title || 'N/A'}</td>
+                            <td><span class="status-${comment.status}">${comment.status}</span></td>
+                            <td>${new Date(comment.publish_date).toLocaleDateString()}</td>
+                            <td class="actions-cell">
+                                <button class="btn btn-success" onclick="approveComment(${comment.id})">Схвалити</button>
+                                <button class="btn btn-warning" onclick="rejectComment(${comment.id})">Відхилити</button>
+                                <button class="btn btn-danger" onclick="deleteComment(${comment.id})">Видалити</button>
+                            </td>
+                        </tr>`;
+                    });
+                    
+                    html += '</table></div>';
+                    document.getElementById('content').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading comments:', error);
+                    showError('Помилка завантаження коментарів');
+                });
+        }
+
+        function loadCategories() {
+            showLoading();
+            fetch('/admin/api/categories')
+                .then(response => response.json())
+                .then(categories => {
+                    let html = '<div class="content-section"><h2>📁 Категорії</h2>';
+                    html += '<table><tr><th>ID</th><th>Назва</th><th>Опис</th><th>Дата створення</th><th>Дії</th></tr>';
+                    
+                    categories.forEach(category => {
+                        html += `<tr>
+                            <td>${category.id}</td>
+                            <td>${category.title}</td>
+                            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${category.description || 'Без опису'}</td>
+                            <td>${new Date(category.created_at).toLocaleDateString()}</td>
+                            <td class="actions-cell">
+                                <button class="btn btn-warning" onclick="editCategory(${category.id})">Редагувати</button>
+                                <button class="btn btn-danger" onclick="deleteCategory(${category.id})">Видалити</button>
+                            </td>
+                        </tr>`;
+                    });
+                    
+                    html += '</table></div>';
+                    document.getElementById('content').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading categories:', error);
+                    showError('Помилка завантаження категорій');
+                });
+        }
+
+        // User actions
+        function toggleUserRole(userId, newRole) {
+            if (confirm(`Змінити роль користувача на "${newRole}"?`)) {
+                fetch(`/admin/api/users/${userId}/role`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role: newRole })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        loadUsers();
+                    } else {
+                        alert('Помилка зміни ролі');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error changing user role:', error);
+                    alert('Помилка зміни ролі');
+                });
+            }
+        }
+
+        function deleteUser(userId) {
+            if (confirm('Видалити користувача? Ця дія незворотна!')) {
+                fetch(`/admin/api/users/${userId}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        loadUsers();
+                    } else {
+                        alert('Помилка видалення користувача');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting user:', error);
+                    alert('Помилка видалення користувача');
+                });
+            }
+        }
+
+        // Post actions
+        function togglePostStatus(postId, newStatus) {
+            fetch(`/admin/api/posts/${postId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    loadPosts();
+                } else {
+                    alert('Помилка зміни статусу посту');
+                }
+            })
+            .catch(error => {
+                console.error('Error changing post status:', error);
+                alert('Помилка зміни статусу посту');
+            });
+        }
+
+        function deletePost(postId) {
+            if (confirm('Видалити пост? Ця дія незворотна!')) {
+                fetch(`/admin/api/posts/${postId}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        loadPosts();
+                    } else {
+                        alert('Помилка видалення посту');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting post:', error);
+                    alert('Помилка видалення посту');
+                });
+            }
+        }
+
+        // Comment actions
+        function approveComment(commentId) {
+            fetch(`/admin/api/comments/${commentId}/approve`, { method: 'PUT' })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    loadComments();
+                } else {
+                    alert('Помилка схвалення коментаря');
+                }
+            })
+            .catch(error => {
+                console.error('Error approving comment:', error);
+                alert('Помилка схвалення коментаря');
+            });
+        }
+
+        function rejectComment(commentId) {
+            fetch(`/admin/api/comments/${commentId}/reject`, { method: 'PUT' })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    loadComments();
+                } else {
+                    alert('Помилка відхилення коментаря');
+                }
+            })
+            .catch(error => {
+                console.error('Error rejecting comment:', error);
+                alert('Помилка відхилення коментаря');
+            });
+        }
+
+        function deleteComment(commentId) {
+            if (confirm('Видалити коментар? Ця дія незворотна!')) {
+                fetch(`/admin/api/comments/${commentId}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        loadComments();
+                    } else {
+                        alert('Помилка видалення коментаря');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting comment:', error);
+                    alert('Помилка видалення коментаря');
+                });
+            }
+        }
+
+        // Category actions
+        function editCategory(categoryId) {
+            alert('Функція редагування категорій буде додана пізніше');
+        }
+
+        function deleteCategory(categoryId) {
+            if (confirm('Видалити категорію? Ця дія незворотна!')) {
+                alert('Функція видалення категорій буде додана пізніше');
+            }
+        }
+    </script>
+</body>
+</html>

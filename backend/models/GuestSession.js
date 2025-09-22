@@ -21,7 +21,7 @@ class GuestSession
                 VALUES (?, ?, ?)
             `;
             
-            const result = await dbConnect.makeRequest(query, [
+            const result = await dbConnect.make_request(query, [
                 this.session_token,
                 this.ip_address,
                 this.user_agent
@@ -41,7 +41,7 @@ class GuestSession
         try 
         {
             const query = 'SELECT * FROM guest_sessions WHERE session_token = ?';
-            const result = await dbConnect.makeRequest(query, [token]);
+            const result = await dbConnect.make_request(query, [token]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -59,7 +59,7 @@ class GuestSession
         try 
         {
             const query = 'SELECT * FROM guest_sessions WHERE id = ?';
-            const result = await dbConnect.makeRequest(query, [id]);
+            const result = await dbConnect.make_request(query, [id]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -77,7 +77,7 @@ class GuestSession
         try 
         {
             const query = 'UPDATE guest_sessions SET last_activity = CURRENT_TIMESTAMP WHERE id = ?';
-            await dbConnect.makeRequest(query, [this.id]);
+            await dbConnect.make_request(query, [this.id]);
             
             return this;
         } 
@@ -92,7 +92,7 @@ class GuestSession
         try 
         {
             const query = 'DELETE FROM guest_sessions WHERE id = ?';
-            await dbConnect.makeRequest(query, [this.id]);
+            await dbConnect.make_request(query, [this.id]);
             
             return true;
         } 
@@ -111,7 +111,7 @@ class GuestSession
                 WHERE last_activity < DATE_SUB(NOW(), INTERVAL ? HOUR)
             `;
             
-            const result = await dbConnect.makeRequest(query, [hours]);
+            const result = await dbConnect.make_request(query, [hours]);
             const rows = result[0];
             return result[0].affectedRows;
         } 
@@ -131,7 +131,7 @@ class GuestSession
                 WHERE last_activity > DATE_SUB(NOW(), INTERVAL 1 HOUR)
             `;
             
-            const result = await dbConnect.makeRequest(query);
+            const result = await dbConnect.make_request(query);
             const rows = result[0];
             return rows[0].count;
         } 
