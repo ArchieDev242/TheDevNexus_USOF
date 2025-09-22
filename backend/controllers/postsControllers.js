@@ -416,7 +416,7 @@ class PostsController
     }
 
     // ===============================
-    // ADMIN METHODS
+    // ADMIN
     // ===============================
 
     static async adminGetAll(req, res) 
@@ -424,26 +424,22 @@ class PostsController
         try 
         {
             const { page = 1, limit = 20, status = '' } = req.query;
-            const limitNum = parseInt(limit);
+            const limit_num = parseInt(limit);
             const pageNum = parseInt(page);
-            const offset = (pageNum - 1) * limitNum;
+            const offset = (pageNum - 1) * limit_num;
             
-            // Use find_all for admin (includes inactive posts)
-            const posts = await Post.find_all(limitNum, offset);
+            const posts = await Post.find_all(limit_num, offset);
             
-            // Filter by status if specified
-            let filteredPosts = posts;
-            if (status) {
-                filteredPosts = posts.filter(post => post.status === status);
-            }
+            let filtered_posts = posts;
+            if(status) filtered_posts = posts.filter(post => post.status === status);
 
             res.json({
                 status: 'success',
-                data: filteredPosts,
+                data: filtered_posts,
                 pagination: {
                     page: pageNum,
-                    limit: limitNum,
-                    total: filteredPosts.length
+                    limit: limit_num,
+                    total: filtered_posts.length
                 }
             });
         } catch(error) 

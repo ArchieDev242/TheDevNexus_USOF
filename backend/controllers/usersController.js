@@ -352,22 +352,26 @@ class UsersController
     }
 
     // ===============================
-    // ALIAS METHODS FOR COMPATIBILITY
+    // ALIAS METHODS
     // ===============================
     
-    static async adminGetAll(req, res) {
+    static async adminGetAll(req, res) 
+    {
         return await UsersController.admin_get_all(req, res);
     }
 
-    static async adminGetById(req, res) {
+    static async adminGetById(req, res) 
+    {
         return await UsersController.admin_get_by_id(req, res);
     }
 
-    static async adminUpdateRole(req, res) {
+    static async adminUpdateRole(req, res) 
+    {
         return await UsersController.admin_update_role(req, res);
     }
 
-    static async adminDelete(req, res) {
+    static async adminDelete(req, res) 
+    {
         return await UsersController.admin_delete(req, res);
     }
 }
