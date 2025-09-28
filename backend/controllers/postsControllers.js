@@ -2,8 +2,15 @@ import Post from '../models/Post.js';
 import Comment from '../models/Comment.js';
 import Like from '../models/Like.js';
 import Category from '../models/Category.js';
+import SavedPost from '../models/SavedPost.js';
 import ErrorHandler from '../middleware/errorHandler.js';
 import FileUpload from '../middleware/fileUpload.js';
+import AchievementService from '../services/AchievementService.js';
+
+// Import services - temporarily comment out until converted to ES6 modules
+// const CodeSnippetService = require('../services/CodeSnippetService');
+// const FileProcessingService = require('../services/FileProcessingService');
+// const NotificationService = require('../services/NotificationService');
 
 class PostsController 
 {
@@ -29,16 +36,30 @@ class PostsController
             const filters = {
                 categories: categories ? categories.split(',') : [],
                 date_from,
-                date_to,
-                status: req.user?.role === 'admin' ? status : 'active' // only admin can see all statuses
+                date_to
             };
+            
+            if(req.user?.role === 'admin') 
+                {
+                if(status === 'all') 
+                    {
+                    filters.status = null;
+                } else 
+                    {
+                    filters.status = status;
+                }
+            } else 
+                {
+                filters.status = 'active';
+            }
             
             const posts = await Post.get_all_with_filters(page, limit, sort, filters);
             
             res.json({
                 status: 'success',
                 data: posts,
-                pagination: {
+                pagination: 
+                {
                     page: parseInt(page),
                     limit: parseInt(limit)
                 }
@@ -157,37 +178,69 @@ class PostsController
     {
         try 
         {
-            const { title, content, categories } = req.body;
-            const author_id = req.user.id;
+            const { title, content, categories, author_id: provided_author_id, code_snippets } = req.body;
+            
+            // Якщо адміністратор і надав author_id, використовуємо його
+            // Інакше використовуємо поточного користувача
+            let author_id;
+            if (provided_author_id && req.user.role === 'admin') {
+                author_id = provided_author_id;
+            } else {
+                author_id = req.user.id;
+            }
+
+            // TODO: Обробити код сніппети коли буде конвертовано в ES6 модулі
+            let processed_content = content;
             
             // create post
             const post_data = {
                 author_id,
                 title,
-                content,
+                content: processed_content,
                 status: 'active'
             };
             
             const post = new Post(post_data);
             const result = await post.create();
-            const post_id = result.insertId;
             
-            if(categories && Array.isArray(categories)) await Post.add_categories(post_id, categories);
+            console.log('Post created with result:', result);
+            console.log('Post ID after create:', post.id);
+            console.log('Categories to add:', categories);
             
+            if(categories && Array.isArray(categories) && categories.length > 0) {
+                console.log('Adding categories to post...');
+                await post.add_categories(categories);
+            }
+            
+            // TODO: Обробити завантажені зображення коли буде конвертовано в ES6 модулі
             if(req.files && req.files.length > 0) 
                 {
                 const image_urls = req.files.map(file => 
                     FileUpload.get_file_url(req, file.filename, 'posts')
                 );
-                await Post.add_images(post_id, req.files.map(f => f.filename));
+                // TODO: Implement add_images method in Post model
+                console.log('Image URLs:', image_urls);
             }
             
+            try 
+            {
+                const achievements = await AchievementService.check_achievements_after_post(
+                    author_id, 
+                    post.id, 
+                    processed_content
+                );
+                console.log('Achievements checked for post creation:', achievements.length, 'earned');
+            } catch(achievement_error) 
+            {
+                console.error('❌ Error checking achievements:', achievement_error);
+            }
+
             res.status(201).json({
                 status: 'success',
                 message: 'Post created successfully',
                 data: 
                 {
-                    id: post_id,
+                    id: post.id,
                     title,
                     content
                 }
@@ -198,7 +251,7 @@ class PostsController
         }
     }
     
-    // POST /api/posts/:post_id/comments - create a new comment
+    // POST /api/posts/:post_id/comments
     static async create_comment(req, res) 
     {
         try 
@@ -221,6 +274,15 @@ class PostsController
             const comment = new Comment(comment_data);
             const result = await comment.create();
             
+            try 
+            {
+                const achievements = await AchievementService.check_achievements_after_comment(author_id);
+                console.log('Achievements checked for comment creation:', achievements.length, 'earned');
+            } catch(achievement_error) 
+            {
+                console.error('❌ Error checking achievements:', achievement_error);
+            }
+            
             res.status(201).json({
                 status: 'success',
                 message: 'Comment created successfully',
@@ -235,7 +297,7 @@ class PostsController
         }
     }
     
-    // POST /api/posts/:post_id/like - create a new like under a post
+    // POST /api/posts/:post_id/like
     static async like_post(req, res) 
     {
         try 
@@ -247,7 +309,6 @@ class PostsController
             const post = await Post.find_by_id(post_id);
             if(!post) throw ErrorHandler.not_found_error('Post');
             
-            // Check if user already liked/disliked this post
             const like_exist = await Like.find_user_post_like(author_id, post_id);
             
             if(like_exist) 
@@ -272,6 +333,19 @@ class PostsController
                 await like.create();
             }
             
+            try 
+            {
+                const achievements = await AchievementService.check_achievements_after_like(
+                    post_id, 
+                    post.author_id, 
+                    type
+                );
+                console.log('Achievements checked for like action:', achievements.length, 'earned');
+            } catch(achievement_error) 
+            {
+                console.error('❌ Error checking achievements:', achievement_error);
+            }
+
             res.json({
                 status: 'success',
                 message: `Post ${type}d successfully`
@@ -282,13 +356,13 @@ class PostsController
         }
     }
     
-    // PATCH /api/posts/:post_id - update the specified post (creator only)
+    // PATCH /api/posts/:post_id
     static async update(req, res) 
     {
         try 
         {
             const { post_id } = req.params;
-            const { title, content, categories } = req.body;
+            const { title, content, categories, status } = req.body;
             
             const post = await Post.find_by_id(post_id);
             if(!post) throw ErrorHandler.not_found_error('Post');
@@ -298,8 +372,12 @@ class PostsController
                 throw ErrorHandler.forbidden_error('You can only edit your own posts');
             }
             
+            const update_data = { title, content };
+            
+            if(status && req.user.role === 'admin') update_data.status = status;
+            
             // update post
-            await post.update({ title, content });
+            await post.update(update_data);
             
             if(categories && Array.isArray(categories)) await Post.update_categories(post_id, categories);
             
@@ -315,7 +393,7 @@ class PostsController
         }
     }
     
-    // DELETE /api/posts/:post_id - delete a post
+    // DELETE /api/posts/:post_id
     static async delete(req, res) 
     {
         try 
@@ -342,7 +420,7 @@ class PostsController
         }
     }
     
-    // DELETE /api/posts/:post_id/like - delete a like under a post
+    // DELETE /api/posts/:post_id/like
     static async unlike_post(req, res) 
     {
         try 
@@ -369,7 +447,6 @@ class PostsController
     // ADMIN
     // ===============================
     
-    // Additional admin methods can be added here
     static async admin_get_all(req, res) 
     {
         try 
@@ -415,10 +492,6 @@ class PostsController
         }
     }
 
-    // ===============================
-    // ADMIN
-    // ===============================
-
     static async adminGetAll(req, res) 
     {
         try 
@@ -436,7 +509,8 @@ class PostsController
             res.json({
                 status: 'success',
                 data: filtered_posts,
-                pagination: {
+                pagination: 
+                {
                     page: pageNum,
                     limit: limit_num,
                     total: filtered_posts.length
@@ -470,6 +544,155 @@ class PostsController
         {
             throw error;
         }
+    }
+
+    // GET /api/posts/all/comments
+    static async get_all_comments(req, res) 
+    {
+        try 
+        {
+            const { 
+                page = 1, 
+                limit = 20, 
+                status = 'active' 
+            } = req.query;
+            
+            const comments = await Comment.get_all_with_details(page, limit, status);
+            
+            res.json({
+                status: 'success',
+                data: comments,
+                pagination: {
+                    page: parseInt(page),
+                    limit: parseInt(limit)
+                }
+            });
+        } catch(error) 
+        {
+            throw error;
+        }
+    }
+
+    // ===============================
+    // SAVED POSTS
+    // ===============================
+
+    // POST /api/posts/:post_id/save
+    static async save_post(req, res) 
+    {
+        try 
+        {
+            const { post_id } = req.params;
+            const { notes } = req.body;
+            const user_id = req.user.id;
+            
+            const post = await Post.find_by_id(post_id);
+            if(!post) throw ErrorHandler.not_found_error('Post');
+            
+            const save_existing = await SavedPost.find_by_user_and_post(user_id, post_id);
+            
+            if(save_existing) throw ErrorHandler.validation_error(['Post is already saved']);
+            
+            const saved_post = new SavedPost({
+                user_id: user_id,
+                post_id: post_id,
+                notes: notes || null
+            });
+            
+            await saved_post.save();
+            
+            res.status(201).json({
+                status: 'success',
+                message: 'Post saved successfully',
+                data: {
+                    id: saved_post.id,
+                    post_id: post_id,
+                    notes: notes
+                }
+            });
+        } catch (error) 
+        {
+            throw error;
+        }
+    }
+
+    // DELETE /api/posts/:post_id/save
+    static async unsave_post(req, res) 
+    {
+        try 
+        {
+            const { post_id } = req.params;
+            const user_id = req.user.id;
+            
+            const saved_post = await SavedPost.find_by_user_and_post(user_id, post_id);
+            if(!saved_post) throw ErrorHandler.not_found_error('Saved post');
+            
+            await saved_post.unsave();
+            
+            res.json({
+                status: 'success',
+                message: 'Post unsaved successfully'
+            });
+        } catch (error) 
+        {
+            throw error;
+        }
+    }
+
+    // GET /api/posts/:post_id/save-status
+    static async get_save_status(req, res) 
+    {
+        try 
+        {
+            const { post_id } = req.params;
+            const user_id = req.user?.id;
+            
+            if(!user_id) 
+                {
+                return res.json({
+                    status: 'success',
+                    data: { is_saved: false }
+                });
+            }
+            
+            const isSaved = await SavedPost.is_saved_by_user(user_id, post_id);
+            
+            res.json({
+                status: 'success',
+                data: { is_saved: isSaved }
+            });
+        } catch (error) 
+        {
+            throw error;
+        }
+    }
+
+    // TODO: Activate when services are converted to ES6 modules
+    // POST /api/posts/execute-code
+    static async execute_code(req, res) 
+    {
+        res.status(501).json({
+            status: 'error',
+            message: 'Code execution service not yet implemented - services need ES6 conversion'
+        });
+    }
+
+    // POST /api/posts/highlight-code
+    static async highlight_code(req, res) 
+    {
+        res.status(501).json({
+            status: 'error',
+            message: 'Code highlighting service not yet implemented - services need ES6 conversion'
+        });
+    }
+
+    // POST /api/posts/validate-code
+    static async validate_code(req, res) 
+    {
+        res.status(501).json({
+            status: 'error',
+            message: 'Code validation service not yet implemented - services need ES6 conversion'
+        });
     }
 }
 

@@ -19,7 +19,7 @@ class RateLimit
         } = options;
 
         return (req, res, next) => {
-            const key = this.getKey(req);
+            const key = this.get_key(req);
             const now = Date.now();
             
             if(!this.requests.has(key)) this.requests.set(key, []); 
@@ -40,7 +40,6 @@ class RateLimit
             valid_requests.push(now);
             this.requests.set(key, valid_requests);
 
-            // Add rate limit headers
             res.set({
                 'X-RateLimit-Limit': maxRequests,
                 'X-RateLimit-Remaining': Math.max(0, maxRequests - valid_requests.length),
@@ -101,7 +100,17 @@ class RateLimit
         });
     }
 
-    getKey(req) 
+    static execute_code_limit() 
+    {
+        const limiter = new RateLimit();
+        return limiter.limit({
+            windowMs: 60 * 1000, // 1 minute
+            maxRequests: 10, // 10 code executions per minute
+            message: 'Too many code execution attempts, please wait before trying again'
+        });
+    }
+
+    get_key(req) 
     {
         // user ID if authenticated, otherwise use IP
         if(req.user) return `user:${req.user.id}`;

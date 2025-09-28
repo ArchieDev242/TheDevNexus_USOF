@@ -9,7 +9,7 @@ class Like
         this.author_id = likeData?.author_id;
         this.post_id = likeData?.post_id;
         this.comment_id = likeData?.comment_id;
-        this.type = likeData?.type; // 'like' or 'dislike'
+        this.type = likeData?.type; // 'like', 'dislike', or 'thanks'
         this.publish_date = likeData?.publish_date;
     }
 
@@ -371,6 +371,45 @@ class Like
         catch(error) 
         {
             throw new Error(`Error getting comment likes stats: ${error.message}`);
+        }
+    }
+
+    static async get_comment_likes(commentId) 
+    {
+        try 
+        {
+            const query = `
+                SELECT l.*, u.login as author_login, u.full_name as author_name
+                FROM likes l
+                JOIN users u ON l.author_id = u.id
+                WHERE l.comment_id = ?
+                ORDER BY l.publish_date DESC
+            `;
+            
+            const result = await dbConnect.make_request(query, [commentId]);
+            const rows = result[0];
+            
+            return rows.map(row => new Like(row));
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error getting comment likes: ${error.message}`);
+        }
+    }
+
+    static async find_user_comment_like(userId, commentId) 
+    {
+        try 
+        {
+            const query = 'SELECT * FROM likes WHERE author_id = ? AND comment_id = ?';
+            const result = await dbConnect.make_request(query, [userId, commentId]);
+            const rows = result[0];
+            
+            return rows.length > 0 ? new Like(rows[0]) : null;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error finding user comment like: ${error.message}`);
         }
     }
 

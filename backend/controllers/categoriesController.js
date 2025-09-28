@@ -8,7 +8,7 @@ class CategoriesController
     // ALL USERS
     // ===============================
     
-    // GET /api/categories - get all categories
+    // GET /api/categories
     static async get_all(req, res) 
     {
         try 
@@ -25,7 +25,7 @@ class CategoriesController
         }
     }
     
-    // GET /api/categories/:category_id - get specified category data
+    // GET /api/categories/:category_id
     static async get_by_id(req, res) 
     {
         try 
@@ -47,7 +47,7 @@ class CategoriesController
         }
     }
     
-    // GET /api/categories/:category_id/posts - get all posts associated with the specified category
+    // GET /api/categories/:category_id/posts
     static async get_posts_by_category(req, res) 
     {
         try 
@@ -85,7 +85,7 @@ class CategoriesController
     // ADMIN
     // ===============================
     
-    // POST /api/categories - create a new category (admin only)
+    // POST /api/categories
     static async admin_create(req, res) 
     {
         try 
@@ -119,7 +119,7 @@ class CategoriesController
         }
     }
     
-    // PATCH /api/categories/:category_id - update specified category data (admin only)
+    // PATCH /api/categories/:category_id
     static async admin_update(req, res) 
     {
         try 
@@ -152,7 +152,7 @@ class CategoriesController
         }
     }
     
-    // DELETE /api/categories/:category_id - delete a category (admin only)
+    // DELETE /api/categories/:category_id
     static async admin_delete(req, res) 
     {
         try 
@@ -177,7 +177,7 @@ class CategoriesController
         }
     }
     
-    // GET /api/categories/admin/stats - get category statistics (admin only)
+    // GET /api/categories/admin/stats
     static async admin_get_stats(req, res) 
     {
         try 

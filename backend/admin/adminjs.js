@@ -1,7 +1,6 @@
 import AdminJS from 'adminjs';
 import AdminJSExpress from '@adminjs/express';
 import AdminJSSequelize from '@adminjs/sequelize';
-import express from 'express';
 import { sequelize, User, Post, Comment, Category } from './sequelize.js';
 import config from '../config.js';
 
@@ -10,7 +9,7 @@ AdminJS.registerAdapter({
     Database: AdminJSSequelize.Database,
 });
 
-const adminJs = new AdminJS({
+const adminJS_config = {
     resources: [
         {
             resource: User,
@@ -20,6 +19,23 @@ const adminJs = new AdminJS({
                 filterProperties: ['login', 'email', 'role', 'email_verified'],
                 editProperties: ['login', 'full_name', 'email', 'role', 'email_verified'],
                 showProperties: ['id', 'login', 'full_name', 'email', 'profile_picture', 'rating', 'role', 'email_verified', 'created_at', 'updated_at'],
+                properties: 
+                {
+                    password: 
+                    { 
+                        isVisible: false
+                    },
+                    verification_token: { isVisible: false },
+                    reset_token: { isVisible: false },
+                    role: 
+                    {
+                        availableValues: [
+                            { value: 'guest', label: 'Guest (Гість)' },
+                            { value: 'user', label: 'User (Користувач)' },
+                            { value: 'admin', label: 'Admin (Адміністратор)' }
+                        ]
+                    }
+                },
                 actions: 
                 {
                     edit: { isAccessible: true },
@@ -48,10 +64,10 @@ const adminJs = new AdminJS({
             resource: Comment,
             options: 
             {
-                listProperties: ['id', 'content', 'author_id', 'post_id', 'publish_date'],
-                filterProperties: ['author_id', 'post_id'],
-                editProperties: ['content', 'author_id', 'post_id'],
-                showProperties: ['id', 'content', 'author_id', 'post_id', 'publish_date', 'created_at'],
+                listProperties: ['id', 'content', 'author_id', 'post_id', 'status', 'publish_date'],
+                filterProperties: ['author_id', 'post_id', 'status'],
+                editProperties: ['content', 'author_id', 'post_id', 'status'],
+                showProperties: ['id', 'content', 'author_id', 'post_id', 'status', 'publish_date', 'created_at'],
                 actions: 
                 {
                     edit: { isAccessible: true },
@@ -85,7 +101,8 @@ const adminJs = new AdminJS({
         logo: false,
         favicon: 'https://adminjs.co/assets/favicon.ico'
     },
-    locale: {
+    locale: 
+    {
         language: 'uk',
         translations: 
         {
@@ -126,10 +143,12 @@ const adminJs = new AdminJS({
             }
         }
     }
-});
+};
+
+const admin_js = new AdminJS(adminJS_config);
 
 const authenticate = async (email, password) => {
-    console.log('AdminJS login attempt:', email, password);
+    console.log('AdminJS login attempt:', email);
     
     if(email === 'admin@usof.com' && password === 'admin123') 
         {
@@ -141,10 +160,17 @@ const authenticate = async (email, password) => {
     return false;
 };
 
-const adminRouter = AdminJSExpress.buildAuthenticatedRouter(adminJs, {
+const admin_router = AdminJSExpress.buildAuthenticatedRouter(admin_js, {
     authenticate,
     cookieName: 'adminjs',
-    cookiePassword: 'some-secret-password-used-to-secure-cookie',
+    cookiePassword: config.admin?.sessionSecret || 'some-secret-password-used-to-secure-cookie',
+}, null, {
+    // Додаємо timeout для запитів
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 // 24 години
+    }
 });
 
-export { adminJs, adminRouter, sequelize };
+export { admin_js as adminJs, admin_router as adminRouter, adminJS_config as adminJsConfig, sequelize };

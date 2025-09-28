@@ -48,4 +48,10 @@ router.delete('/:user_id',
     ErrorHandler.async_handler(UsersController.delete_account)
 );
 
+// GET /api/users/saved-posts - get user's saved posts
+router.get('/saved-posts', 
+    AuthMiddleware.require_auth,
+    ErrorHandler.async_handler(UsersController.get_saved_posts)
+);
+
 export default router;

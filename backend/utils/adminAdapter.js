@@ -3,6 +3,7 @@ import Post from '../models/Post.js';
 import Comment from '../models/Comment.js';
 import Like from '../models/Like.js';
 import Category from '../models/Category.js';
+import dbConnect from './dbConnect.js';
 
 class AdminAdapter 
 {
@@ -42,7 +43,7 @@ class AdminAdapter
             query += ` LIMIT ? OFFSET ?`;
             params.push(limit, offset);
             
-            const [rows] = await this.model.makeRequest(query, params);
+            const [rows] = await dbConnect.make_request(query, params);
             return rows;
         } catch(error) 
         {
@@ -87,7 +88,7 @@ class AdminAdapter
                 query += ` WHERE ${conditions.join(' AND ')}`;
             }
             
-            const [rows] = await this.model.makeRequest(query, params);
+            const [rows] = await dbConnect.make_request(query, params);
             return rows[0]?.count || 0;
         } catch(error) 
         {
@@ -100,14 +101,34 @@ class AdminAdapter
     {
         try 
         {
+            console.log(`Creating ${this.modelName} with payload:`, payload);
+            
             switch(this.modelName) 
             {
-                case 'User': return await User.create_user(payload);
-                case 'Post': return await Post.create_post(payload);
-                case 'Comment': return await Comment.create_comment(payload);
-                case 'Category': return await Category.create_category(payload);
-                case 'Like': return await Like.create_like(payload);
-                default: throw new Error(`Create method not implemented for ${this.modelName}`);
+                case 'User': 
+                    const user = new User(payload);
+                    const userResult = await user.create();
+                    return userResult.user;
+                    
+                case 'Category':
+                    if (!Category.create_category) {
+                        // Fallback до прямого SQL запиту
+                        const query = `INSERT INTO categories (title, description) VALUES (?, ?)`;
+                        const [categoryResult] = await dbConnect.make_request(query, [payload.title, payload.description]);
+                        return await Category.find_by_id(categoryResult.insertId);
+                    }
+                    return await Category.create_category(payload);
+                    
+                default: 
+                    // Загальний метод створення для інших моделей
+                    const fields = Object.keys(payload);
+                    const values = Object.values(payload);
+                    const placeholders = fields.map(() => '?').join(', ');
+                    
+                    const insertQuery = `INSERT INTO ${this.get_table_name()} (${fields.join(', ')}) VALUES (${placeholders})`;
+                    const [insertResult] = await dbConnect.make_request(insertQuery, values);
+                    
+                    return await this.find_one(insertResult.insertId);
             }
         } catch(error) 
         {
@@ -120,16 +141,42 @@ class AdminAdapter
     {
         try 
         {
-            const fields = Object.keys(payload).map(key => `${key} = ?`).join(', ');
-            const values = [...Object.values(payload), id];
+            // Видаляємо системні поля, які не можна оновлювати напряму
+            const { created_at, updated_at, ...updateData } = payload;
+            
+            if (Object.keys(updateData).length === 0) {
+                console.log('No fields to update');
+                return await this.find_one(id);
+            }
+
+            // Спеціальна обробка для користувачів
+            if (this.modelName === 'User') {
+                const user = await User.find_by_id(id);
+                if (!user) throw new Error('User not found');
+                
+                // Хешуємо пароль, якщо він оновлюється
+                if (updateData.password) {
+                    const bcrypt = await import('bcrypt');
+                    updateData.password = await bcrypt.hash(updateData.password, 10);
+                }
+                
+                const result = await user.update(updateData);
+                console.log('User updated successfully:', result.id);
+                return result;
+            }
+            
+            // Загальне оновлення для інших моделей
+            const fields = Object.keys(updateData).map(key => `${key} = ?`).join(', ');
+            const values = [...Object.values(updateData), id];
             
             const query = `UPDATE ${this.get_table_name()} SET ${fields} WHERE id = ?`;
-            await this.model.makeRequest(query, values);
+            const result = await dbConnect.make_request(query, values);
             
+            console.log(`${this.modelName} updated successfully:`, result);
             return await this.find_one(id);
         } catch(error) 
         {
-            console.error(`Error updating ${this.modelName}:`, error);
+            console.error(`Error updating ${this.modelName}:`, error.message);
             throw error;
         }
     }
@@ -139,7 +186,7 @@ class AdminAdapter
         try 
         {
             const query = `DELETE FROM ${this.get_table_name()} WHERE id = ?`;
-            await this.model.makeRequest(query, [id]);
+            await dbConnect.make_request(query, [id]);
             return true;
         } catch(error) 
         {

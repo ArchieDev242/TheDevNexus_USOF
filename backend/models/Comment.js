@@ -8,6 +8,7 @@ class Comment
         this.id = commentData?.id;
         this.post_id = commentData?.post_id;
         this.author_id = commentData?.author_id;
+        this.parent_comment_id = commentData?.parent_comment_id;
         this.content = commentData?.content;
         this.status = commentData?.status || 'active';
         this.publish_date = commentData?.publish_date;
@@ -18,13 +19,14 @@ class Comment
         try 
         {
             const query = `
-                INSERT INTO comments (post_id, author_id, content, status)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO comments (post_id, author_id, parent_comment_id, content, status)
+                VALUES (?, ?, ?, ?, ?)
             `;
             
             const result = await dbConnect.make_request(query, [
                 this.post_id,
                 this.author_id,
+                this.parent_comment_id,
                 this.content,
                 this.status
             ]);
@@ -377,6 +379,128 @@ class Comment
         catch(error) 
         {
             throw new Error(`Error updating comment status: ${error.message}`);
+        }
+    }
+
+    static async get_all_with_details(page = 1, limit = 20, status = 'active') 
+    {
+        try 
+        {
+            const offset = (page - 1) * limit;
+            
+            const query = `
+                SELECT 
+                    c.*,
+                    u.login as author_login,
+                    u.full_name as author_name,
+                    p.title as post_title,
+                    p.id as post_id
+                FROM comments c
+                JOIN users u ON c.author_id = u.id
+                JOIN posts p ON c.post_id = p.id
+                WHERE c.status = ?
+                ORDER BY c.publish_date DESC
+                LIMIT ${parseInt(limit)} OFFSET ${offset}
+            `;
+            
+            const result = await dbConnect.make_request(query, [status]);
+            const rows = result[0];
+            
+            return rows.map(row => ({
+                id: row.id,
+                content: row.content,
+                status: row.status,
+                publish_date: row.publish_date,
+                author: {
+                    id: row.author_id,
+                    login: row.author_login,
+                    full_name: row.author_name
+                },
+                post: {
+                    id: row.post_id,
+                    title: row.post_title
+                }
+            }));
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error getting all comments with details: ${error.message}`);
+        }
+    }
+
+    static async get_full_comment_data(comment_id) 
+    {
+        try 
+        {
+            const query = `
+                SELECT 
+                    c.id,
+                    c.post_id,
+                    c.author_id,
+                    c.content,
+                    c.status,
+                    c.publish_date,
+                    c.created_at,
+                    c.updated_at,
+                    u.login as author_login,
+                    u.full_name as author_name,
+                    p.title as post_title,
+                    COALESCE(likes.like_count, 0) as like_count,
+                    COALESCE(dislikes.dislike_count, 0) as dislike_count
+                FROM comments c
+                LEFT JOIN users u ON c.author_id = u.id
+                LEFT JOIN posts p ON c.post_id = p.id
+                LEFT JOIN (
+                    SELECT comment_id, COUNT(*) as like_count 
+                    FROM likes 
+                    WHERE type = 'like' AND comment_id IS NOT NULL 
+                    GROUP BY comment_id
+                ) likes ON c.id = likes.comment_id
+                LEFT JOIN (
+                    SELECT comment_id, COUNT(*) as dislike_count 
+                    FROM likes 
+                    WHERE type = 'dislike' AND comment_id IS NOT NULL 
+                    GROUP BY comment_id
+                ) dislikes ON c.id = dislikes.comment_id
+                WHERE c.id = ?
+            `;
+            
+            const result = await dbConnect.make_request(query, [comment_id]);
+            const rows = result[0];
+            
+            if(rows.length === 0) return null;
+            
+            const comment = rows[0];
+            return {
+                id: comment.id,
+                post_id: comment.post_id,
+                author_id: comment.author_id,
+                content: comment.content,
+                status: comment.status,
+                publish_date: comment.publish_date,
+                created_at: comment.created_at,
+                updated_at: comment.updated_at,
+                author: 
+                {
+                    id: comment.author_id,
+                    login: comment.author_login,
+                    full_name: comment.author_name
+                },
+                post: 
+                {
+                    id: comment.post_id,
+                    title: comment.post_title
+                },
+                likes: 
+                {
+                    like_count: comment.like_count,
+                    dislike_count: comment.dislike_count
+                }
+            };
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error getting full comment data: ${error.message}`);
         }
     }
 }

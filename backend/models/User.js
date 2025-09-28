@@ -24,8 +24,10 @@ class User
         this.updated_at = userData?.updated_at;
     }
 
-    async create() {
-        try {
+    async create() 
+    {
+        try 
+        {
             const hashedPassword = await bcrypt.hash(this.password, 10);
 
             const plainToken = await bcrypt.genSalt(10); // generate random token (plain)
@@ -53,7 +55,8 @@ class User
 
             this.id = result[0].insertId;
             return { user: this, plainToken };
-        } catch (error) {
+        } catch(error) 
+        {
             throw new Error(`Error creating user: ${error.message}`);
         }
     }
@@ -84,7 +87,18 @@ class User
             const result = await dbConnect.make_request(query, [login]);
             const rows = result[0];
             
+            console.log('Database search for login:', login);
+            console.log('Found rows:', rows.length);
+            
             if(rows.length === 0) return null;
+            
+            console.log('User data from DB:', {
+                id: rows[0].id,
+                login: rows[0].login,
+                email: rows[0].email,
+                email_verified: rows[0].email_verified,
+                password_length: rows[0].password?.length
+            });
             
             return new User(rows[0]);
         } 

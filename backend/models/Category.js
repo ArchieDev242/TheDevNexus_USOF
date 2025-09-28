@@ -133,7 +133,7 @@ class Category
         }
     }
 
-    async get_posts_count() 
+    static async get_posts_count(category_id) 
     {
         try 
         {
@@ -144,7 +144,7 @@ class Category
                 WHERE pc.category_id = ? AND p.status = 'active'
             `;
             
-            const result = await dbConnect.make_request(query, [this.id]);
+            const result = await dbConnect.make_request(query, [category_id]);
             const rows = result[0];
             return rows[0].count;
         } 
@@ -179,6 +179,88 @@ class Category
         catch(error) 
         {
             throw new Error(`Error getting categories with posts count: ${error.message}`);
+        }
+    }
+
+    static async get_all_with_stats() 
+    {
+        try 
+        {
+            const query = `
+                SELECT c.*, 
+                       COUNT(DISTINCT pc.post_id) as posts_count,
+                       COUNT(DISTINCT com.id) as comments_count,
+                       COALESCE(SUM(DISTINCT likes.likes_count), 0) as total_likes
+                FROM categories c
+                LEFT JOIN post_categories pc ON c.id = pc.category_id
+                LEFT JOIN posts p ON pc.post_id = p.id AND p.status = 'active'
+                LEFT JOIN comments com ON p.id = com.post_id AND com.status = 'active'
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as likes_count
+                    FROM likes 
+                    WHERE type = 'like'
+                    GROUP BY post_id
+                ) likes ON p.id = likes.post_id
+                GROUP BY c.id, c.title, c.description, c.created_at
+                ORDER BY c.title ASC
+            `;
+            
+            const result = await dbConnect.make_request(query);
+            const rows = result[0];
+            
+            return rows.map(row => {
+                const category = new Category(row);
+                category.posts_count = parseInt(row.posts_count) || 0;
+                category.comments_count = parseInt(row.comments_count) || 0;
+                category.total_likes = parseInt(row.total_likes) || 0;
+                return category;
+            });
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error getting categories with stats: ${error.message}`);
+        }
+    }
+
+    static async get_with_stats(id) 
+    {
+        try 
+        {
+            const query = `
+                SELECT c.*, 
+                       COUNT(DISTINCT pc.post_id) as posts_count,
+                       COUNT(DISTINCT com.id) as comments_count,
+                       COALESCE(SUM(DISTINCT likes.likes_count), 0) as total_likes
+                FROM categories c
+                LEFT JOIN post_categories pc ON c.id = pc.category_id
+                LEFT JOIN posts p ON pc.post_id = p.id AND p.status = 'active'
+                LEFT JOIN comments com ON p.id = com.post_id AND com.status = 'active'
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as likes_count
+                    FROM likes 
+                    WHERE type = 'like'
+                    GROUP BY post_id
+                ) likes ON p.id = likes.post_id
+                WHERE c.id = ?
+                GROUP BY c.id, c.title, c.description, c.created_at
+            `;
+            
+            const result = await dbConnect.make_request(query, [id]);
+            const rows = result[0];
+            
+            if(rows.length === 0) return null;
+            
+            const row = rows[0];
+            const category = new Category(row);
+            category.posts_count = parseInt(row.posts_count) || 0;
+            category.comments_count = parseInt(row.comments_count) || 0;
+            category.total_likes = parseInt(row.total_likes) || 0;
+            
+            return category;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error getting category with stats: ${error.message}`);
         }
     }
 
@@ -255,6 +337,35 @@ class Category
         catch(error) 
         {
             throw new Error(`Error searching categories: ${error.message}`);
+        }
+    }
+
+    // Отримати статистику для адмін панелі
+    static async get_admin_stats() 
+    {
+        try 
+        {
+            const query = `
+                SELECT 
+                    COUNT(*) as total_categories,
+                    COUNT(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 END) as new_this_week,
+                    COUNT(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 END) as new_this_month
+                FROM categories
+            `;
+            
+            const result = await dbConnect.make_request(query);
+            const rows = result[0];
+            const stats = rows[0];
+            
+            return {
+                total_categories: parseInt(stats.total_categories),
+                new_this_week: parseInt(stats.new_this_week), 
+                new_this_month: parseInt(stats.new_this_month)
+            };
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error getting admin stats: ${error.message}`);
         }
     }
 }

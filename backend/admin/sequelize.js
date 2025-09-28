@@ -10,6 +10,18 @@ const sequelize = new Sequelize(
         port: config.database.port,
         dialect: 'mysql',
         logging: false,
+        pool: 
+        {
+            max: 5,
+            min: 0,
+            acquire: 30000,
+            idle: 10000
+        },
+        define: 
+        {
+            freezeTableName: true,
+            timestamps: false
+        }
     }
 );
 
@@ -54,8 +66,8 @@ const User = sequelize.define('User', {
     },
     role: 
     {
-        type: DataTypes.ENUM('user', 'admin'),
-        defaultValue: 'user'
+        type: DataTypes.ENUM('guest', 'user', 'admin'),
+        defaultValue: 'guest'
     },
     email_verified: 
     {
@@ -63,15 +75,45 @@ const User = sequelize.define('User', {
         defaultValue: false
     },
     verification_token: DataTypes.STRING,
-    reset_token_hash: DataTypes.STRING,
-    reset_token_expires_at: DataTypes.DATE,
-    password_changed_at: DataTypes.DATE
+    reset_token: DataTypes.STRING
 }, {
     tableName: 'users',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    hooks: {
+        beforeUpdate: async (user, options) => {
+            if(user.changed('password') && user.password && !user.password.startsWith('$2b$')) {
+                try 
+                {
+                    const bcrypt = await import('bcrypt');
+                    user.password = await bcrypt.default.hash(user.password, 10);
+                } catch(error) 
+                {
+                    console.error('Error hashing password:', error);
+                }
+            }
+        }
+    }
 });
+
+async function connect_test() 
+{
+    try 
+    {
+        await sequelize.authenticate();
+        console.log('✅ AdminJS: Database connection established successfully.');
+        
+        const user_count = await User.count();
+        console.log(`📊 AdminJS: Found ${user_count} users in database`);
+        
+    } catch(error) 
+    {
+        console.error('❌ AdminJS: Database connection or model error:', error);
+    }
+}
+
+connect_test();
 
 const Post = sequelize.define('Post', {
     id: 
@@ -109,6 +151,16 @@ const Post = sequelize.define('Post', {
     {
         type: DataTypes.ENUM('active', 'inactive'),
         defaultValue: 'active'
+    },
+    created_at: 
+    {
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.NOW
+    },
+    updated_at: 
+    {
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.NOW
     }
 }, {
     tableName: 'posts',
@@ -153,6 +205,21 @@ const Comment = sequelize.define('Comment', {
     {
         type: DataTypes.DATE,
         defaultValue: Sequelize.NOW
+    },
+    status: 
+    {
+        type: DataTypes.ENUM('active', 'inactive'),
+        defaultValue: 'active'
+    },
+    created_at: 
+    {
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.NOW
+    },
+    updated_at: 
+    {
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.NOW
     }
 }, {
     tableName: 'comments',
@@ -177,6 +244,16 @@ const Category = sequelize.define('Category', {
     description: 
     {
         type: DataTypes.TEXT
+    },
+    created_at: 
+    {
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.NOW
+    },
+    updated_at: 
+    {
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.NOW
     }
 }, {
     tableName: 'categories',

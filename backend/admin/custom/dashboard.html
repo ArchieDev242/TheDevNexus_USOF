@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USOF Admin Dashboard</title>
+    <link rel="stylesheet" href="/admin-panel/assets/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-tachometer-alt"></i> USOF Admin</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="active">
+                <a href="#" data-section="dashboard">
+                    <i class="fas fa-home"></i> Дашборд
+                </a>
+            </li>
+            <li>
+                <a href="#" data-section="users">
+                    <i class="fas fa-users"></i> Користувачі
+                </a>
+            </li>
+            <li>
+                <a href="#" data-section="posts">
+                    <i class="fas fa-newspaper"></i> Пости
+                </a>
+            </li>
+            <li>
+                <a href="#" data-section="comments">
+                    <i class="fas fa-comments"></i> Коментарі
+                </a>
+            </li>
+            <li>
+                <a href="#" data-section="categories">
+                    <i class="fas fa-tags"></i> Категорії
+                </a>
+            </li>
+            <li>
+                <a href="#" data-section="settings">
+                    <i class="fas fa-cog"></i> Налаштування
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        <header class="header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 id="pageTitle">Дашборд</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-menu">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Admin</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            <section id="dashboard" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon users">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalUsers">0</h3>
+                            <p>Загальна кількість користувачів</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon posts">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalPosts">0</h3>
+                            <p>Загальна кількість постів</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon comments">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalComments">0</h3>
+                            <p>Загальна кількість коментарів</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon categories">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalCategories">0</h3>
+                            <p>Загальна кількість категорій</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Активність користувачів</h3>
+                        <div class="chart-placeholder">
+                            <p>Графік буде тут</p>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Статистика постів</h3>
+                        <div class="chart-placeholder">
+                            <p>Графік буде тут</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="users" class="content-section">
+                <div class="section-header">
+                    <h2>Управління користувачами</h2>
+                    <button class="btn btn-primary" id="addUserBtn">
+                        <i class="fas fa-plus"></i> Додати користувача
+                    </button>
+                </div>
+                <div class="filters">
+                    <input type="text" id="userSearch" placeholder="Пошук користувачів..." class="search-input">
+                    <select id="userRoleFilter" class="filter-select">
+                        <option value="">Всі ролі</option>
+                        <option value="guest">Гість</option>
+                        <option value="user">Користувач</option>
+                        <option value="admin">Адміністратор</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Логін</th>
+                                <th>Повне ім'я</th>
+                                <th>Email</th>
+                                <th>Роль</th>
+                                <th>Статус</th>
+                                <th>Дата реєстрації</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="posts" class="content-section">
+                <div class="section-header">
+                    <h2>Управління постами</h2>
+                    <button class="btn btn-primary" id="addPostBtn">
+                        <i class="fas fa-plus"></i> Додати пост
+                    </button>
+                </div>
+                <div class="filters">
+                    <input type="text" id="postSearch" placeholder="Пошук постів..." class="search-input">
+                    <select id="postStatusFilter" class="filter-select">
+                        <option value="">Всі статуси</option>
+                        <option value="active">Активний</option>
+                        <option value="inactive">Неактивний</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="postsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Заголовок</th>
+                                <th>Автор</th>
+                                <th>Статус</th>
+                                <th>Дата публікації</th>
+                                <th>Лайки</th>
+                                <th>Коментарі</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="postsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="comments" class="content-section">
+                <div class="section-header">
+                    <h2>Управління коментарями</h2>
+                </div>
+                <div class="filters">
+                    <input type="text" id="commentSearch" placeholder="Пошук коментарів..." class="search-input">
+                    <select id="commentStatusFilter" class="filter-select">
+                        <option value="">Всі статуси</option>
+                        <option value="active">Активний</option>
+                        <option value="inactive">Неактивний</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="commentsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Контент</th>
+                                <th>Автор</th>
+                                <th>Пост</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="commentsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="categories" class="content-section">
+                <div class="section-header">
+                    <h2>Управління категоріями</h2>
+                    <button class="btn btn-primary" id="addCategoryBtn">
+                        <i class="fas fa-plus"></i> Додати категорію
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="categoriesTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Назва</th>
+                                <th>Опис</th>
+                                <th>Дата створення</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoriesTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="settings" class="content-section">
+                <div class="section-header">
+                    <h2>Налаштування системи</h2>
+                </div>
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <h3>Загальні налаштування</h3>
+                        <div class="setting-item">
+                            <label>Назва сайту:</label>
+                            <input type="text" value="USOF" class="setting-input">
+                        </div>
+                        <div class="setting-item">
+                            <label>Email адміністратора:</label>
+                            <input type="email" value="admin@usof.com" class="setting-input">
+                        </div>
+                    </div>
+                    <div class="setting-card">
+                        <h3>Налаштування модерації</h3>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" checked> Автоматична модерація
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" checked> Email сповіщення
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <div id="loadingSpinner" class="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="/admin-panel/assets/dashboard.js"></script>
+</body>
+</html>

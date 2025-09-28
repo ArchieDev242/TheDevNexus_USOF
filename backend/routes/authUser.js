@@ -39,7 +39,7 @@ router.post('/password-reset',
     ErrorHandler.async_handler(forgotPassword)
 );
 
-router.post('/password-reset/:confirm_token', 
+router.post('/password-reset/confirm', 
     RateLimit.password_reset(),
     Validator.validate_new_password,
     ErrorHandler.async_handler(resetPassword)

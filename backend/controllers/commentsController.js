@@ -6,7 +6,7 @@ import ErrorHandler from '../middleware/errorHandler.js';
 class CommentsController 
 {
     // ===============================
-    // PUBLIC METHODS
+    // ALL USERS
     // ===============================
     
     // GET /api/comments/post/:postId - get comments by post
@@ -17,18 +17,16 @@ class CommentsController
             const { postId } = req.params;
             const { page = 1, limit = 20 } = req.query;
             
-            // Check if post exists
             const post = await Post.find_by_id(postId);
-            if (!post) {
-                throw ErrorHandler.not_found_error('Post');
-            }
+            if(!post) throw ErrorHandler.not_found_error('Post');
             
             const comments = await Comment.get_by_post(postId, page, limit);
             
             res.json({
                 status: 'success',
                 data: comments,
-                pagination: {
+                pagination: 
+                {
                     page: parseInt(page),
                     limit: parseInt(limit)
                 }
@@ -47,16 +45,14 @@ class CommentsController
             const { id } = req.params;
             const comment = await Comment.find_by_id(id);
             
-            if (!comment) {
-                throw ErrorHandler.not_found_error('Comment');
-            }
+            if(!comment) throw ErrorHandler.not_found_error('Comment');
             
             // Get comment with additional data (author, likes)
-            const commentData = await Comment.get_full_comment_data(id);
+            const comment_data = await Comment.get_full_comment_data(id);
             
             res.json({
                 status: 'success',
-                data: commentData
+                data: comment_data
             });
         } catch(error) 
         {
@@ -72,9 +68,7 @@ class CommentsController
             const { comment_id } = req.params;
             
             const comment = await Comment.find_by_id(comment_id);
-            if (!comment) {
-                throw ErrorHandler.not_found_error('Comment');
-            }
+            if(!comment) throw ErrorHandler.not_found_error('Comment');
             
             const likes = await Like.get_comment_likes(comment_id);
             
@@ -89,7 +83,7 @@ class CommentsController
     }
 
     // ===============================
-    // USER METHODS (Authenticated)
+    // AUTHORIZED USERS
     // ===============================
     
     // POST /api/comments - create a new comment
@@ -100,23 +94,21 @@ class CommentsController
             const { content, post_id } = req.body;
             const author_id = req.user.id;
             
-            // Check if post exists and is active
             const post = await Post.find_by_id(post_id);
-            if (!post) {
-                throw ErrorHandler.not_found_error('Post');
-            }
+            if(!post) throw ErrorHandler.not_found_error('Post');
             
-            if (post.status !== 'active') {
+            if(post.status !== 'active') 
+                {
                 throw ErrorHandler.forbidden_error('Cannot comment on inactive post');
             }
             
-            const commentData = {
+            const comment_data = {
                 author_id,
                 post_id,
                 content
             };
             
-            const comment = new Comment(commentData);
+            const comment = new Comment(comment_data);
             const result = await comment.create();
             
             res.status(201).json({
@@ -133,6 +125,55 @@ class CommentsController
             throw error;
         }
     }
+
+    // POST /api/comments/:comment_id/reply - create a reply to a comment
+    static async create_reply(req, res) 
+    {
+        try 
+        {
+            const { id: comment_id } = req.params;
+            const { content } = req.body;
+            const author_id = req.user.id;
+            
+            const parent_comment = await Comment.find_by_id(comment_id);
+            if(!parent_comment) throw ErrorHandler.not_found_error('Comment');
+            
+            if(parent_comment.status !== 'active') 
+                {
+                throw ErrorHandler.forbidden_error('Cannot reply to inactive comment');
+            }
+            
+            const post = await Post.find_by_id(parent_comment.post_id);
+            
+            if(!post || post.status !== 'active') 
+                {
+                throw ErrorHandler.forbidden_error('Cannot reply to comment on inactive post');
+            }
+            
+            const comment_data = {
+                author_id,
+                post_id: parent_comment.post_id,
+                parent_comment_id: comment_id,
+                content
+            };
+            
+            const comment = new Comment(comment_data);
+            const result = await comment.create();
+            
+            res.status(201).json({
+                status: 'success',
+                message: 'Reply created successfully',
+                data: {
+                    id: result.insertId,
+                    content,
+                    parent_comment_id: comment_id
+                }
+            });
+        } catch (error) 
+        {
+            throw error;
+        }
+    }
     
     // PUT /api/comments/:id - update comment (author only)
     static async update(req, res) 
@@ -143,12 +184,10 @@ class CommentsController
             const { content } = req.body;
             
             const comment = await Comment.find_by_id(id);
-            if (!comment) {
-                throw ErrorHandler.not_found_error('Comment');
-            }
+            if(!comment) throw ErrorHandler.not_found_error('Comment');
             
-            // Check ownership or admin
-            if (req.user.role !== 'admin' && comment.author_id !== req.user.id) {
+            if(req.user.role !== 'admin' && comment.author_id !== req.user.id) 
+                {
                 throw ErrorHandler.forbidden_error('You can only edit your own comments');
             }
             
@@ -172,12 +211,10 @@ class CommentsController
             const { id } = req.params;
             
             const comment = await Comment.find_by_id(id);
-            if (!comment) {
-                throw ErrorHandler.not_found_error('Comment');
-            }
-            
-            // Check ownership or admin
-            if (req.user.role !== 'admin' && comment.author_id !== req.user.id) {
+            if(!comment) throw ErrorHandler.not_found_error('Comment');
+
+            if(req.user.role !== 'admin' && comment.author_id !== req.user.id) 
+            {
                 throw ErrorHandler.forbidden_error('You can only delete your own comments');
             }
             
@@ -203,29 +240,28 @@ class CommentsController
             const author_id = req.user.id;
             
             const comment = await Comment.find_by_id(comment_id);
-            if (!comment) {
-                throw ErrorHandler.not_found_error('Comment');
-            }
+            if(!comment) throw ErrorHandler.not_found_error('Comment');
             
-            // Check if user already liked/disliked this comment
-            const existingLike = await Like.find_user_comment_like(author_id, comment_id);
+            const like_exists = await Like.find_user_comment_like(author_id, comment_id);
             
-            if (existingLike) {
-                if (existingLike.type === type) {
+            if(like_exists) 
+                {
+                if(like_exists.type === type) 
+                    {
                     throw ErrorHandler.validation_error(['You already ' + type + 'd this comment']);
-                } else {
-                    // Update existing like
-                    await existingLike.update_type(type);
+                } else 
+                    {
+                    await like_exists.update_type(type);
                 }
-            } else {
-                // Create new like
-                const likeData = {
+            } else 
+                {
+                const like_data = {
                     author_id,
                     comment_id,
                     type
                 };
                 
-                const like = new Like(likeData);
+                const like = new Like(like_data);
                 await like.create();
             }
             
@@ -375,10 +411,6 @@ class CommentsController
             throw error;
         }
     }
-
-    // ===============================
-    // ALIAS
-    // ===============================
     
     static async adminGetAll(req, res) 
     {

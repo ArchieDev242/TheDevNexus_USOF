@@ -104,10 +104,15 @@ function show_user_info(userData)
             <div class="user-info">
                 <span class="welcome-text">Вітаємо, ${userData.user.login}!</span>
                 <button class="btn btn-outline" onclick="logout()">
-                    🚪 Війти
+                    🚪 Вийти
                 </button>
             </div>
         `;
+    }
+    
+    // Показати admin панель якщо користувач - адміністратор
+    if(userData.user && userData.user.role === 'admin') {
+        show_admin_panel();
     }
     
     const guest_info = document.querySelector('.guest-info');
@@ -253,6 +258,330 @@ window.viewPosts = view_posts;
 window.viewCategories = view_categories;
 window.viewUsers = view_users;
 window.logout = logout;
+
+// ===============================
+// ADMIN PANEL FUNCTIONS
+// ===============================
+
+function show_admin_panel() {
+    // Створюємо admin панель після quick-actions
+    const quick_actions = document.querySelector('.quick-actions');
+    
+    if(quick_actions && !document.querySelector('.admin-panel')) {
+        const admin_panel = document.createElement('div');
+        admin_panel.className = 'admin-panel';
+        admin_panel.innerHTML = `
+            <div class="admin-header">
+                <h3>🔧 Панель адміністратора</h3>
+                <p>Управління системою USOF</p>
+            </div>
+            <div class="admin-actions">
+                <button class="btn btn-admin" onclick="open_admin_dashboard()">
+                    📊 Кастомна Admin Panel
+                </button>
+                <button class="btn btn-admin" onclick="open_adminjs()">
+                    ⚙️ AdminJS Panel
+                </button>
+                <button class="btn btn-admin" onclick="view_system_stats()">
+                    📈 Статистика системи
+                </button>
+                <button class="btn btn-admin" onclick="manage_users()">
+                    👥 Управління користувачами
+                </button>
+                <button class="btn btn-admin" onclick="moderate_content()">
+                    🛡️ Модерація контенту
+                </button>
+                <button class="btn btn-admin" onclick="system_settings()">
+                    ⚙️ Налаштування системи
+                </button>
+            </div>
+        `;
+        
+        quick_actions.insertAdjacentElement('afterend', admin_panel);
+        add_admin_styles();
+    }
+}
+
+function open_admin_dashboard() {
+    window.open('/admin-panel', '_blank');
+}
+
+function open_adminjs() {
+    window.open('/admin', '_blank');
+}
+
+async function view_system_stats() {
+    try {
+        show_loading('Завантаження статистики...');
+        
+        const token = localStorage.getItem('authToken') || get_cookie('auth');
+        const [users, posts, comments, categories] = await Promise.all([
+            fetch('/api/users', { headers: { 'Authorization': `Bearer ${token}` } }),
+            fetch('/api/posts', { headers: { 'Authorization': `Bearer ${token}` } }),
+            fetch('/api/posts/all/comments', { headers: { 'Authorization': `Bearer ${token}` } }),
+            fetch('/api/categories', { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
+        
+        const [usersData, postsData, commentsData, categoriesData] = await Promise.all([
+            users.json(),
+            posts.json(),
+            comments.json(),
+            categories.json()
+        ]);
+        
+        show_stats_modal({
+            users: usersData?.length || 0,
+            posts: postsData?.length || 0,
+            comments: commentsData?.length || 0,
+            categories: categoriesData?.length || 0
+        });
+        
+    } catch (error) {
+        console.error('Error loading system stats:', error);
+        show_notification('Помилка завантаження статистики', 'error');
+    } finally {
+        hide_loading();
+    }
+}
+
+function show_stats_modal(stats) {
+    const modal = document.createElement('div');
+    modal.className = 'modal stats-modal';
+    modal.innerHTML = `
+        <div class="modal-content stats-content">
+            <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+            <h2>📈 Статистика системи USOF</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">${stats.users}</div>
+                    <div class="stat-label">👥 Користувачі</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.posts}</div>
+                    <div class="stat-label">📝 Пости</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.comments}</div>
+                    <div class="stat-label">💬 Коментарі</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.categories}</div>
+                    <div class="stat-label">📁 Категорії</div>
+                </div>
+            </div>
+            <div class="stats-info">
+                <p>📅 Останнє оновлення: ${new Date().toLocaleString('uk-UA')}</p>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'block';
+    
+    // Закриття при кліку поза модальним вікном
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
+function manage_users() {
+    show_notification('Перенаправлення до управління користувачами...', 'info');
+    setTimeout(() => {
+        window.open('/admin-panel#users', '_blank');
+    }, 1000);
+}
+
+function moderate_content() {
+    show_notification('Перенаправлення до модерації контенту...', 'info');
+    setTimeout(() => {
+        window.open('/admin-panel#posts', '_blank');
+    }, 1000);
+}
+
+function system_settings() {
+    show_notification('Перенаправлення до налаштувань системи...', 'info');
+    setTimeout(() => {
+        window.open('/admin-panel#settings', '_blank');
+    }, 1000);
+}
+
+function show_loading(message = 'Завантаження...') {
+    const loading = document.createElement('div');
+    loading.id = 'loading-overlay';
+    loading.innerHTML = `
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>${message}</p>
+        </div>
+    `;
+    document.body.appendChild(loading);
+}
+
+function hide_loading() {
+    const loading = document.getElementById('loading-overlay');
+    if (loading) {
+        loading.remove();
+    }
+}
+
+function add_admin_styles() {
+    if (document.querySelector('#admin-styles')) return;
+    
+    const style = document.createElement('style');
+    style.id = 'admin-styles';
+    style.textContent = `
+        .admin-panel {
+            margin: 30px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .admin-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .admin-header h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+        }
+        
+        .admin-header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        .admin-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .btn-admin {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            padding: 12px 20px !important;
+            border-radius: 8px !important;
+            font-weight: 500 !important;
+            transition: all 0.3s ease !important;
+            backdrop-filter: blur(10px) !important;
+        }
+        
+        .btn-admin:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        .stats-modal {
+            position: fixed !important;
+            z-index: 10000 !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background-color: rgba(0,0,0,0.5) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        
+        .stats-content {
+            background: white !important;
+            padding: 30px !important;
+            border-radius: 15px !important;
+            max-width: 600px !important;
+            width: 90% !important;
+            position: relative !important;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .stats-info {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+        }
+        
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20000;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .admin-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
 
 const style = document.createElement('style');
 style.textContent = `

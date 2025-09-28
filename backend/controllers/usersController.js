@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import SavedPost from '../models/SavedPost.js';
 import ErrorHandler from '../middleware/errorHandler.js';
 import FileUpload from '../middleware/fileUpload.js';
 
@@ -16,14 +17,31 @@ class UsersController
             const { page = 1, limit = 10, sort = 'rating' } = req.query;
             const users = await User.find_all();
             
-            const public_users = users.map(user => ({
-                id: user.id,
-                login: user.login,
-                full_name: user.full_name,
-                profile_picture: user.profile_picture,
-                rating: user.rating,
-                created_at: user.created_at
-            }));
+            const public_users = users.map(user => {
+                if(req.user && req.user.role === 'admin') 
+                    {
+                    return {
+                        id: user.id,
+                        login: user.login,
+                        full_name: user.full_name,
+                        email: user.email,
+                        profile_picture: user.profile_picture,
+                        rating: user.rating,
+                        role: user.role,
+                        email_verified: user.email_verified,
+                        created_at: user.created_at
+                    };
+                } else {
+                    return {
+                        id: user.id,
+                        login: user.login,
+                        full_name: user.full_name,
+                        profile_picture: user.profile_picture,
+                        rating: user.rating,
+                        created_at: user.created_at
+                    };
+                }
+            });
 
             if(sort === 'rating') 
                 {
@@ -62,6 +80,28 @@ class UsersController
             
             if(!user) throw ErrorHandler.not_found_error('User');
             
+            // Якщо користувач адмін - повертаємо повну інформацію
+            if (req.user && req.user.role === 'admin') {
+                const admin_data = {
+                    id: user.id,
+                    login: user.login,
+                    full_name: user.full_name,
+                    email: user.email,
+                    profile_picture: user.profile_picture,
+                    rating: user.rating,
+                    role: user.role,
+                    email_verified: user.email_verified,
+                    created_at: user.created_at,
+                    updated_at: user.updated_at
+                };
+                
+                return res.json({
+                    status: 'success',
+                    data: admin_data
+                });
+            }
+            
+            // Для звичайних користувачів - тільки публічні дані
             const public_data = {
                 id: user.id,
                 login: user.login,
@@ -158,12 +198,27 @@ class UsersController
         try 
         {
             const { user_id } = req.params;
-            const { full_name, email } = req.body;
+            const { login, full_name, email, role, email_verified, password } = req.body;
 
             const user = await User.find_by_id(user_id);
             if(!user) throw ErrorHandler.not_found_error('User');
 
-            // check if email is already taken by another user
+            // Створюємо об'єкт з даними для оновлення
+            const updateData = {};
+            
+            if (login !== undefined) updateData.login = login;
+            if (full_name !== undefined) updateData.full_name = full_name;
+            if (email !== undefined) updateData.email = email;
+            if (role !== undefined) updateData.role = role;
+            if (email_verified !== undefined) updateData.email_verified = email_verified;
+            
+            // Спеціальна обробка для паролю
+            if (password && password.trim() !== '') {
+                const bcrypt = await import('bcrypt');
+                updateData.password = await bcrypt.default.hash(password, 10);
+            }
+
+            // Перевіряємо чи email не зайнятий іншим користувачем
             if(email && email !== user.email) 
                 {
                 const user_exists = await User.find_by_email(email);
@@ -174,12 +229,38 @@ class UsersController
                 }
             }
 
-            // update user data
-            await user.update_profile({ full_name, email });
+            // Перевіряємо чи логін не зайнятий іншим користувачем
+            if(login && login !== user.login) 
+                {
+                const user_exists = await User.find_by_login(login);
+                
+                if(user_exists && user_exists.id !== user.id) 
+                    {
+                    throw ErrorHandler.validationError(['Login is already taken']);
+                }
+            }
+
+            // Оновлюємо дані користувача
+            const updatedUser = await user.update(updateData);
+
+            // Повертаємо оновлені дані (без пароля)
+            const responseData = {
+                id: updatedUser.id,
+                login: updatedUser.login,
+                full_name: updatedUser.full_name,
+                email: updatedUser.email,
+                profile_picture: updatedUser.profile_picture,
+                rating: updatedUser.rating,
+                role: updatedUser.role,
+                email_verified: updatedUser.email_verified,
+                created_at: updatedUser.created_at,
+                updated_at: updatedUser.updated_at
+            };
 
             res.json({
                 status: 'success',
-                message: 'Profile updated successfully'
+                message: 'User updated successfully',
+                data: responseData
             });
         } catch(error) 
         {
@@ -373,6 +454,30 @@ class UsersController
     static async adminDelete(req, res) 
     {
         return await UsersController.admin_delete(req, res);
+    }
+
+    // GET /api/users/saved-posts - get user's saved posts
+    static async get_saved_posts(req, res) 
+    {
+        try 
+        {
+            const { page = 1, limit = 20 } = req.query;
+            const userId = req.user.id;
+            
+            const savedPosts = await SavedPost.get_user_saved_posts(userId, page, limit);
+            
+            res.json({
+                status: 'success',
+                data: savedPosts,
+                pagination: {
+                    page: parseInt(page),
+                    limit: parseInt(limit)
+                }
+            });
+        } catch (error) 
+        {
+            throw error;
+        }
     }
 }
 

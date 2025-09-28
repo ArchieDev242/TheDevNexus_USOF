@@ -33,12 +33,12 @@ class Validator
 
     static validate_user_login(req, res, next) 
     {
-        const { login, email, password } = req.body;
+        const { login, email, loginOrEmail, password } = req.body;
         const errors = [];
 
         if(!password) errors.push('Password is required');
 
-        if(!login && !email) errors.push('Login or email is required');
+        if(!login && !email && !loginOrEmail) errors.push('Login or email is required');
 
         if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Valid email format required');
 
@@ -56,7 +56,19 @@ class Validator
 
         if(!content || content.length < 10) errors.push('Post content must be at least 10 characters long');
 
-        if(!categories || !Array.isArray(categories) || categories.length === 0) errors.push('At least one category is required');
+        if(req.user && req.user.role !== 'admin') 
+            {
+            if(!categories || !Array.isArray(categories) || categories.length === 0) 
+                {
+                errors.push('At least one category is required');
+            }
+        } else 
+            {
+            if(categories !== undefined && !Array.isArray(categories)) 
+                {
+                errors.push('Categories must be an array');
+            }
+        }
 
         if(errors.length > 0) return next(ErrorHandler.validation_error(errors));
 
@@ -108,10 +120,13 @@ class Validator
 
     static validate_new_password(req, res, next) 
     {
-        const { new_password } = req.body;
+        const { new_password, newPassword, email, token } = req.body;
+        const password = new_password || newPassword;
         const errors = [];
 
-        if(!new_password || new_password.length < 6) errors.push('New password must be at least 6 characters long');
+        if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Valid email is required');
+        if(!token || typeof token !== 'string') errors.push('Valid token is required');
+        if(!password || password.length < 8) errors.push('Password must be at least 8 characters long');
 
         if(errors.length > 0) return next(ErrorHandler.validation_error(errors));
 
@@ -127,6 +142,24 @@ class Validator
 
             next();
         };
+    }
+
+    static validate_like_action(req, res, next) 
+    {
+        const { type } = req.body;
+        const errors = [];
+
+        if(!type) 
+            {
+            errors.push('Like type is required');
+        } else if(!['like', 'dislike', 'thanks'].includes(type)) 
+            {
+            errors.push('Like type must be one of: like, dislike, thanks');
+        }
+
+        if(errors.length > 0) return next(ErrorHandler.validation_error(errors));
+
+        next();
     }
 }
 

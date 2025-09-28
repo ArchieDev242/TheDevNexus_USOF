@@ -316,16 +316,33 @@ class Post
     {
         try 
         {
+            console.log('add_categories called with post.id:', this.id);
+            console.log('add_categories called with categoryIds:', categoryIds);
+            
+            if(!this.id) throw new Error('Post ID is not set');
+            
             await dbConnect.make_request('DELETE FROM post_categories WHERE post_id = ?', [this.id]);
             
-            if(categoryIds && categoryIds.length > 0) 
+            if(categoryIds && Array.isArray(categoryIds) && categoryIds.length > 0) 
             {
-                const values = categoryIds.map(categoryId => [this.id, categoryId]);
-                const placeholders = values.map(() => '(?, ?)').join(', ');
-                const flat_values = values.flat();
+                const valid_category_ids = categoryIds
+                    .filter(id => id !== undefined && id !== null && id !== '')
+                    .map(id => parseInt(id))
+                    .filter(id => !isNaN(id));
                 
-                const query = `INSERT INTO post_categories (post_id, category_id) VALUES ${placeholders}`;
-                await dbConnect.make_request(query, flat_values);
+                console.log('Valid category IDs:', valid_category_ids);
+                
+                if(valid_category_ids.length > 0) 
+                    {
+                    const values = valid_category_ids.map(categoryId => [this.id, categoryId]);
+                    const placeholders = values.map(() => '(?, ?)').join(', ');
+                    const flat_values = values.flat();
+                    
+                    console.log('SQL values:', flat_values);
+                    
+                    const query = `INSERT INTO post_categories (post_id, category_id) VALUES ${placeholders}`;
+                    await dbConnect.make_request(query, flat_values);
+                }
             }
             
             return true;
@@ -444,6 +461,188 @@ class Post
         catch(error) 
         {
             throw new Error(`Error finding posts by date range: ${error.message}`);
+        }
+    }
+
+    static async get_all_with_filters(page = 1, limit = 10, sort = 'likes', filters = {}) 
+    {
+        try 
+        {
+            const offset = (page - 1) * limit;
+            let query = `
+                SELECT p.*, u.login as author_login, u.full_name as author_name,
+                       COALESCE(SUM(CASE WHEN l.type = 'like' THEN 1 ELSE 0 END), 0) - 
+                       COALESCE(SUM(CASE WHEN l.type = 'dislike' THEN 1 ELSE 0 END), 0) as like_score,
+                       COUNT(c.id) as comments_count
+                FROM posts p
+                JOIN users u ON p.author_id = u.id
+                LEFT JOIN likes l ON p.id = l.post_id
+                LEFT JOIN comments c ON p.id = c.post_id AND c.status = 'active'
+            `;
+            
+            const queryParams = [];
+            const whereConditions = [];
+            
+            // status filter
+            if(filters.status && filters.status !== null) 
+                {
+                whereConditions.push('p.status = ?');
+                queryParams.push(filters.status);
+            }
+            
+            // categories filter
+            if(filters.categories && filters.categories.length > 0) 
+                {
+                const categoryPlaceholders = filters.categories.map(() => '?').join(',');
+                query += ` JOIN post_categories pc ON p.id = pc.post_id WHERE pc.category_id IN (${categoryPlaceholders})`;
+                queryParams.push(...filters.categories);
+            }
+            
+            //date filter
+            if (filters.date_from) 
+                {
+                whereConditions.push('p.publish_date >= ?');
+                queryParams.push(filters.date_from);
+            }
+            
+            if(filters.date_to) 
+                {
+                whereConditions.push('p.publish_date <= ?');
+                queryParams.push(filters.date_to);
+            }
+            
+            if(whereConditions.length > 0) 
+                {
+                if(!query.includes('WHERE')) 
+                    {
+                    query += ' WHERE ';
+                } else 
+                    {
+                    query += ' AND ';
+                }
+
+                query += whereConditions.join(' AND ');
+            }
+            
+            query += ' GROUP BY p.id';
+            
+            // sorting
+            if(sort === 'likes') 
+                {
+                query += ' ORDER BY like_score DESC, p.publish_date DESC';
+            } else if(sort === 'date') 
+                {
+                query += ' ORDER BY p.publish_date DESC';
+            } else 
+                {
+                query += ' ORDER BY p.publish_date DESC';
+            }
+            
+            query += ` LIMIT ${parseInt(limit)} OFFSET ${offset}`;
+            
+            const result = await dbConnect.make_request(query, queryParams);
+            const rows = result[0];
+            
+            return rows.map(row => {
+                const post = new Post(row);
+                post.author_login = row.author_login;
+                post.author_name = row.author_name;
+                post.like_score = parseInt(row.like_score) || 0;
+                post.comments_count = parseInt(row.comments_count) || 0;
+                return post;
+            });
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error getting posts with filters: ${error.message}`);
+        }
+    }
+
+    static async get_full_post_data(post_id) 
+    {
+        try 
+        {
+            const query = `
+                SELECT 
+                    p.id,
+                    p.author_id,
+                    p.title,
+                    p.content,
+                    p.status,
+                    p.publish_date,
+                    p.created_at,
+                    p.updated_at,
+                    u.login as author_login,
+                    u.full_name as author_name,
+                    u.profile_picture as author_avatar,
+                    COALESCE(likes.like_count, 0) as like_count,
+                    COALESCE(dislikes.dislike_count, 0) as dislike_count,
+                    COALESCE(comments.comment_count, 0) as comment_count,
+                    GROUP_CONCAT(DISTINCT c.title) as categories
+                FROM posts p
+                LEFT JOIN users u ON p.author_id = u.id
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as like_count 
+                    FROM likes 
+                    WHERE type = 'like' AND post_id IS NOT NULL 
+                    GROUP BY post_id
+                ) likes ON p.id = likes.post_id
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as dislike_count 
+                    FROM likes 
+                    WHERE type = 'dislike' AND post_id IS NOT NULL 
+                    GROUP BY post_id
+                ) dislikes ON p.id = dislikes.post_id
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as comment_count 
+                    FROM comments 
+                    WHERE status = 'active' 
+                    GROUP BY post_id
+                ) comments ON p.id = comments.post_id
+                LEFT JOIN post_categories pc ON p.id = pc.post_id
+                LEFT JOIN categories c ON pc.category_id = c.id
+                WHERE p.id = ?
+                GROUP BY p.id, p.author_id, p.title, p.content, p.status, p.publish_date, p.created_at, p.updated_at, u.login, u.full_name, u.profile_picture, likes.like_count, dislikes.dislike_count, comments.comment_count
+            `;
+            
+            const result = await dbConnect.make_request(query, [post_id]);
+            const rows = result[0];
+            
+            if(rows.length === 0) return null;
+            
+            const post = rows[0];
+            return {
+                id: post.id,
+                author_id: post.author_id,
+                title: post.title,
+                content: post.content,
+                status: post.status,
+                publish_date: post.publish_date,
+                created_at: post.created_at,
+                updated_at: post.updated_at,
+                author: 
+                {
+                    id: post.author_id,
+                    login: post.author_login,
+                    full_name: post.author_name,
+                    profile_picture: post.author_avatar
+                },
+                likes: 
+                {
+                    like_count: post.like_count,
+                    dislike_count: post.dislike_count
+                },
+                stats: 
+                {
+                    comment_count: post.comment_count,
+                    like_score: post.like_count - post.dislike_count
+                },
+                categories: post.categories ? post.categories.split(',') : []
+            };
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error getting full post data: ${error.message}`);
         }
     }
 }

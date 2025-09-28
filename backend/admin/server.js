@@ -1,68 +1,57 @@
 import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import adminUsersRoutes from '../routes/adminUsers.js';
-import adminPostsRoutes from '../routes/adminPosts.js';
-import adminCommentsRoutes from '../routes/adminComments.js';
-import adminStatsRoutes from '../routes/adminStats.js';
-import dbConnect from '../utils/dbConnect.js';
-import config from '../config.js';
+import AdminJS from 'adminjs';
+import AdminJSExpress from '@adminjs/express';
+import session from 'express-session';
+import { adminJsConfig } from './adminjs.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const PORT = 4001;
 
-const PORT = config.admin.port;
+const start = async () => {
+    const app = express();
+    
+    app.use(session({
+        secret: 'your-secret-key-change-this-in-production',
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            secure: false, // true for HTTPS
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        }
+    }));
 
-async function start_admin_server() 
-{
-    try 
-    {
-        // DB connection check
-        await dbConnect.connect();
-        console.log('✅ Database connection successful');
+    const admin = new AdminJS(adminJsConfig);
 
-        // Express app
-        const app = express();
-        app.use(express.json());
-        app.use(express.urlencoded({ extended: true }));
-        app.use(express.static(path.join(__dirname, '../public')));
+    const admin_router = AdminJSExpress.buildAuthenticatedRouter(
+        admin,
+        {
+            authenticate: async (email, password) => {
+                if(email === 'admin@usof.com' && password === 'admin123') 
+                {
+                    return { email: 'admin@usof.com', role: 'admin' };
+                }
+                return null;
+            },
+            cookieName: 'adminjs',
+            cookiePassword: 'complex-cookie-password-change-this',
+        },
+        null,
+        {
+            resave: false,
+            saveUninitialized: false,
+            secret: 'session-secret-change-this',
+        }
+    );
 
-        app.use('/admin/api/users', adminUsersRoutes);
-        app.use('/admin/api/posts', adminPostsRoutes);
-        app.use('/admin/api/comments', adminCommentsRoutes);
-        app.use('/admin/api/stats', adminStatsRoutes);
+    app.use(admin.options.rootPath, admin_router);
 
-        app.get('/admin/api/categories', async (req, res) => {
-            try 
-            {
-                const result = await dbConnect.make_request('SELECT * FROM categories ORDER BY title');
-                res.json(result[0]);
-            } catch(error) 
-            {
-                console.error('Error fetching categories:', error);
-                res.status(500).json({ error: 'Failed to fetch categories' });
-            }
-        });
+    app.listen(PORT, () => {
+        console.log(`AdminJS server running on http://localhost:${PORT}${admin.options.rootPath}`);
+        console.log(`Login: admin@usof.com`);
+        console.log(`Password: admin123`);
+    });
+};
 
-        app.get('/admin', (req, res) => {
-            res.sendFile(path.join(__dirname, 'views', 'dashboard.html'));
-        });
-
-        // main page route
-        app.get('/', (req, res) => {
-            res.redirect('/admin');
-        });
-
-        app.listen(PORT, () => {
-            console.log(`Admin panel running at http://localhost:${PORT}/admin`);
-            console.log(`API endpoints available at /admin/api/*`);
-        });
-
-    } catch(error) 
-    {
-        console.error('❌ Failed to start admin server:', error);
-        process.exit(1);
-    }
-}
-
-start_admin_server();
+start().catch((error) => {
+    console.error('❌ Error starting AdminJS server:', error);
+    process.exit(1);
+});

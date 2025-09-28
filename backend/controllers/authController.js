@@ -1,9 +1,9 @@
 import userModel from '../models/User.js';
 import config from '../config.js';
 import dbConnect from '../utils/dbConnect.js';
+import MailService from '../services/MailService.js';
 
 import bcrypt from 'bcrypt';
-import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken'
 
 export const register = async (req, res) => {
@@ -21,30 +21,9 @@ export const register = async (req, res) => {
         const user = new userModel({ login, password, full_name, email });
         const { plainToken } = await user.create(); // create() должен вернуть plainToken
 
-        // link for accept
-        const verificationLink = `http://127.0.0.1:3000/api/auth/verify?token=${encodeURIComponent(plainToken)}&email=${encodeURIComponent(email)}`;
-
-        // send mail
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            auth: {
-                user: config.email.user,
-                pass: config.email.password
-            }
-        });
-
-        await transporter.sendMail({
-            from: `USOF <${config.email.user}>`,
-            to: email,
-            subject: 'Подтверждение регистрации',
-            html: `
-                <h1>Здравствуйте, ${full_name}!</h1>
-                <h3>Для подтверждения email перейдите по ссылке:</h3>
-                <a href="${verificationLink}">${verificationLink}</a>
-            `
-        });
+        // send verification email using MailService
+        const mailService = new MailService();
+        await mailService.sending_verification(email, full_name, plainToken);
 
         res.status(201).json({ message: 'Пользователь создан. Проверьте почту для подтверждения.' });
     } catch (err) {
@@ -53,12 +32,14 @@ export const register = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-    try {
+    try 
+    {
         const { loginOrEmail, password } = req.body;
 
         console.log('Login attempt:', { loginOrEmail, passwordLength: password?.length });
 
-        if (!loginOrEmail || !password) {
+        if(!loginOrEmail || !password) 
+            {
             return res.status(400).json({ error: 'Введите логин/почту и пароль' });
         }
 
@@ -67,31 +48,41 @@ export const login = async (req, res) => {
         console.log('User found by login:', !!user);
         
         // find user by email
-        if (!user) {
+        if(!user) 
+            {
             user = await userModel.find_by_email(loginOrEmail);
             console.log('User found by email:', !!user);
         }
 
-        if (!user) {
+        if(!user) 
+            {
             console.log('No user found for:', loginOrEmail);
             return res.status(400).json({ error: 'Неверный логин или пароль' });
         }
 
         // check password
-        const isMatch = await bcrypt.compare(password, user.password);
+        console.log('Comparing passwords...');
+        console.log('Input password:', password);
+        console.log('Stored password hash:', user.password);
 
-        if (!isMatch) {
+        const is_match = await bcrypt.compare(password, user.password);
+        console.log('Password match result:', is_match);
+
+        if(!is_match) 
+            {
+            console.log('Password does not match!');
             return res.status(400).json({ error: 'Неверный логин или пароль' });
         }
 
         // verify email
         console.log('Email verified status:', user.email_verified);
-        if (!user.email_verified) {
+        if(!user.email_verified) 
+            {
             console.warn('Email not verified');
             return res.status(403).json({ error: 'Email не подтверждён' });
         }
 
-        // Issue JWT and set as HttpOnly cookie
+        // issue JWT and set as HttpOnly cookie
         const token = jwt.sign(
             { id: user.id, role: user.role },
             config.jwt.secret,
@@ -116,7 +107,8 @@ export const login = async (req, res) => {
                 role: user.role
             }
         });
-    } catch (err) {
+    } catch (err) 
+    {
         console.error('Login error:', err);
         res.status(500).json({ error: err.message });
     }
@@ -189,31 +181,20 @@ export const forgotPassword = async (req, res) => {
             [tokenHash, expiresAt, user.id]
         );
 
-    const resetLink = `http://127.0.0.1:3000/reset-password#token=${encodeURIComponent(plainToken)}&email=${encodeURIComponent(email)}`;
-
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            auth: {
-                user: config.email.user,
-                pass: config.email.password
-            }
-        });
-
-        await transporter.sendMail({
-            from: `USOF <${config.email.user}>`,
-            to: email,
-            subject: 'Сброс пароля',
-            html: `
-                <h1>Сброс пароля</h1>
-                <p>Для сброса пароля перейдите по ссылке (действительна 30 минут):</p>
-                <a href="${resetLink}">${resetLink}</a>
-            `
-        });
+        // send password reset email using MailService
+        try {
+            const mailService = new MailService();
+            console.log(`🔄 Attempting to send password reset email to: ${email}`);
+            await mailService.send_pass_reset(email, plainToken);
+            console.log(`✅ Password reset email sent successfully to: ${email}`);
+        } catch (emailError) {
+            console.error(`❌ Failed to send password reset email to ${email}:`, emailError);
+            // Не зупиняємо процес, але логуємо помилку
+        }
 
         return res.status(200).json({ message: genericMsg });
     } catch (err) {
+        console.error('❌ Error in forgotPassword:', err);
         return res.status(200).json({ message: 'If the email exists, a reset link was sent' });
     }
 };
@@ -276,6 +257,19 @@ export const resetPassword = async (req, res) => {
             [newHash, changedAt, userId]
         );
 
+        try {
+            const [userRows] = await dbConnect.make_request(
+                'SELECT full_name FROM users WHERE id = ?',
+                [userId]
+            );
+            const fullName = userRows[0]?.full_name || 'User';
+
+            // send password change confirmation email using MailService
+            const mailService = new MailService();
+            await mailService.send_pass_change_confirmation(email, fullName);
+        } catch (emailError) {
+            console.error('Error sending password change confirmation email:', emailError);
+        }
         return res.status(200).json({ message: 'Пароль успешно обновлён' });
     } catch (err) {
         return res.status(500).json({ error: 'Внутренняя ошибка сервера' });
