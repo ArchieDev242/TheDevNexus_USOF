@@ -1,4 +1,3 @@
-// Dashboard JavaScript
 class AdminDashboard 
 {
     constructor() 
@@ -145,8 +144,7 @@ class AdminDashboard
     {
         try 
         {
-            const options = 
-            {
+            const options = {
                 method,
                 headers: 
                 {
@@ -154,9 +152,19 @@ class AdminDashboard
                 }
             };
 
+            if(!options.headers['Content-Type']) delete options.headers['Content-Type'];
+
+            options.credentials = 'include';
+
             if(data) options.body = JSON.stringify(data);
 
             const response = await fetch(`${this.apiBase}${endpoint}`, options);
+
+            if(response.status === 401 || response.status === 403)
+            {
+                this.handleAuthError(response.status);
+                return null;
+            }
             
             if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             
@@ -171,6 +179,19 @@ class AdminDashboard
             this.showNotification('Помилка при завантаженні даних', 'error');
             return null;
         }
+    }
+
+    handleAuthError(status)
+    {
+        const message = status === 401
+            ? 'Сесія завершилась. Увійдіть повторно.'
+            : 'Недостатньо прав доступу.';
+
+        this.showNotification(message, 'error');
+
+        setTimeout(() => {
+            window.location.href = '/admin-panel/login';
+        }, 1500);
     }
 
     async load_dashboard_data() 
@@ -241,13 +262,14 @@ class AdminDashboard
         }
     }
 
-    translateRole(role) {
-        const roleTranslations = {
+    translateRole(role) 
+    {
+        const role_translations = {
             'guest': 'Гість',
             'user': 'Користувач', 
             'admin': 'Адміністратор'
         };
-        return roleTranslations[role] || role;
+        return role_translations[role] || role;
     }
 
     renderUsersTable(users) 
@@ -267,10 +289,10 @@ class AdminDashboard
                 </span></td>
                 <td>${new Date(user.created_at).toLocaleDateString('uk-UA')}</td>
                 <td>
-                    <button class="btn btn-small btn-primary" onclick="dashboard.editUser(${user.id})">
+                    <button class="btn btn-small btn-primary" onclick="editUser(${user.id})">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-small btn-danger" onclick="dashboard.deleteUser(${user.id})">
+                    <button class="btn btn-small btn-danger" onclick="deleteUser(${user.id})">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -284,8 +306,8 @@ class AdminDashboard
         
         try 
         {
-            // Для адміна завантажуємо всі пости (активні та неактивні)
             const posts = await this.api_call('/posts?status=all&limit=100');
+
             this.renderPostsTable(posts || []);
         } catch(error) 
         {
@@ -311,10 +333,10 @@ class AdminDashboard
                 <td>${post.likes_count || 0}</td>
                 <td>${post.comments_count || 0}</td>
                 <td>
-                    <button class="btn btn-small btn-primary" onclick="dashboard.editPost(${post.id})">
+                    <button class="btn btn-small btn-primary" onclick="editPost(${post.id})">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-small btn-danger" onclick="dashboard.deletePost(${post.id})">
+                    <button class="btn btn-small btn-danger" onclick="deletePost(${post.id})">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -329,6 +351,7 @@ class AdminDashboard
         try 
         {
             const comments = await this.api_call('/posts/all/comments');
+
             this.renderCommentsTable(comments || []);
         } catch(error) 
         {
@@ -353,10 +376,10 @@ class AdminDashboard
                 <td><span class="status-badge ${comment.status}">${comment.status}</span></td>
                 <td>${new Date(comment.publish_date).toLocaleDateString('uk-UA')}</td>
                 <td>
-                    <button class="btn btn-small btn-primary" onclick="dashboard.editComment(${comment.id})">
+                    <button class="btn btn-small btn-primary" onclick="editComment(${comment.id})">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-small btn-danger" onclick="dashboard.deleteComment(${comment.id})">
+                    <button class="btn btn-small btn-danger" onclick="deleteComment(${comment.id})">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -371,6 +394,7 @@ class AdminDashboard
         try 
         {
             const categories = await this.api_call('/categories');
+
             this.renderCategoriesTable(categories || []);
         } catch(error) 
         {
@@ -393,10 +417,10 @@ class AdminDashboard
                 <td>${category.description}</td>
                 <td>${new Date(category.created_at).toLocaleDateString('uk-UA')}</td>
                 <td>
-                    <button class="btn btn-small btn-primary" onclick="dashboard.editCategory(${category.id})">
+                    <button class="btn btn-small btn-primary" onclick="editCategory(${category.id})">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-small btn-danger" onclick="dashboard.deleteCategory(${category.id})">
+                    <button class="btn btn-small btn-danger" onclick="deleteCategory(${category.id})">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -407,6 +431,7 @@ class AdminDashboard
     searchUsers(query) 
     {
         const rows = document.querySelectorAll('#usersTableBody tr');
+
         rows.forEach(row => {
             const text = row.textContent.toLowerCase();
             row.style.display = text.includes(query.toLowerCase()) ? '' : 'none';
@@ -416,6 +441,7 @@ class AdminDashboard
     searchPosts(query) 
     {
         const rows = document.querySelectorAll('#postsTableBody tr');
+
         rows.forEach(row => {
             const text = row.textContent.toLowerCase();
             row.style.display = text.includes(query.toLowerCase()) ? '' : 'none';
@@ -425,6 +451,7 @@ class AdminDashboard
     searchComments(query) 
     {
         const rows = document.querySelectorAll('#commentsTableBody tr');
+
         rows.forEach(row => {
             const text = row.textContent.toLowerCase();
             row.style.display = text.includes(query.toLowerCase()) ? '' : 'none';
@@ -434,6 +461,7 @@ class AdminDashboard
     filterUsers(type, value) 
     {
         const rows = document.querySelectorAll('#usersTableBody tr');
+
         rows.forEach(row => {
             if(!value) 
                 {
@@ -450,6 +478,7 @@ class AdminDashboard
     filterPosts(type, value) 
     {
         const rows = document.querySelectorAll('#postsTableBody tr');
+
         rows.forEach(row => {
             if(!value) 
                 {
@@ -466,6 +495,7 @@ class AdminDashboard
     filterComments(type, value) 
     {
         const rows = document.querySelectorAll('#commentsTableBody tr');
+
         rows.forEach(row => {
             if(!value) 
                 {
@@ -522,17 +552,16 @@ class AdminDashboard
 
     async showAddPostModal() 
     {
-        // Завантажуємо користувачів та категорії
         const [users, categories] = await Promise.all([
             this.api_call('/users'),
             this.api_call('/categories')
         ]);
         
-        const userOptions = users?.map(user => 
+        const user_options = users?.map(user => 
             `<option value="${user.id}">${user.login} (${user.full_name})</option>`
         ).join('') || '';
         
-        const categoryOptions = categories?.map(category => 
+        const category_options = categories?.map(category => 
             `<option value="${category.id}">${category.title}</option>`
         ).join('') || '';
         
@@ -543,7 +572,7 @@ class AdminDashboard
                     <label>Автор:</label>
                     <select name="author_id" required class="setting-input">
                         <option value="">Оберіть автора</option>
-                        ${userOptions}
+                        ${user_options}
                     </select>
                 </div>
                 <div style="margin-bottom: 15px;">
@@ -557,7 +586,7 @@ class AdminDashboard
                 <div style="margin-bottom: 15px;">
                     <label>Категорії:</label>
                     <select name="categories" multiple required class="setting-input" style="height: 100px;">
-                        ${categoryOptions}
+                        ${category_options}
                     </select>
                     <small style="color: #666;">Утримуйте Ctrl для вибору кількох категорій</small>
                 </div>
@@ -623,22 +652,20 @@ class AdminDashboard
         try {
             const user_data = Object.fromEntries(formData);
             
-            // Видаляємо пустий пароль
-            if (!user_data.password) {
-                delete user_data.password;
-            }
+            if(!user_data.password) delete user_data.password;
             
-            // Перетворюємо checkbox в boolean
             user_data.email_verified = user_data.email_verified === 'on';
             
             const result = await this.api_call(`/users/${id}`, 'PATCH', user_data);
             
-            if(result) {
+            if(result) 
+                {
                 this.showNotification('Користувач успішно оновлений', 'success');
                 this.closeModal();
                 this.load_users();
             }
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Failed to update user:', error);
             this.showNotification('Помилка оновлення користувача', 'error');
         }
@@ -648,20 +675,20 @@ class AdminDashboard
     {
         const post_data = Object.fromEntries(formData);
         
-        // Обробляємо множинні категорії
-        const categoriesSelect = document.querySelector('select[name="categories"]');
-        if (categoriesSelect) {
-            const selectedCategories = Array.from(categoriesSelect.selectedOptions)
+        const categories_select = document.querySelector('select[name="categories"]');
+        if(categories_select) 
+            {
+            const selected_categories = Array.from(categories_select.selectedOptions)
                 .map(option => parseInt(option.value))
                 .filter(value => !isNaN(value) && value > 0);
             
-            // Якщо категорії не вибрані, встановлюємо порожній масив
-            post_data.categories = selectedCategories.length > 0 ? selectedCategories : [];
-        } else {
+            post_data.categories = selected_categories.length > 0 ? selected_categories : [];
+        } else 
+            {
             post_data.categories = [];
         }
         
-        console.log('Creating post with data:', post_data); // Для відладки
+        console.log('Creating post with data:', post_data);
         
         const result = await this.api_call('/posts', 'POST', post_data);
         
@@ -673,22 +700,25 @@ class AdminDashboard
         }
     }
 
-    async updatePost(id, formData) 
+    async update_post(id, formData) 
     {
-        try {
+        try 
+        {
             const post_data = Object.fromEntries(formData);
-            delete post_data.id; // Видаляємо ID з даних
+            delete post_data.id;
             
-            console.log('Updating post with data:', post_data); // Для відладки
+            console.log('Updating post with data:', post_data);
             
             const result = await this.api_call(`/posts/${id}`, 'PATCH', post_data);
             
-            if(result) {
+            if(result) 
+                {
                 this.showNotification('Пост успішно оновлений', 'success');
                 this.closeModal();
                 this.load_posts();
             }
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Failed to update post:', error);
             this.showNotification('Помилка оновлення поста', 'error');
         }
@@ -707,60 +737,66 @@ class AdminDashboard
         }
     }
 
-    async updateComment(id, formData) 
+    async update_comment(id, formData) 
     {
         try {
             const comment_data = Object.fromEntries(formData);
-            delete comment_data.id; // Видаляємо ID з даних
+            delete comment_data.id;
             
             const result = await this.api_call(`/comments/${id}`, 'PUT', comment_data);
             
-            if(result) {
+            if(result) 
+                {
                 this.showNotification('Коментар успішно оновлений', 'success');
                 this.closeModal();
                 this.load_comments();
             }
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Failed to update comment:', error);
             this.showNotification('Помилка оновлення коментаря', 'error');
         }
     }
 
-    async updateCategory(id, formData) 
+    async update_category(id, formData) 
     {
-        try {
+        try 
+        {
             const category_data = Object.fromEntries(formData);
-            delete category_data.id; // Видаляємо ID з даних
+            delete category_data.id;
             
             const result = await this.api_call(`/categories/${id}`, 'PATCH', category_data);
             
-            if(result) {
+            if(result) 
+                {
                 this.showNotification('Категорія успішно оновлена', 'success');
                 this.closeModal();
                 this.load_categories();
             }
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Failed to update category:', error);
             this.showNotification('Помилка оновлення категорії', 'error');
         }
     }
 
-    async editUser(id) 
+    async edit_user(id) 
     {
-        try {
+        try 
+        {
             console.log('Loading user data for editing:', id);
             
-            // Завантажуємо дані користувача (API повертає повну інформацію для адмінів)
             const response = await this.api_call(`/users/${id}`);
             console.log('User data loaded:', response);
             
-            const user = response; // Дані вже розпаковані в api_call
-            if (!user) {
+            const user = response;
+            if(!user) 
+                {
                 this.showNotification('Не вдалося завантажити дані користувача', 'error');
                 return;
             }
 
-            const modalContent = `
+            const modal_content = `
                 <h2>Редагувати користувача</h2>
                 <form id="editUserForm">
                     <input type="hidden" name="id" value="${user.id}">
@@ -798,20 +834,21 @@ class AdminDashboard
                 </form>
             `;
 
-            this.showModal(modalContent);
+            this.showModal(modal_content);
 
             document.getElementById('editUserForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 await this.updateUser(id, new FormData(e.target));
             });
 
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Failed to load user for editing:', error);
             this.showNotification('Помилка завантаження даних користувача', 'error');
         }
     }
 
-    async deleteUser(id) 
+    async delete_user(id) 
     {
         if(confirm('Ви впевнені, що хочете видалити цього користувача?')) 
             {
@@ -825,14 +862,14 @@ class AdminDashboard
         }
     }
 
-    async editPost(id) 
+    async edit_post(id) 
     {
-        try {
-            // Завантажуємо дані поста
+        try 
+        {
             const post = await this.api_call(`/posts/${id}`);
-            if (!post) return;
+            if(!post) return;
 
-            const modalContent = `
+            const modal_content = `
                 <h2>Редагувати пост</h2>
                 <form id="editPostForm">
                     <input type="hidden" name="id" value="${post.id}">
@@ -856,11 +893,11 @@ class AdminDashboard
                 </form>
             `;
 
-            this.showModal(modalContent);
+            this.showModal(modal_content);
 
             document.getElementById('editPostForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                await this.updatePost(id, new FormData(e.target));
+                await this.update_post(id, new FormData(e.target));
             });
 
         } catch (error) {
@@ -869,7 +906,7 @@ class AdminDashboard
         }
     }
 
-    async deletePost(id) 
+    async delete_post(id) 
     {
         if(confirm('Ви впевнені, що хочете видалити цей пост?')) 
             {
@@ -883,14 +920,14 @@ class AdminDashboard
         }
     }
 
-    async editComment(id) 
+    async edit_comment(id) 
     {
-        try {
-            // Завантажуємо дані коментаря
+        try 
+        {
             const comment = await this.api_call(`/comments/${id}`);
-            if (!comment) return;
+            if(!comment) return;
 
-            const modalContent = `
+            const modal_content = `
                 <h2>Редагувати коментар</h2>
                 <form id="editCommentForm">
                     <input type="hidden" name="id" value="${comment.id}">
@@ -910,20 +947,21 @@ class AdminDashboard
                 </form>
             `;
 
-            this.showModal(modalContent);
+            this.showModal(modal_content);
 
             document.getElementById('editCommentForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                await this.updateComment(id, new FormData(e.target));
+                await this.update_comment(id, new FormData(e.target));
             });
 
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Failed to load comment for editing:', error);
             this.showNotification('Помилка завантаження даних коментаря', 'error');
         }
     }
 
-    async deleteComment(id) 
+    async delete_comment(id) 
     {
         if(confirm('Ви впевнені, що хочете видалити цей коментар?')) 
             {
@@ -937,14 +975,14 @@ class AdminDashboard
         }
     }
 
-    async editCategory(id) 
+    async edit_category(id) 
     {
-        try {
-            // Завантажуємо дані категорії
+        try 
+        {
             const category = await this.api_call(`/categories/${id}`);
-            if (!category) return;
+            if(!category) return;
 
-            const modalContent = `
+            const modal_content = `
                 <h2>Редагувати категорію</h2>
                 <form id="editCategoryForm">
                     <input type="hidden" name="id" value="${category.id}">
@@ -961,20 +999,21 @@ class AdminDashboard
                 </form>
             `;
 
-            this.showModal(modalContent);
+            this.showModal(modal_content);
 
             document.getElementById('editCategoryForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                await this.updateCategory(id, new FormData(e.target));
+                await this.update_category(id, new FormData(e.target));
             });
 
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Failed to load category for editing:', error);
             this.showNotification('Помилка завантаження даних категорії', 'error');
         }
     }
 
-    async deleteCategory(id) 
+    async delete_category(id) 
     {
         if(confirm('Ви впевнені, що хочете видалити цю категорію?')) 
             {
@@ -1035,4 +1074,14 @@ class AdminDashboard
 
 document.addEventListener('DOMContentLoaded', () => {
     window.dashboard = new AdminDashboard();
+    
+    // Глобальні функції для кнопок
+    window.editUser = (id) => window.dashboard.edit_user(id);
+    window.deleteUser = (id) => window.dashboard.delete_user(id);
+    window.editPost = (id) => window.dashboard.edit_post(id);
+    window.deletePost = (id) => window.dashboard.delete_post(id);
+    window.editComment = (id) => window.dashboard.edit_comment(id);
+    window.deleteComment = (id) => window.dashboard.delete_comment(id);
+    window.editCategory = (id) => window.dashboard.edit_category(id);
+    window.deleteCategory = (id) => window.dashboard.delete_category(id);
 });

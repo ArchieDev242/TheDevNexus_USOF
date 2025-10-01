@@ -1,4 +1,4 @@
-import dbConnect from './utils/dbConnect.js';
+import DB_connect from './utils/dbConnect.js';
 import config from './config.js';
 import authRouter from './routes/authUser.js';
 import usersRouter from './routes/users.js';
@@ -8,10 +8,10 @@ import categoriesRouter from './routes/categories.js';
 import commentsAdditionalRouter from './routes/comments-additional.js';
 import notificationsRouter from './routes/notifications.js';
 import achievementsRouter from './routes/achievements.js';
-// import servicesRouter from './routes/services.js'; // TODO: Convert to ES6
-import ErrorHandler from './middleware/errorHandler.js';
+import codeExecutionRouter from './routes/codeExecution.js';
+import error_handler from './middleware/errorHandler.js';
 import RateLimit from './middleware/rateLimit.js';
-import { adminJs, adminRouter } from './admin/adminjs.js';
+import { adminJs, adminRouter } from './admin/admin.js';
 import customAdminRouter from './admin/routes/customAdmin.js';
 
 
@@ -32,8 +32,6 @@ app.use(cors());
 
 app.use('/api', RateLimit.api());
 
-// Remove global multer middleware that conflicts with AdminJS
-// Individual routes will handle file uploads through FileUpload middleware
 app.use(session({ secret: 'key', resave: false, saveUninitialized: true }));
 
 app.use((req, res, next) => {
@@ -80,12 +78,12 @@ app.use("/api/comments", commentsAdditionalRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/achievements", achievementsRouter);
-// app.use("/api/services", servicesRouter); // TODO: Enable when converted to ES6
+app.use("/api/code", codeExecutionRouter);
 
 // AdminJS routes
 app.use(adminJs.options.rootPath, adminRouter);
 
-// Custom Admin Panel
+// custom Admin Panel
 app.use('/admin-panel', customAdminRouter);
 
 // Admin Dashboard Selector
@@ -93,14 +91,14 @@ app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin/views/dashboard.html'));
 });
 
-app.use(ErrorHandler.not_found);
-app.use(ErrorHandler.handler);
+app.use(error_handler.not_found);
+app.use(error_handler.handler);
 
 app.listen(port, () => {
     console.log(`Server started at http://127.0.0.1:${port}`);
     console.log(`Main site available at http://127.0.0.1:${port}`);
-    console.log(`📊 Admin Dashboard Selector: http://127.0.0.1:${port}/dashboard`);
-    console.log(`🚀 Custom Admin Panel: http://127.0.0.1:${port}/admin-panel`);
-    console.log(`⚙️  AdminJS panel: http://127.0.0.1:${port}/admin`);
+    console.log(`Admin Dashboard Selector: http://127.0.0.1:${port}/dashboard`);
+    console.log(`Custom Admin Panel: http://127.0.0.1:${port}/admin-panel`);
+    console.log(`AdminJS panel: http://127.0.0.1:${port}/admin`);
     console.log(`AdminJS credentials: admin@usof.com / admin123`);
 });

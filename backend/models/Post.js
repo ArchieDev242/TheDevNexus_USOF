@@ -1,4 +1,4 @@
-import dbConnect from '../utils/dbConnect.js';
+import DB_connect from '../utils/dbConnect.js';
 import Permission from './Permission.js';
 
 class Post 
@@ -23,7 +23,7 @@ class Post
                 VALUES (?, ?, ?, ?)
             `;
             
-            const result = await dbConnect.make_request(query, [
+            const result = await DB_connect.make_request(query, [
                 this.author_id,
                 this.title,
                 this.content,
@@ -130,7 +130,7 @@ class Post
                 WHERE p.id = ?
             `;
             
-            const result = await dbConnect.make_request(query, [id]);
+            const result = await DB_connect.make_request(query, [id]);
             const rows = result[0];
             
             if (rows.length === 0) return null;
@@ -160,7 +160,7 @@ class Post
                 LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
             `;
             
-            const result = await dbConnect.make_request(query);
+            const result = await DB_connect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => {
@@ -188,7 +188,7 @@ class Post
                 LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
             `;
             
-            const result = await dbConnect.make_request(query);
+            const result = await DB_connect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => {
@@ -219,7 +219,7 @@ class Post
             
             query += " ORDER BY p.publish_date DESC";
             
-            const result = await dbConnect.make_request(query, [authorId]);
+            const result = await DB_connect.make_request(query, [authorId]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -249,7 +249,7 @@ class Post
                 LIMIT ? OFFSET ?
             `;
             
-            const result = await dbConnect.make_request(query, [categoryId, limit, offset]);
+            const result = await DB_connect.make_request(query, [categoryId, limit, offset]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -285,7 +285,7 @@ class Post
             values.push(this.id);
             
             const query = `UPDATE posts SET ${fields.join(', ')} WHERE id = ?`;
-            await dbConnect.make_request(query, values);
+            await DB_connect.make_request(query, values);
             
             Object.assign(this, updateData);
             
@@ -302,7 +302,7 @@ class Post
         try 
         {
             const query = 'DELETE FROM posts WHERE id = ?';
-            await dbConnect.make_request(query, [this.id]);
+            await DB_connect.make_request(query, [this.id]);
             
             return true;
         } 
@@ -321,7 +321,7 @@ class Post
             
             if(!this.id) throw new Error('Post ID is not set');
             
-            await dbConnect.make_request('DELETE FROM post_categories WHERE post_id = ?', [this.id]);
+            await DB_connect.make_request('DELETE FROM post_categories WHERE post_id = ?', [this.id]);
             
             if(categoryIds && Array.isArray(categoryIds) && categoryIds.length > 0) 
             {
@@ -341,7 +341,7 @@ class Post
                     console.log('SQL values:', flat_values);
                     
                     const query = `INSERT INTO post_categories (post_id, category_id) VALUES ${placeholders}`;
-                    await dbConnect.make_request(query, flat_values);
+                    await DB_connect.make_request(query, flat_values);
                 }
             }
             
@@ -364,7 +364,7 @@ class Post
                 WHERE pc.post_id = ?
             `;
             
-            const result = await dbConnect.make_request(query, [this.id]);
+            const result = await DB_connect.make_request(query, [this.id]);
             const rows = result[0];
             return rows;
         } 
@@ -386,7 +386,7 @@ class Post
                 WHERE post_id = ?
             `;
             
-            const result = await dbConnect.make_request(query, [this.id]);
+            const result = await DB_connect.make_request(query, [this.id]);
             const rows = result[0];
             
             return {
@@ -417,7 +417,7 @@ class Post
                 LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
             `;
             
-            const result = await dbConnect.make_request(query);
+            const result = await DB_connect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => {
@@ -448,7 +448,7 @@ class Post
                 LIMIT ? OFFSET ?
             `;
             
-            const result = await dbConnect.make_request(query, [startDate, endDate, limit, offset]);
+            const result = await DB_connect.make_request(query, [startDate, endDate, limit, offset]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -540,7 +540,7 @@ class Post
             
             query += ` LIMIT ${parseInt(limit)} OFFSET ${offset}`;
             
-            const result = await dbConnect.make_request(query, queryParams);
+            const result = await DB_connect.make_request(query, queryParams);
             const rows = result[0];
             
             return rows.map(row => {
@@ -605,7 +605,7 @@ class Post
                 GROUP BY p.id, p.author_id, p.title, p.content, p.status, p.publish_date, p.created_at, p.updated_at, u.login, u.full_name, u.profile_picture, likes.like_count, dislikes.dislike_count, comments.comment_count
             `;
             
-            const result = await dbConnect.make_request(query, [post_id]);
+            const result = await DB_connect.make_request(query, [post_id]);
             const rows = result[0];
             
             if(rows.length === 0) return null;

@@ -1,5 +1,5 @@
 import Achievement from '../models/Achievement.js';
-import AchievementService from '../services/AchievementService.js';
+import achievement_service from '../services/AchievementService.js';
 
 export const get_all_achievements = async (req, res) => {
     try 
@@ -25,8 +25,8 @@ export const get_user_achievements = async (req, res) => {
     {
         const user_id = req.user.id;
         
-        const achievements = await AchievementService.get_user_achievements(user_id);
-        const stats = await AchievementService.get_user_stats(user_id);
+        const achievements = await achievement_service.get_user_achievements(user_id);
+        const stats = await achievement_service.get_user_stats(user_id);
         
         res.json({
             success: true,
@@ -48,8 +48,8 @@ export const get_public_user_achievements = async (req, res) => {
     {
         const { user_id } = req.params;
         
-        const achievements = await AchievementService.get_user_achievements(user_id);
-        const stats = await AchievementService.get_user_stats(user_id);
+        const achievements = await achievement_service.get_user_achievements(user_id);
+        const stats = await achievement_service.get_user_stats(user_id);
         
         res.json({
             success: true,
@@ -70,7 +70,7 @@ export const get_leaderboard = async (req, res) => {
     try 
     {
         const limit = parseInt(req.query.limit) || 10;
-        const leaderboard = await AchievementService.get_leaderboard(limit);
+        const leaderboard = await achievement_service.get_leaderboard(limit);
         
         res.json({
             success: true,
@@ -144,7 +144,7 @@ export const award_achievement = async (req, res) => {
             });
         }
         
-        const result = await AchievementService.award_achievement(user_id, achievement_key);
+        const result = await achievement_service.award_achievement(user_id, achievement_key);
         
         if(result.success) 
             {

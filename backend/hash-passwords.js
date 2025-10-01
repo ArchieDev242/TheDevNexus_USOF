@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import dbConnect from './utils/dbConnect.js';
+import DB_connect from './utils/dbConnect.js';
 
 async function hash_test_passwords() 
 {
@@ -22,7 +22,7 @@ async function hash_test_passwords()
             const hashed_password = await bcrypt.hash(user.password, 10);
             
             const query = 'UPDATE users SET password = ? WHERE login = ?';
-            await dbConnect.make_request(query, [hashed_password, user.login]);
+            await DB_connect.make_request(query, [hashed_password, user.login]);
             
             console.log(`   Пароль оновлено для ${user.login}`);
             console.log(`   Оригінальний: ${user.password}`);

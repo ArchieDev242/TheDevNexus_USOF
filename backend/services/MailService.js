@@ -1,13 +1,13 @@
 import nodemailer from 'nodemailer';
 import config from '../config.js';
-import ErrorHandler from '../middleware/errorHandler.js';
+import error_handler from '../middleware/errorHandler.js';
 
 class MailService 
 {
     constructor() 
     {
-        console.log(`🔧 Initializing MailService...`);
-        console.log(`📧 Email config: user=${config.email.user ? 'SET' : 'NOT SET'}, password=${config.email.password ? 'SET' : 'NOT SET'}`);
+        console.log(`Initializing MailService...`);
+        console.log(`Email config: user=${config.email.user ? 'SET' : 'NOT SET'}, password=${config.email.password ? 'SET' : 'NOT SET'}`);
         
         if(!config.email.user || !config.email.password) 
             {
@@ -21,7 +21,8 @@ class MailService
                 host: 'smtp.gmail.com',
                 port: 587,
                 secure: false,
-                auth: {
+                auth: 
+                {
                     user: config.email.user,
                     pass: config.email.password
                 }
@@ -337,14 +338,14 @@ class MailService
     {
         const subject = `Новий коментар до вашого поста "${postTitle}"`;
         const html = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #27ae60;">Новий коментар!</h2>
+            <div style = "font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style = "color: #27ae60;">Новий коментар!</h2>
                 <p>Привіт, ${authorName}!</p>
                 <p><strong>${commenterName}</strong> залишив коментар до вашого поста <strong>"${postTitle}"</strong>:</p>
-                <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #27ae60; margin: 20px 0;">
-                    <p style="margin: 0; font-style: italic;">${commentContent}</p>
+                <div style = "background-color: #f8f9fa; padding: 15px; border-left: 4px solid #27ae60; margin: 20px 0;">
+                    <p style = "margin: 0; font-style: italic;">${commentContent}</p>
                 </div>
-                <p style="color: #7f8c8d; font-size: 12px;">
+                <p style = "color: #7f8c8d; font-size: 12px;">
                     Ви можете відповісти на коментар, увійшовши на сайт.
                 </p>
             </div>
@@ -357,11 +358,11 @@ class MailService
     {
         const subject = `Ваш пост "${postTitle}" сподобався!`;
         const html = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #3498db;">👍 Ваш пост сподобався!</h2>
+            <div style = "font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style = "color: #3498db;">👍 Ваш пост сподобався!</h2>
                 <p>Привіт, ${authorName}!</p>
                 <p><strong>${likerName}</strong> поставив лайк вашому посту <strong>"${postTitle}"</strong>!</p>
-                <p style="color: #7f8c8d; font-size: 12px;">
+                <p style = "color: #7f8c8d; font-size: 12px;">
                     Продовжуйте створювати цікавий контент!
                 </p>
             </div>
@@ -375,20 +376,20 @@ class MailService
         const subject = 'Щотижневий дайджест - Найкращі пости тижня';
         
         const posts_html = topPosts.map(post => `
-            <div style="border: 1px solid #ddd; padding: 15px; margin: 15px 0; border-radius: 5px;">
-                <h3 style="color: #2c3e50; margin-top: 0;">${post.title}</h3>
-                <p style="color: #7f8c8d;">Автор: ${post.author_name} | Лайків: ${post.like_count}</p>
+            <div style = "border: 1px solid #ddd; padding: 15px; margin: 15px 0; border-radius: 5px;">
+                <h3 style = "color: #2c3e50; margin-top: 0;">${post.title}</h3>
+                <p style = "color: #7f8c8d;">Автор: ${post.author_name} | Лайків: ${post.like_count}</p>
                 <p>${post.content.substring(0, 200)}${post.content.length > 200 ? '...' : ''}</p>
             </div>
         `).join('');
 
         const html = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #8e44ad;">Найкращі пости тижня</h2>
+            <div style = "font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style = "color: #8e44ad;">Найкращі пости тижня</h2>
                 <p>Привіт, ${userName}!</p>
                 <p>Ось найпопулярніші пости цього тижня, які ви могли пропустити:</p>
                 ${posts_html}
-                <p style="color: #7f8c8d; font-size: 12px;">
+                <p style = "color: #7f8c8d; font-size: 12px;">
                     Щоб відписатись від розсилки, увійдіть в налаштування профілю.
                 </p>
             </div>

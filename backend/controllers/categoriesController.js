@@ -1,8 +1,8 @@
 import Category from '../models/Category.js';
 import Post from '../models/Post.js';
-import ErrorHandler from '../middleware/errorHandler.js';
+import error_handler from '../middleware/errorHandler.js';
 
-class CategoriesController 
+class categories_controller 
 {
     // ===============================
     // ALL USERS
@@ -33,7 +33,7 @@ class CategoriesController
             const { category_id } = req.params;
             const category = await Category.find_by_id(category_id);
             
-            if(!category) throw ErrorHandler.not_found_error('Category');
+            if(!category) throw error_handler.not_found_error('Category');
             
             const category_data = await Category.get_with_stats(category_id);
             
@@ -56,7 +56,7 @@ class CategoriesController
             const { page = 1, limit = 10, sort = 'date' } = req.query;
             
             const category = await Category.find_by_id(category_id);
-            if(!category) throw ErrorHandler.not_found_error('Category');
+            if(!category) throw error_handler.not_found_error('Category');
             
             const posts = await Post.get_by_category(category_id, page, limit, sort);
             
@@ -93,7 +93,7 @@ class CategoriesController
             const { title, description } = req.body;
             
             const existing_category = await Category.find_by_title(title);
-            if(existing_category) throw ErrorHandler.validation_error(['Category with this title already exists']);
+            if(existing_category) throw error_handler.validation_error(['Category with this title already exists']);
             
             const category_data = {
                 title,
@@ -128,7 +128,7 @@ class CategoriesController
             const { title, description } = req.body;
             
             const category = await Category.find_by_id(category_id);
-            if(!category) throw ErrorHandler.not_found_error('Category');
+            if(!category) throw error_handler.not_found_error('Category');
             
             if(title && title !== category.title) 
                 {
@@ -136,7 +136,7 @@ class CategoriesController
                 
                 if(category_exists && category_exists.id !== category.id) 
                     {
-                    throw ErrorHandler.validation_error(['Category with this title already exists']);
+                    throw error_handler.validation_error(['Category with this title already exists']);
                 }
             }
             
@@ -160,10 +160,10 @@ class CategoriesController
             const { category_id } = req.params;
             
             const category = await Category.find_by_id(category_id);
-            if(!category) throw ErrorHandler.not_found_error('Category');
+            if(!category) throw error_handler.not_found_error('Category');
             
             const posts_count = await Category.get_posts_count(category_id);
-            if(posts_count > 0) throw ErrorHandler.validation_error(['Cannot delete category that has posts. Please reassign posts first.']);
+            if(posts_count > 0) throw error_handler.validation_error(['Cannot delete category that has posts. Please reassign posts first.']);
             
             await category.delete();
             
@@ -195,4 +195,4 @@ class CategoriesController
     }
 }
 
-export default CategoriesController;
+export default categories_controller;

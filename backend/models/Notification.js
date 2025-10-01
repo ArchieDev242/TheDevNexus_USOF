@@ -1,4 +1,4 @@
-import dbConnect from '../utils/dbConnect.js';
+import DB_connect from '../utils/dbConnect.js';
 import { v4 as uuidv4 } from 'uuid';
 
 class Notification 
@@ -25,7 +25,7 @@ class Notification
                 INSERT INTO notifications (user_id, type, title, message, is_read, related_id, related_type)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             `;
-            const [result] = await dbConnect.make_request(query, [
+            const [result] = await DB_connect.make_request(query, [
                 this.user_id,
                 this.type,
                 this.title,
@@ -53,7 +53,7 @@ class Notification
                 ORDER BY created_at DESC 
                 LIMIT ? OFFSET ?
             `;
-            const [rows] = await dbConnect.make_request(query, [user_id, limit, offset]);
+            const [rows] = await DB_connect.make_request(query, [user_id, limit, offset]);
             return rows.map(row => new Notification(row));
         } catch(error) 
         {
@@ -69,7 +69,7 @@ class Notification
                 WHERE user_id = ? AND is_read = FALSE 
                 ORDER BY created_at DESC
             `;
-            const [rows] = await dbConnect.make_request(query, [user_id]);
+            const [rows] = await DB_connect.make_request(query, [user_id]);
             return rows.map(row => new Notification(row));
         } catch(error) 
         {
@@ -85,7 +85,7 @@ class Notification
                 FROM notifications 
                 WHERE user_id = ? AND is_read = FALSE
             `;
-            const [rows] = await dbConnect.make_request(query, [user_id]);
+            const [rows] = await DB_connect.make_request(query, [user_id]);
             return rows[0].count || 0;
         } catch(error) 
         {
@@ -101,7 +101,7 @@ class Notification
                 SET is_read = TRUE, updated_at = CURRENT_TIMESTAMP 
                 WHERE id = ?
             `;
-            await dbConnect.make_request(query, [this.id]);
+            await DB_connect.make_request(query, [this.id]);
             this.is_read = true;
             return this;
         } catch(error) 
@@ -119,7 +119,7 @@ class Notification
                 SET is_read = TRUE, updated_at = CURRENT_TIMESTAMP 
                 WHERE user_id = ? AND is_read = FALSE
             `;
-            const [result] = await dbConnect.make_request(query, [user_id]);
+            const [result] = await DB_connect.make_request(query, [user_id]);
             return result.affectedRows;
         } catch(error) 
         {
@@ -132,7 +132,7 @@ class Notification
         try 
         {
             const query = `SELECT * FROM notifications WHERE id = ?`;
-            const [rows] = await dbConnect.make_request(query, [id]);
+            const [rows] = await DB_connect.make_request(query, [id]);
             return rows.length > 0 ? new Notification(rows[0]) : null;
         } catch(error) 
         {
@@ -145,7 +145,7 @@ class Notification
         try 
         {
             const query = `DELETE FROM notifications WHERE id = ?`;
-            await dbConnect.make_request(query, [this.id]);
+            await DB_connect.make_request(query, [this.id]);
             return true;
         } catch(error) 
         {
@@ -161,7 +161,7 @@ class Notification
                 DELETE FROM notifications 
                 WHERE created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)
             `;
-            const [result] = await dbConnect.make_request(query);
+            const [result] = await DB_connect.make_request(query);
             return result.affectedRows;
         } catch(error) 
         {
@@ -195,7 +195,7 @@ class Notification
                 ORDER BY n.created_at DESC
                 LIMIT ? OFFSET ?
             `;
-            const [rows] = await dbConnect.make_request(query, [user_id, limit, offset]);
+            const [rows] = await DB_connect.make_request(query, [user_id, limit, offset]);
             return rows;
         } catch(error) 
         {

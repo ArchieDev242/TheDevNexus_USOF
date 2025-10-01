@@ -1,4 +1,4 @@
-class ResponseHandler 
+class response_handler 
 {
     static send_response(res, statusCode = 200, message = 'Success', data = null) 
     {
@@ -99,14 +99,14 @@ class ResponseHandler
     }
 }
 
-export default ResponseHandler;
+export default response_handler;
 
-export const sendResponse = ResponseHandler.send_response;
-export const sendError = ResponseHandler.send_error;
-export const sendPaginatedResponse = ResponseHandler.send_paginated_response;
-export const sendValidationError = ResponseHandler.send_validation_error;
-export const sendNotFound = ResponseHandler.send_not_found;
-export const sendUnauthorized = ResponseHandler.send_unauthorized;
-export const sendForbidden = ResponseHandler.send_forbidden;
-export const sendCreated = ResponseHandler.send_created;
-export const sendNoContent = ResponseHandler.send_no_content;
+export const send_response = response_handler.send_response;
+export const send_error = response_handler.send_error;
+export const send_paginated_response = response_handler.send_paginated_response;
+export const send_validation_error = response_handler.send_validation_error;
+export const send_not_found = response_handler.send_not_found;
+export const send_unauthorized = response_handler.send_unauthorized;
+export const send_forbidden = response_handler.send_forbidden;
+export const send_created = response_handler.send_created;
+export const send_no_content = response_handler.send_no_content;

@@ -1,105 +1,106 @@
 import bcrypt from 'bcrypt';
 import User from './models/User.js';
-import dbConnect from './utils/dbConnect.js';
+import DB_connect from './utils/dbConnect.js';
 
-async function createAdmin() {
-    try {
+async function create_admin() {
+    try 
+    {
         console.log('🔧 Creating admin user...');
         
-        // Спочатку перевіримо чи є існуючі адміни
-        const existingAdmins = await User.find_by_role('admin');
-        console.log('📊 Existing admins:', existingAdmins.length);
+        const existing_admins = await User.find_by_role('admin');
+        console.log('Existing admins:', existing_admins.length);
         
-        if (existingAdmins.length > 0) {
+        if(existing_admins.length > 0) 
+            {
             console.log('📋 Current admin users:');
-            existingAdmins.forEach(admin => {
+            existing_admins.forEach(admin => {
                 console.log(`  - ID: ${admin.id}, Login: ${admin.login}, Email: ${admin.email}, Verified: ${admin.email_verified}`);
             });
         }
         
-        // Створюємо нового адміна
-        const adminData = {
+        const admin_data = {
             login: 'admin',
-            password: 'admin123', // Буде хешований в методі create()
+            password: 'admin123',
             full_name: 'System Administrator',
             email: 'admin@usof.com',
             role: 'admin',
             email_verified: true
         };
         
-        // Перевіряємо чи існує користувач з таким логіном
-        const existingByLogin = await User.find_by_login(adminData.login);
-        if (existingByLogin) {
+        const existing_by_login = await User.find_by_login(admin_data.login);
+        if(existing_by_login) 
+            {
             console.log('⚠️  User with login "admin" already exists');
             
-            // Якщо існує, але не адмін - робимо адміном
-            if (existingByLogin.role !== 'admin') {
-                await existingByLogin.update_role('admin');
-                await existingByLogin.update({ email_verified: true });
+            if(existing_by_login.role !== 'admin') 
+                {
+                await existing_by_login.update_role('admin');
+                await existing_by_login.update({ email_verified: true });
                 console.log('✅ Updated existing user to admin role');
             }
             
-            // Оновлюємо пароль
-            const hashedPassword = await bcrypt.hash('admin123', 10);
-            await existingByLogin.update({ 
-                password: hashedPassword,
+            const hashed_password = await bcrypt.hash('admin123', 10);
+            await existing_by_login.update({ 
+                password: hashed_password,
                 email: 'admin@usof.com',
                 email_verified: true 
             });
             
             console.log('✅ Admin password updated to: admin123');
-            console.log('📧 Admin email updated to: admin@usof.com');
-            return existingByLogin;
+            console.log('Admin email updated to: admin@usof.com');
+            return existing_by_login;
         }
         
-        // Перевіряємо чи існує користувач з таким email
-        const existingByEmail = await User.find_by_email(adminData.email);
-        if (existingByEmail) {
+        const existing_by_email = await User.find_by_email(admin_data.email);
+        if(existing_by_email) 
+            {
             console.log('⚠️  User with email "admin@usof.com" already exists');
             
-            // Робимо його адміном
-            if (existingByEmail.role !== 'admin') {
-                await existingByEmail.update_role('admin');
+            if(existing_by_email.role !== 'admin') 
+                {
+                await existing_by_email.update_role('admin');
                 console.log('✅ Updated existing user to admin role');
             }
             
-            // Оновлюємо пароль
-            const hashedPassword = await bcrypt.hash('admin123', 10);
-            await existingByEmail.update({ 
-                password: hashedPassword,
+            const hashed_password = await bcrypt.hash('admin123', 10);
+            await existing_by_email.update({ 
+                password: hashed_password,
                 login: 'admin',
                 email_verified: true 
             });
             
             console.log('✅ Admin password updated to: admin123');
             console.log('🔑 Admin login updated to: admin');
-            return existingByEmail;
+            return existing_by_email;
         }
         
-        // Створюємо нового адміна
-        const admin = new User(adminData);
+        const admin = new User(admin_data);
         const result = await admin.create();
-        
+
         console.log('✅ New admin created successfully!');
-        console.log('🔑 Login: admin');
-        console.log('🔒 Password: admin123');
-        console.log('📧 Email: admin@usof.com');
-        console.log('🆔 ID:', result.user.id);
+        console.log('Login: admin');
+        console.log('Password: admin123');
+        console.log('Email: admin@usof.com');
+        console.log('ID:', result.user.id);
         
         return result.user;
         
-    } catch (error) {
+    } catch(error) 
+    {
         console.error('❌ Error creating admin:', error.message);
         throw error;
     }
 }
 
-async function listAllUsers() {
-    try {
-        console.log('\n📋 All users in database:');
+async function list_aall_users() 
+{
+    try 
+    {
+        console.log('\nAll users in database:');
         const users = await User.find_all();
         
-        if (users.length === 0) {
+        if(users.length === 0) 
+            {
             console.log('  No users found');
             return;
         }
@@ -114,32 +115,35 @@ async function listAllUsers() {
             console.log('     ---');
         });
         
-    } catch (error) {
+    } catch(error) 
+    {
         console.error('❌ Error listing users:', error.message);
     }
 }
 
-// Запускаємо скрипт
-async function main() {
-    try {
-        console.log('🚀 Starting admin creation script...\n');
+async function main() 
+{
+    try 
+    {
+        console.log('Starting admin creation script...\n');
         
-        await listAllUsers();
-        await createAdmin();
+        await list_aall_users();
+        await create_admin();
         
-        console.log('\n📋 Updated user list:');
-        await listAllUsers();
+        console.log('\nUpdated user list:');
+        await list_aall_users();
         
-        console.log('\n🎉 Script completed successfully!');
-        console.log('\n💡 You can now login to admin panel with:');
+        console.log('\nScript completed successfully!');
+        console.log('\nYou can now login to admin panel with:');
         console.log('   URL: http://localhost:3000/admin-panel/login');
         console.log('   Login: admin');
         console.log('   Password: admin123');
         
         process.exit(0);
         
-    } catch (error) {
-        console.error('💥 Script failed:', error);
+    } catch(error) 
+    {
+        console.error('Script failed:', error);
         process.exit(1);
     }
 }

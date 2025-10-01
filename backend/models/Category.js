@@ -1,4 +1,4 @@
-import dbConnect from '../utils/dbConnect.js';
+import DB_connect from '../utils/dbConnect.js';
 import Permission from './Permission.js';
 
 class Category 
@@ -20,7 +20,7 @@ class Category
                 VALUES (?, ?)
             `;
             
-            const result = await dbConnect.make_request(query, [
+            const result = await DB_connect.make_request(query, [
                 this.title,
                 this.description
             ]);
@@ -39,7 +39,7 @@ class Category
         try 
         {
             const query = 'SELECT * FROM categories WHERE id = ?';
-            const result = await dbConnect.make_request(query, [id]);
+            const result = await DB_connect.make_request(query, [id]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -57,7 +57,7 @@ class Category
         try 
         {
             const query = 'SELECT * FROM categories ORDER BY title ASC';
-            const result = await dbConnect.make_request(query);
+            const result = await DB_connect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => new Category(row));
@@ -73,7 +73,7 @@ class Category
         try 
         {
             const query = 'SELECT * FROM categories WHERE title = ?';
-            const result = await dbConnect.make_request(query, [title]);
+            const result = await DB_connect.make_request(query, [title]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -106,7 +106,7 @@ class Category
             values.push(this.id);
             
             const query = `UPDATE categories SET ${fields.join(', ')} WHERE id = ?`;
-            await dbConnect.make_request(query, values);
+            await DB_connect.make_request(query, values);
             
             Object.assign(this, updateData);
             
@@ -123,7 +123,7 @@ class Category
         try 
         {
             const query = 'DELETE FROM categories WHERE id = ?';
-            await dbConnect.make_request(query, [this.id]);
+            await DB_connect.make_request(query, [this.id]);
             
             return true;
         } 
@@ -144,7 +144,7 @@ class Category
                 WHERE pc.category_id = ? AND p.status = 'active'
             `;
             
-            const result = await dbConnect.make_request(query, [category_id]);
+            const result = await DB_connect.make_request(query, [category_id]);
             const rows = result[0];
             return rows[0].count;
         } 
@@ -167,7 +167,7 @@ class Category
                 ORDER BY c.title ASC
             `;
             
-            const result = await dbConnect.make_request(query);
+            const result = await DB_connect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => {
@@ -205,7 +205,7 @@ class Category
                 ORDER BY c.title ASC
             `;
             
-            const result = await dbConnect.make_request(query);
+            const result = await DB_connect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => {
@@ -245,7 +245,7 @@ class Category
                 GROUP BY c.id, c.title, c.description, c.created_at
             `;
             
-            const result = await dbConnect.make_request(query, [id]);
+            const result = await DB_connect.make_request(query, [id]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -329,7 +329,7 @@ class Category
             `;
             
             const search_pattern = `%${searchTerm}%`;
-            const result = await dbConnect.make_request(query, [search_pattern, search_pattern]);
+            const result = await DB_connect.make_request(query, [search_pattern, search_pattern]);
             const rows = result[0];
             
             return rows.map(row => new Category(row));
@@ -353,7 +353,7 @@ class Category
                 FROM categories
             `;
             
-            const result = await dbConnect.make_request(query);
+            const result = await DB_connect.make_request(query);
             const rows = result[0];
             const stats = rows[0];
             

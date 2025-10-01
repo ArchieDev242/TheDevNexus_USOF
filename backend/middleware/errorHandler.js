@@ -1,4 +1,4 @@
-class ErrorHandler 
+class error_handler 
 {
     static not_found(req, res, next) 
     {
@@ -60,4 +60,4 @@ class ErrorHandler
     }
 }
 
-export default ErrorHandler;
+export default error_handler;

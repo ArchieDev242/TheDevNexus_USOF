@@ -1,4 +1,4 @@
-import dbConnect from '../utils/dbConnect.js';
+import DB_connect from '../utils/dbConnect.js';
 import Permission from './Permission.js';
 
 class Like 
@@ -26,7 +26,7 @@ class Like
                 VALUES (?, ?, ?, ?)
             `;
             
-            const result = await dbConnect.make_request(query, [
+            const result = await DB_connect.make_request(query, [
                 this.author_id,
                 this.post_id,
                 this.comment_id,
@@ -104,7 +104,7 @@ class Like
                 throw new Error('Either post_id or comment_id must be provided');
             }
 
-            const result = await dbConnect.make_request(query, params);
+            const result = await DB_connect.make_request(query, params);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -122,7 +122,7 @@ class Like
         try 
         {
             const query = 'SELECT * FROM likes WHERE id = ?';
-            const result = await dbConnect.make_request(query, [id]);
+            const result = await DB_connect.make_request(query, [id]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -147,7 +147,7 @@ class Like
                 ORDER BY l.publish_date DESC
             `;
             
-            const result = await dbConnect.make_request(query, [postId]);
+            const result = await DB_connect.make_request(query, [postId]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -175,7 +175,7 @@ class Like
                 ORDER BY l.publish_date DESC
             `;
             
-            const result = await dbConnect.make_request(query, [commentId]);
+            const result = await DB_connect.make_request(query, [commentId]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -212,7 +212,7 @@ class Like
                 ORDER BY l.publish_date DESC
             `;
             
-            const result = await dbConnect.make_request(query, [authorId]);
+            const result = await DB_connect.make_request(query, [authorId]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -233,7 +233,7 @@ class Like
         try 
         {
             const query = 'DELETE FROM likes WHERE id = ?';
-            await dbConnect.make_request(query, [this.id]);
+            await DB_connect.make_request(query, [this.id]);
             
             return true;
         } 
@@ -248,7 +248,7 @@ class Like
         try 
         {
             const query = 'DELETE FROM likes WHERE author_id = ? AND post_id = ?';
-            const result = await dbConnect.make_request(query, [authorId, postId]);
+            const result = await DB_connect.make_request(query, [authorId, postId]);
             const rows = result[0];
             
             return result[0].affectedRows > 0;
@@ -264,7 +264,7 @@ class Like
         try 
         {
             const query = 'DELETE FROM likes WHERE author_id = ? AND comment_id = ?';
-            const result = await dbConnect.make_request(query, [authorId, commentId]);
+            const result = await DB_connect.make_request(query, [authorId, commentId]);
             const rows = result[0];
             
             return result[0].affectedRows > 0;
@@ -302,7 +302,7 @@ class Like
                     return { action: 'removed', like: null };
                 } else 
                 {
-                    await dbConnect.make_request('UPDATE likes SET type = ? WHERE id = ?', [type, existing.id]);
+                    await DB_connect.make_request('UPDATE likes SET type = ? WHERE id = ?', [type, existing.id]);
                     existing.type = type;
                     return { action: 'updated', like: existing };
                 }
@@ -331,7 +331,7 @@ class Like
                 WHERE post_id = ?
             `;
             
-            const result = await dbConnect.make_request(query, [postId]);
+            const result = await DB_connect.make_request(query, [postId]);
             const rows = result[0];
             
             return {
@@ -359,7 +359,7 @@ class Like
                 WHERE comment_id = ?
             `;
             
-            const result = await dbConnect.make_request(query, [commentId]);
+            const result = await DB_connect.make_request(query, [commentId]);
             const rows = result[0];
             
             return {
@@ -386,7 +386,7 @@ class Like
                 ORDER BY l.publish_date DESC
             `;
             
-            const result = await dbConnect.make_request(query, [commentId]);
+            const result = await DB_connect.make_request(query, [commentId]);
             const rows = result[0];
             
             return rows.map(row => new Like(row));
@@ -402,7 +402,7 @@ class Like
         try 
         {
             const query = 'SELECT * FROM likes WHERE author_id = ? AND comment_id = ?';
-            const result = await dbConnect.make_request(query, [userId, commentId]);
+            const result = await DB_connect.make_request(query, [userId, commentId]);
             const rows = result[0];
             
             return rows.length > 0 ? new Like(rows[0]) : null;

@@ -1,4 +1,4 @@
-import dbConnect from '../utils/dbConnect.js';
+import DB_connect from '../utils/dbConnect.js';
 import Permission from './Permission.js';
 
 import bcrypt from 'bcrypt';
@@ -14,6 +14,8 @@ class User
         this.email = userData?.email;
         this.profile_picture = userData?.profile_picture || 'default_avatar.png';
         this.rating = userData?.rating || 0;
+        this.reputation_score = userData?.reputation_score ?? 0;
+        this.is_toxic = userData?.is_toxic ?? false;
         this.role = userData?.role || 'user';
         this.email_verified = userData?.email_verified || false;
         this.verification_token = userData?.verification_token;
@@ -22,6 +24,11 @@ class User
         this.password_changed_at = userData?.password_changed_at;
         this.created_at = userData?.created_at;
         this.updated_at = userData?.updated_at;
+    }
+
+    static get REPUTATION_TOXIC_THRESHOLD() 
+    {
+        return -5;
     }
 
     async create() 
@@ -39,7 +46,7 @@ class User
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             `;
 
-            const result = await dbConnect.make_request(query, [
+            const result = await DB_connect.make_request(query, [
                 this.login,
                 hashedPassword,
                 this.full_name,
@@ -66,7 +73,7 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE id = ?';
-            const result = await dbConnect.make_request(query, [id]);
+            const result = await DB_connect.make_request(query, [id]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -84,7 +91,7 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE login = ?';
-            const result = await dbConnect.make_request(query, [login]);
+            const result = await DB_connect.make_request(query, [login]);
             const rows = result[0];
             
             console.log('Database search for login:', login);
@@ -113,7 +120,7 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE email = ?';
-            const result = await dbConnect.make_request(query, [email]);
+            const result = await DB_connect.make_request(query, [email]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -131,7 +138,7 @@ class User
         try 
         {
             const query = 'SELECT * FROM users ORDER BY created_at DESC';
-            const result = await dbConnect.make_request(query);
+            const result = await DB_connect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => new User(row));
@@ -162,7 +169,7 @@ class User
             values.push(this.id);
             
             const query = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
-            await dbConnect.make_request(query, values);
+            await DB_connect.make_request(query, values);
             
             Object.assign(this, updateData);
             
@@ -179,7 +186,7 @@ class User
         try 
         {
             const query = 'DELETE FROM users WHERE id = ?';
-            await dbConnect.make_request(query, [this.id]);
+            await DB_connect.make_request(query, [this.id]);
             
             return true;
         } 
@@ -199,6 +206,31 @@ class User
         {
             throw new Error(`Error checking password: ${error.message}`);
         }
+    }
+
+    static async adjust_reputation(user_id, delta, threshold = User.REPUTATION_TOXIC_THRESHOLD) 
+    {
+        try 
+        {
+            const query = `
+                UPDATE users
+                SET 
+                    reputation_score = reputation_score + ?,
+                    is_toxic = CASE WHEN (reputation_score + ?) <= ? THEN TRUE ELSE FALSE END
+                WHERE id = ?
+            `;
+
+            await DB_connect.make_request(query, [delta, delta, threshold, user_id]);
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error adjusting user reputation: ${error.message}`);
+        }
+    }
+
+    is_toxic_user() 
+    {
+        return !!this.is_toxic;
     }
 
     async update_password(newPassword) {
@@ -265,7 +297,7 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE verification_token = ?';
-            const result = await dbConnect.make_request(query, [token]);
+            const result = await DB_connect.make_request(query, [token]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -286,6 +318,8 @@ class User
             full_name: this.full_name,
             profile_picture: this.profile_picture,
             rating: this.rating,
+            reputation_score: this.reputation_score,
+            is_toxic: this.is_toxic,
             role: this.role,
             created_at: this.created_at
         };
@@ -384,7 +418,7 @@ class User
         try 
         {
             const query = 'SELECT * FROM users WHERE role = ? ORDER BY created_at DESC';
-            const result = await dbConnect.make_request(query, [role]);
+            const result = await DB_connect.make_request(query, [role]);
             const rows = result[0];
             
             return rows.map(row => new User(row));
@@ -408,7 +442,7 @@ class User
                 GROUP BY role
             `;
             
-            const result = await dbConnect.make_request(query);
+            const result = await DB_connect.make_request(query);
             const rows = result[0];
             return rows;
         } 
@@ -423,7 +457,7 @@ class User
         try 
         {
             const query = `UPDATE users SET role = ? WHERE id = ?`;
-            await dbConnect.make_request(query, [role, this.id]);
+            await DB_connect.make_request(query, [role, this.id]);
             this.role = role;
             return true;
         } 

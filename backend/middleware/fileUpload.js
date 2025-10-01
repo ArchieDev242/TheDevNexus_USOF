@@ -2,11 +2,11 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import ErrorHandler from './errorHandler.js';
+import error_handler from './errorHandler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-class FileUpload 
+class file_upload 
 {
     static create_upload_dir(dir) 
     {
@@ -16,7 +16,7 @@ class FileUpload
     static avatar_storage = multer.diskStorage({
         destination: (req, file, cb) => {
             const upload_dir = path.join(__dirname, '../public/uploads/avatars');
-            FileUpload.create_upload_dir(upload_dir);
+            file_upload.create_upload_dir(upload_dir);
             cb(null, upload_dir);
         },
         filename: (req, file, cb) => {
@@ -30,7 +30,7 @@ class FileUpload
     static post_image_storage = multer.diskStorage({
         destination: (req, file, cb) => {
             const upload_dir = path.join(__dirname, '../public/uploads/posts');
-            FileUpload.create_upload_dir(upload_dir);
+            file_upload.create_upload_dir(upload_dir);
             cb(null, upload_dir);
         },
         filename: (req, file, cb) => {
@@ -55,22 +55,22 @@ class FileUpload
     };
 
     static upload_avatar = multer({
-        storage: FileUpload.avatar_storage,
+        storage: file_upload.avatar_storage,
         limits: 
         {
             fileSize: 2 * 1024 * 1024, // 2MB limit
         },
-        fileFilter: FileUpload.image_filter
+        fileFilter: file_upload.image_filter
     }).single('avatar');
 
     static upload_post_images = multer({
-        storage: FileUpload.post_image_storage,
+        storage: file_upload.post_image_storage,
         limits: 
         {
             fileSize: 5 * 1024 * 1024, // 5MB limit per file
             files: 5 // Maximum 5 files
         },
-        fileFilter: FileUpload.image_filter
+        fileFilter: file_upload.image_filter
     }).array('images', 5);
 
     //error handling wrapper
@@ -114,4 +114,4 @@ class FileUpload
     }
 }
 
-export default FileUpload;
+export default file_upload;

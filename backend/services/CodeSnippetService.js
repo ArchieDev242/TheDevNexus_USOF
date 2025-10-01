@@ -1,13 +1,40 @@
 import hljs from 'highlight.js';
 import { VM } from 'vm2';
-import ErrorHandler from '../middleware/errorHandler.js';
+import error_handler from '../middleware/errorHandler.js';
+import JDoodleService from './JDoodleService.js';
+import EmscriptenService from './EmscriptenService.js';
 
-class CodeSnippetService 
+class code_snippet_service 
 {
-    static supportedLanguages = [
+    static supported_langs = [
         'javascript', 'python', 'java', 'cpp', 'csharp', 'php', 
-        'html', 'css', 'sql', 'json', 'xml', 'markdown', 'bash'
+        'html', 'css', 'sql', 'json', 'xml', 'markdown', 'bash',
+        'c', 'python3', 'nodejs', 'go', 'rust', 'kotlin', 'swift'
     ];
+
+    static lang_mapping = {
+        jdoodle: 
+        {
+            'javascript': 'nodejs',
+            'python': 'python3',
+            'java': 'java',
+            'cpp': 'cpp17',
+            'c': 'c',
+            'csharp': 'csharp',
+            'php': 'php',
+            'go': 'go',
+            'rust': 'rust',
+            'kotlin': 'kotlin',
+            'swift': 'swift',
+            'python3': 'python3',
+            'nodejs': 'nodejs'
+        },
+        emscripten: 
+        {
+            'c': 'c',
+            'cpp': 'cpp'
+        }
+    };
 
     static code_highlighting(code, language = 'auto') 
     {
@@ -21,9 +48,10 @@ class CodeSnippetService
                     detectedLanguage: result.language,
                     relevance: result.relevance
                 };
-            } else if(this.supportedLanguages.includes(language)) 
+            } else if(this.supported_langs.includes(language)) 
                 {
                 const result = hljs.highlight(code, { language });
+
                 return {
                     highlightedCode: result.value,
                     detectedLanguage: language,
@@ -179,7 +207,7 @@ class CodeSnippetService
         const { title, code, language, description, isPublic = false } = data;
         
         const validation = this.validate_code(code, language);
-        if(validation.errors.length > 0) throw ErrorHandler.validation_error(validation.errors);
+        if(validation.errors.length > 0) throw error_handler.validation_error(validation.errors);
 
         const highlighted = this.code_highlighting(code, language);
         const formatted = this.format_code(code, language);
@@ -198,24 +226,101 @@ class CodeSnippetService
 
     static async run_code(code, language, options = {}) 
     {
-        const { timeout = 5000, memoryLimit = 50 } = options;
+        const { timeout = 5000, memoryLimit = 50, service = 'auto' } = options;
         
         const validation = this.validate_code(code, language);
-        if(validation.errors.length > 0) throw ErrorHandler.validation_error(validation.errors);
+        if(validation.errors.length > 0) throw error_handler.validation_error(validation.errors);
 
         let result = {};
+        let executionService = service;
 
-        switch(language) 
+        if(service === 'auto') 
+            {
+            if(language === 'javascript' || language === 'nodejs') 
+                {
+                executionService = 'local';
+            } else if(this.lang_mapping.emscripten[language]) 
+                {
+                executionService = 'emscripten';
+            } else if(this.lang_mapping.jdoodle[language]) 
+                {
+                executionService = 'jdoodle';
+            } else 
+                {
+                executionService = 'local';
+            }
+        }
+
+        try {
+            switch(executionService) 
+            {
+                case 'local':
+                    if(language === 'javascript' || language === 'nodejs') 
+                        {
+                        result = this.JS_execute(code, timeout);
+                    } else 
+                        {
+                        result = {
+                            success: false,
+                            result: null,
+                            executionTime: 0,
+                            error: `Local execution not supported for ${language}. Try using JDoodle service.`,
+                            service: 'local'
+                        };
+                    } break;
+
+                case 'jdoodle':
+                    const jdoodle_language = this.lang_mapping.jdoodle[language];
+                    if(jdoodle_language) 
+                        {
+                        result = await JDoodleService.executeCode(code, jdoodle_language, { timeout });
+                        result.service = 'jdoodle';
+                    } else 
+                        {
+                        result = {
+                            success: false,
+                            result: null,
+                            executionTime: 0,
+                            error: `JDoodle execution not supported for ${language}`,
+                            service: 'jdoodle'
+                        };
+                    } break;
+
+                case 'emscripten':
+                    const emscripten_language = this.lang_mapping.emscripten[language];
+                    if(emscripten_language) 
+                        {
+                        result = await EmscriptenService.executeCode(code, emscripten_language, { timeout });
+                        result.service = 'emscripten';
+                    } else 
+                        {
+                        result = {
+                            success: false,
+                            result: null,
+                            executionTime: 0,
+                            error: `Emscripten execution not supported for ${language}`,
+                            service: 'emscripten'
+                        };
+                    } break;
+                    
+                default:
+                    result = {
+                        success: false,
+                        result: null,
+                        executionTime: 0,
+                        error: `Unknown execution service: ${service}`,
+                        service: service
+                    };
+            }
+        } catch(error) 
         {
-            case 'javascript': result = this.JS_execute(code, timeout); break;
-                
-            default:
-                result = {
-                    success: false,
-                    result: null,
-                    executionTime: 0,
-                    error: `Execution not supported for ${language}`
-                };
+            result = {
+                success: false,
+                result: null,
+                executionTime: 0,
+                error: `Execution failed: ${error.message}`,
+                service: executionService
+            };
         }
 
         const highlighted = this.code_highlighting(code, language);
@@ -225,9 +330,45 @@ class CodeSnippetService
             language: highlighted.detectedLanguage,
             highlightedCode: highlighted.highlightedCode,
             execution: result,
-            validation: validation
+            validation: validation,
+            executionService: executionService
         };
+    }
+
+    static get_available_services(language) 
+    {
+        const services = ['local'];
+        
+        if(this.lang_mapping.jdoodle[language]) services.push('jdoodle');
+        
+        if(this.lang_mapping.emscripten[language]) services.push('emscripten');
+        
+        return services;
+    }
+
+    static get_supported_langs() 
+    {
+        return this.supported_langs.map(lang => ({
+            name: lang,
+            services: this.get_available_services(lang),
+            defaultService: this.get_default_service(lang)
+        }));
+    }
+
+    static get_default_service(language) 
+    {
+        if(language === 'javascript' || language === 'nodejs') 
+            {
+            return 'local';
+        } else if(this.lang_mapping.emscripten[language]) 
+            {
+            return 'emscripten';
+        } else if(this.lang_mapping.jdoodle[language]) 
+            {
+            return 'jdoodle';
+        }
+        return 'local';
     }
 }
 
-export default CodeSnippetService;
+export default code_snippet_service;

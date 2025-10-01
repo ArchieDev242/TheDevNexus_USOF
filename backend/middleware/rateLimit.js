@@ -70,26 +70,6 @@ class RateLimit
         });
     }
 
-    static posting() 
-    {
-        const limiter = new RateLimit();
-        return limiter.limit({
-            windowMs: 60 * 1000, // 1 minute
-            maxRequests: 5, // 5 posts per minute
-            message: 'Too many posts created, please wait before posting again'
-        });
-    }
-
-    static commenting() 
-    {
-        const limiter = new RateLimit();
-        return limiter.limit({
-            windowMs: 60 * 1000, // 1 minute
-            maxRequests: 10, // 10 comments per minute
-            message: 'Too many comments created, please wait before commenting again'
-        });
-    }
-
     static password_reset() 
     {
         const limiter = new RateLimit();

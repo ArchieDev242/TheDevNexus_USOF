@@ -4,7 +4,7 @@ import Permission from '../models/Permission.js';
 import GuestSession from '../models/GuestSession.js';
 import config from '../config.js';
 
-class AuthMiddleware 
+class auth_middleware 
 {
     static async identify_user(req, res, next) 
     {
@@ -210,4 +210,4 @@ class AuthMiddleware
     }
 }
 
-export default AuthMiddleware;
+export default auth_middleware;

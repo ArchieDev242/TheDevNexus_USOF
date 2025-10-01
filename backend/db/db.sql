@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS users(
     email VARCHAR(100) NOT NULL UNIQUE,
     profile_picture VARCHAR(255) DEFAULT 'default_avatar.png',
     rating INT DEFAULT 0,
+    reputation_score INT DEFAULT 0,
+    is_toxic BOOLEAN DEFAULT FALSE,
     role ENUM('user', 'admin', 'guest') DEFAULT 'guest',
     email_verified BOOLEAN DEFAULT FALSE,
     verification_token VARCHAR(255),
@@ -99,6 +101,19 @@ CREATE TABLE IF NOT EXISTS likes(
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
     FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE,
     CHECK ((post_id IS NOT NULL AND comment_id IS NULL) OR (post_id IS NULL AND comment_id IS NOT NULL))
+);
+
+CREATE TABLE IF NOT EXISTS user_reputations(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    giver_id INT NOT NULL,
+    receiver_id INT NOT NULL,
+    value TINYINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_user_reputation (giver_id, receiver_id),
+    FOREIGN KEY (giver_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
+    CHECK (value IN (-1, 1))
 );
 
 CREATE TABLE IF NOT EXISTS saved_posts(

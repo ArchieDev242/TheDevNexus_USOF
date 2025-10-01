@@ -1,4 +1,4 @@
-import dbConnect from '../utils/dbConnect.js';
+import DB_connect from '../utils/dbConnect.js';
 
 class Achievement 
 {
@@ -16,7 +16,7 @@ class Achievement
 
     static async get_all() 
     {
-        const [rows] = await dbConnect.make_request(
+        const [rows] = await DB_connect.make_request(
             'SELECT * FROM achievements WHERE is_active = TRUE ORDER BY points ASC'
         );
         return rows.map(row => new Achievement(row));
@@ -24,7 +24,7 @@ class Achievement
 
     static async get_by_key(key_name) 
     {
-        const [rows] = await dbConnect.make_request(
+        const [rows] = await DB_connect.make_request(
             'SELECT * FROM achievements WHERE key_name = ? AND is_active = TRUE',
             [key_name]
         );
@@ -34,7 +34,7 @@ class Achievement
 
     static async get_by_id(id) 
     {
-        const [rows] = await dbConnect.make_request(
+        const [rows] = await DB_connect.make_request(
             'SELECT * FROM achievements WHERE id = ? AND is_active = TRUE',
             [id]
         );
@@ -44,7 +44,7 @@ class Achievement
 
     static async get_user_achievements(user_id) 
     {
-        const [rows] = await dbConnect.make_request(`
+        const [rows] = await DB_connect.make_request(`
             SELECT a.*, ua.earned_at, ua.progress 
             FROM achievements a 
             INNER JOIN user_achievements ua ON a.id = ua.achievement_id 
@@ -61,7 +61,7 @@ class Achievement
 
     static async user_has_achievement(user_id, achievement_key) 
     {
-        const [rows] = await dbConnect.make_request(`
+        const [rows] = await DB_connect.make_request(`
             SELECT ua.id 
             FROM user_achievements ua 
             INNER JOIN achievements a ON ua.achievement_id = a.id 
@@ -83,12 +83,12 @@ class Achievement
             const achievement = await Achievement.get_by_key(achievement_key);
             if(!achievement) return { success: false, message: 'Achievement not found' };
 
-            await dbConnect.make_request(`
+            await DB_connect.make_request(`
                 INSERT INTO user_achievements (user_id, achievement_id, progress) 
                 VALUES (?, ?, ?)
             `, [user_id, achievement.id, progress]);
 
-            await dbConnect.make_request(`
+            await DB_connect.make_request(`
                 UPDATE users 
                 SET rating = rating + ? 
                 WHERE id = ?
@@ -108,7 +108,7 @@ class Achievement
 
     static async get_user_stats(user_id) 
     {
-        const [rows] = await dbConnect.make_request(`
+        const [rows] = await DB_connect.make_request(`
             SELECT 
                 COUNT(*) as total_earned,
                 SUM(a.points) as total_points,
@@ -123,7 +123,7 @@ class Achievement
 
     static async get_leaderboard(limit = 10) 
     {
-        const [rows] = await dbConnect.make_request(`
+        const [rows] = await DB_connect.make_request(`
             SELECT 
                 u.id,
                 u.login,

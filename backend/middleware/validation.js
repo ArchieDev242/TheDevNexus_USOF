@@ -1,4 +1,4 @@
-import ErrorHandler from './errorHandler.js';
+import error_handler from './errorHandler.js';
 
 class Validator 
 {
@@ -26,7 +26,7 @@ class Validator
         // full name
         if(!full_name || full_name.length < 2) errors.push('Full name must be at least 2 characters long');
 
-        if(errors.length > 0) return next(ErrorHandler.validation_error(errors));
+        if(errors.length > 0) return next(error_handler.validation_error(errors));
 
         next();
     }
@@ -42,7 +42,7 @@ class Validator
 
         if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Valid email format required');
 
-        if(errors.length > 0) return next(ErrorHandler.validation_error(errors));
+        if(errors.length > 0) return next(error_handler.validation_error(errors));
 
         next();
     }
@@ -70,7 +70,7 @@ class Validator
             }
         }
 
-        if(errors.length > 0) return next(ErrorHandler.validation_error(errors));
+        if(errors.length > 0) return next(error_handler.validation_error(errors));
 
         next();
     }
@@ -84,7 +84,7 @@ class Validator
 
         if(content && content.length > 1000) errors.push('Comment content cannot exceed 1000 characters');
 
-        if(errors.length > 0) return next(ErrorHandler.validation_error(errors));
+        if(errors.length > 0) return next(error_handler.validation_error(errors));
 
         next();
     }
@@ -98,7 +98,7 @@ class Validator
 
         if(description && description.length > 500) errors.push('Category description cannot exceed 500 characters');
 
-        if(errors.length > 0) return next(ErrorHandler.validation_error(errors));
+        if(errors.length > 0) return next(error_handler.validation_error(errors));
 
         next();
     }
@@ -113,7 +113,7 @@ class Validator
         
         if(!email || !email_regex.test(email)) errors.push('Valid email is required');
 
-        if(errors.length > 0) return next(ErrorHandler.validation_error(errors));
+        if(errors.length > 0) return next(error_handler.validation_error(errors));
 
         next();
     }
@@ -128,7 +128,7 @@ class Validator
         if(!token || typeof token !== 'string') errors.push('Valid token is required');
         if(!password || password.length < 8) errors.push('Password must be at least 8 characters long');
 
-        if(errors.length > 0) return next(ErrorHandler.validation_error(errors));
+        if(errors.length > 0) return next(error_handler.validation_error(errors));
 
         next();
     }
@@ -138,7 +138,7 @@ class Validator
         return (req, res, next) => {
             const id = req.params[paramName];
             
-            if(!id || isNaN(parseInt(id))) return next(ErrorHandler.validation_error([`Invalid ${paramName} parameter`]));
+            if(!id || isNaN(parseInt(id))) return next(error_handler.validation_error([`Invalid ${paramName} parameter`]));
 
             next();
         };
@@ -157,7 +157,29 @@ class Validator
             errors.push('Like type must be one of: like, dislike, thanks');
         }
 
-        if(errors.length > 0) return next(ErrorHandler.validation_error(errors));
+        if(errors.length > 0) return next(error_handler.validation_error(errors));
+
+        next();
+    }
+
+    static validate_reputation_action(req, res, next) 
+    {
+        const { value } = req.body;
+        const errors = [];
+
+        const numeric_value = parseInt(value);
+
+        if(value === undefined) 
+            {
+            errors.push('Reputation value is required');
+        } else if(isNaN(numeric_value) || ![-1, 1].includes(numeric_value)) 
+            {
+            errors.push('Reputation value must be +1 or -1');
+        }
+
+        if(errors.length > 0) return next(error_handler.validation_error(errors));
+
+        req.body.value = numeric_value;
 
         next();
     }

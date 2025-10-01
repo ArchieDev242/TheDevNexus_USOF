@@ -1,7 +1,7 @@
 import Notification from '../models/Notification.js';
-import { sendResponse, sendError } from '../utils/responseHandler.js';
+import { send_response, send_error } from '../utils/responseHandler.js';
 
-class NotificationsController 
+class notifications_controller 
 {
     static async get_notifications(req, res) 
     {
@@ -15,7 +15,7 @@ class NotificationsController
             const notifications = await Notification.get_notifications_with_details(user_id, limit, offset);
             const unread_count = await Notification.get_unread_count(user_id);
 
-            return sendResponse(res, 200, 'Notifications retrieved successfully', {
+            return send_response(res, 200, 'Notifications retrieved successfully', {
                 notifications,
                 unread_count,
                 pagination: 
@@ -27,7 +27,7 @@ class NotificationsController
             });
         } catch(error) 
         {
-            return sendError(res, 500, 'Error retrieving notifications', error.message);
+            return send_error(res, 500, 'Error retrieving notifications', error.message);
         }
     }
 
@@ -39,13 +39,13 @@ class NotificationsController
             const notifications = await Notification.get_unread_notifications(user_id);
             const unread_count = notifications.length;
 
-            return sendResponse(res, 200, 'Unread notifications retrieved successfully', {
+            return send_response(res, 200, 'Unread notifications retrieved successfully', {
                 notifications,
                 unread_count
             });
         } catch(error) 
         {
-            return sendError(res, 500, 'Error retrieving unread notifications', error.message);
+            return send_error(res, 500, 'Error retrieving unread notifications', error.message);
         }
     }
 
@@ -56,12 +56,12 @@ class NotificationsController
             const user_id = req.user.id;
             const unread_count = await Notification.get_unread_count(user_id);
 
-            return sendResponse(res, 200, 'Unread count retrieved successfully', {
+            return send_response(res, 200, 'Unread count retrieved successfully', {
                 unread_count
             });
         } catch(error) 
         {
-            return sendError(res, 500, 'Error retrieving unread count', error.message);
+            return send_error(res, 500, 'Error retrieving unread count', error.message);
         }
     }
 
@@ -73,20 +73,20 @@ class NotificationsController
             const user_id = req.user.id;
 
             const notification = await Notification.find_by_id(notification_id);
-            if(!notification) return sendError(res, 404, 'Notification not found');
+            if(!notification) return send_error(res, 404, 'Notification not found');
 
-            if(notification.user_id !== user_id) return sendError(res, 403, 'Access denied');
+            if(notification.user_id !== user_id) return send_error(res, 403, 'Access denied');
 
             await notification.mark_as_read();
             const unread_count = await Notification.get_unread_count(user_id);
 
-            return sendResponse(res, 200, 'Notification marked as read', {
+            return send_response(res, 200, 'Notification marked as read', {
                 notification,
                 unread_count
             });
         } catch(error) 
         {
-            return sendError(res, 500, 'Error marking notification as read', error.message);
+            return send_error(res, 500, 'Error marking notification as read', error.message);
         }
     }
 
@@ -97,12 +97,12 @@ class NotificationsController
             const user_id = req.user.id;
             const affected_rows = await Notification.mark_all_as_read(user_id);
 
-            return sendResponse(res, 200, 'All notifications marked as read', {
+            return send_response(res, 200, 'All notifications marked as read', {
                 marked_count: affected_rows
             });
         } catch(error) 
         {
-            return sendError(res, 500, 'Error marking all notifications as read', error.message);
+            return send_error(res, 500, 'Error marking all notifications as read', error.message);
         }
     }
 
@@ -114,19 +114,19 @@ class NotificationsController
             const user_id = req.user.id;
 
             const notification = await Notification.find_by_id(notification_id);
-            if(!notification) return sendError(res, 404, 'Notification not found');
+            if(!notification) return send_error(res, 404, 'Notification not found');
 
-            if(notification.user_id !== user_id) return sendError(res, 403, 'Access denied');
+            if(notification.user_id !== user_id) return send_error(res, 403, 'Access denied');
 
             await notification.delete();
             const unread_count = await Notification.get_unread_count(user_id);
 
-            return sendResponse(res, 200, 'Notification deleted successfully', {
+            return send_response(res, 200, 'Notification deleted successfully', {
                 unread_count
             });
         } catch(error) 
         {
-            return sendError(res, 500, 'Error deleting notification', error.message);
+            return send_error(res, 500, 'Error deleting notification', error.message);
         }
     }
 
@@ -148,13 +148,13 @@ class NotificationsController
 
             const unread_count = await Notification.get_unread_count(user_id);
 
-            return sendResponse(res, 200, 'Read notifications deleted successfully', {
+            return send_response(res, 200, 'Read notifications deleted successfully', {
                 deleted_count,
                 unread_count
             });
         } catch(error) 
         {
-            return sendError(res, 500, 'Error deleting read notifications', error.message);
+            return send_error(res, 500, 'Error deleting read notifications', error.message);
         }
     }
 
@@ -162,18 +162,18 @@ class NotificationsController
     {
         try 
         {
-            if(req.user.role !== 'admin') return sendError(res, 403, 'Admin access required');
+            if(req.user.role !== 'admin') return send_error(res, 403, 'Admin access required');
 
             const deleted_count = await Notification.cleanup_old_notifications();
 
-            return sendResponse(res, 200, 'Old notifications cleaned up successfully', {
+            return send_response(res, 200, 'Old notifications cleaned up successfully', {
                 deleted_count
             });
         } catch(error) 
         {
-            return sendError(res, 500, 'Error cleaning up old notifications', error.message);
+            return send_error(res, 500, 'Error cleaning up old notifications', error.message);
         }
     }
 }
 
-export default NotificationsController;
+export default notifications_controller;

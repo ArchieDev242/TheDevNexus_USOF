@@ -1,6 +1,6 @@
-const { sendResponse, sendError: send_error } = require('../utils/responseHandler');
+const { sendResponse: send_response, sendError: send_error } = require('../utils/responseHandler');
 
-class ServicesController 
+class services_controller 
 {
     // GET /api/services/status
     static async get_services_status(req, res) {
@@ -36,7 +36,7 @@ class ServicesController
                 }
             };
 
-            return sendResponse(res, 200, 'Services status retrieved successfully', services_status);
+            return send_response(res, 200, 'Services status retrieved successfully', services_status);
         } catch(error) 
         {
             return send_error(res, 500, 'Error retrieving services status', error.message);
@@ -130,7 +130,8 @@ class ServicesController
                             'Automatic cleanup of processed files'
                         ]
                     },
-                    notification_service: {
+                    notification_service: 
+                    {
                         description: 'Manage in-app notifications and alerts',
                         endpoints: [
                             'GET /api/notifications - Get user notifications',
@@ -156,7 +157,7 @@ class ServicesController
                 }
             };
 
-            return sendResponse(res, 200, 'Services documentation retrieved successfully', documentation);
+            return send_response(res, 200, 'Services documentation retrieved successfully', documentation);
         } catch(error) 
         {
             return send_error(res, 500, 'Error retrieving documentation', error.message);
@@ -164,4 +165,4 @@ class ServicesController
     }
 }
 
-module.exports = ServicesController;
+module.exports = services_controller;

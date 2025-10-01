@@ -2,13 +2,13 @@ import fs from 'fs/promises';
 import path from 'path';
 import sharp from 'sharp';
 import crypto from 'crypto';
-import ErrorHandler from '../middleware/errorHandler.js';
+import error_handler from '../middleware/errorHandler.js';
 
-class FileProcessingService 
+class file_processing_service 
 {
-    static allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-    static allowedDocumentTypes = ['application/pdf', 'text/plain', 'application/json'];
-    static maxFileSize = 10 * 1024 * 1024; // 10MB
+    static allowed_image_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    static allowed_document_types = ['application/pdf', 'text/plain', 'application/json'];
+    static max_file_size = 10 * 1024 * 1024; // 10MB
 
     static async process_image(inputPath, options = {}) 
     {
@@ -123,12 +123,12 @@ class FileProcessingService
     {
         const errors = [];
         
-        if(file.size > this.maxFileSize) 
+        if(file.size > this.max_file_size) 
             {
-            errors.push(`File size exceeds limit of ${this.maxFileSize / (1024 * 1024)}MB`);
+            errors.push(`File size exceeds limit of ${this.max_file_size / (1024 * 1024)}MB`);
         }
 
-        const allowed_types = [...this.allowedImageTypes, ...this.allowedDocumentTypes];
+        const allowed_types = [...this.allowed_image_types, ...this.allowed_document_types];
         if(!allowed_types.includes(file.mimetype)) 
             {
             errors.push(`File type ${file.mimetype} is not allowed`);
@@ -172,7 +172,7 @@ class FileProcessingService
                 extension: ext
             };
 
-            if(this.allowedImageTypes.some(type => type.includes(ext.substring(1)))) {
+            if(this.allowed_image_types.some(type => type.includes(ext.substring(1)))) {
                 try 
                 {
                     const image_metadata = await sharp(filePath).metadata();
@@ -258,4 +258,4 @@ class FileProcessingService
     }
 }
 
-export default FileProcessingService;
+export default file_processing_service;

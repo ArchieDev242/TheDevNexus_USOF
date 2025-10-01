@@ -2,7 +2,7 @@ import express from 'express';
 import AdminJS from 'adminjs';
 import AdminJSExpress from '@adminjs/express';
 import session from 'express-session';
-import { adminJsConfig } from './adminjs.js';
+import { adminJs, adminRouter } from './adminjs.js';
 
 const PORT = 4001;
 
@@ -19,35 +19,13 @@ const start = async () => {
         }
     }));
 
-    const admin = new AdminJS(adminJsConfig);
-
-    const admin_router = AdminJSExpress.buildAuthenticatedRouter(
-        admin,
-        {
-            authenticate: async (email, password) => {
-                if(email === 'admin@usof.com' && password === 'admin123') 
-                {
-                    return { email: 'admin@usof.com', role: 'admin' };
-                }
-                return null;
-            },
-            cookieName: 'adminjs',
-            cookiePassword: 'complex-cookie-password-change-this',
-        },
-        null,
-        {
-            resave: false,
-            saveUninitialized: false,
-            secret: 'session-secret-change-this',
-        }
-    );
-
-    app.use(admin.options.rootPath, admin_router);
+    app.use(adminJs.options.rootPath, adminRouter);
 
     app.listen(PORT, () => {
-        console.log(`AdminJS server running on http://localhost:${PORT}${admin.options.rootPath}`);
+        console.log(`AdminJS server running on http://localhost:${PORT}${adminJs.options.rootPath}`);
         console.log(`Login: admin@usof.com`);
         console.log(`Password: admin123`);
+        console.log('✅ AdminJS is now running without ORM dependency');
     });
 };
 

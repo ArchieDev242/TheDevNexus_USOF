@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import { fileURLToPath } from 'url';
 import config from '../../config.js';
 import User from '../../models/User.js';
-import AuthMiddleware from '../../middleware/auth.js';
+import auth_middleware from '../../middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,7 +15,7 @@ const router = express.Router();
 const admin_auth = async (req, res, next) => {
     try 
     {
-        await AuthMiddleware.identify_user(req, res, () => {});
+        await auth_middleware.identify_user(req, res, () => {});
         
         if(!req.user) 
             {
@@ -43,7 +43,7 @@ const admin_auth = async (req, res, next) => {
             return res.status(403).send(`
                 <h1>Access Denied</h1>
                 <p>Admin access required. Your role: ${req.user.role}</p>
-                <a href="/admin-panel/login">Return to login</a>
+                <a href = "/admin-panel/login">Return to login</a>
             `);
         }
 
@@ -60,7 +60,7 @@ const admin_auth = async (req, res, next) => {
             return res.status(403).send(`
                 <h1>Email Verification Required</h1>
                 <p>Please verify your email before accessing admin panel.</p>
-                <a href="/admin-panel/login">Return to login</a>
+                <a href = "/admin-panel/login">Return to login</a>
             `);
         }
 
@@ -98,16 +98,16 @@ router.get('/login', (req, res) => {
                 </style>
             </head>
             <body>
-                <div class="login-form">
+                <div class = "login-form">
                     <h2>Admin Panel Login</h2>
-                    <form id="loginForm">
-                        <div class="form-group">
-                            <label for="login">Login:</label>
-                            <input type="text" id="login" name="login" required>
+                    <form id = "loginForm">
+                        <div class = "form-group">
+                            <label for = "login">Login:</label>
+                            <input type = "text" id = "login" name = "login" required>
                         </div>
-                        <div class="form-group">
-                            <label for="password">Password:</label>
-                            <input type="password" id="password" name="password" required>
+                        <div class = "form-group">
+                            <label for = "password">Password:</label>
+                            <input type = "password" id = "password" name = "password" required>
                         </div>
                         <button type="submit">Login</button>
                         <div id="message"></div>
@@ -125,21 +125,26 @@ router.get('/login', (req, res) => {
                         };
                         
                         try {
+
                             const response = await fetch('/api/auth/login', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
+                                credentials: 'include',
                                 body: JSON.stringify(loginData)
                             });
                             
                             const result = await response.json();
                             
-                            if (response.ok) {
+                            if(response.ok) 
+                            {
                                 messageDiv.innerHTML = '<div class="success">Login successful! Redirecting...</div>';
                                 setTimeout(() => window.location.href = '/admin-panel/', 1000);
-                            } else {
+                            } else 
+                                {
                                 messageDiv.innerHTML = '<div class="error">' + result.message + '</div>';
                             }
-                        } catch (error) {
+                        } catch(error) 
+                         {
                             messageDiv.innerHTML = '<div class="error">Network error. Please try again.</div>';
                         }
                     });
@@ -226,10 +231,9 @@ router.get('/api/me', admin_auth, (req, res) => {
     }
 });
 
-// Logout для адмін панелі
 router.post('/api/logout', admin_auth, (req, res) => {
-    try {
-        // Очищуємо cookie
+    try 
+    {
         res.clearCookie('auth');
         res.clearCookie('guestSession');
         
@@ -237,7 +241,8 @@ router.post('/api/logout', admin_auth, (req, res) => {
             status: 'success',
             message: 'Successfully logged out'
         });
-    } catch (error) {
+    } catch(error) 
+    {
         console.error('Error during logout:', error);
         res.status(500).json({
             status: 'error',
@@ -246,9 +251,8 @@ router.post('/api/logout', admin_auth, (req, res) => {
     }
 });
 
-// Перевірка статусу авторизації
 router.get('/api/status', (req, res) => {
-    AuthMiddleware.identify_user(req, res, () => {
+    auth_middleware.identify_user(req, res, () => {
         res.json({
             status: 'success',
             authenticated: !!req.user,

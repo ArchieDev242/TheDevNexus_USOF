@@ -1,8 +1,8 @@
 import Achievement from '../models/Achievement.js';
-import dbConnect from '../utils/dbConnect.js';
-import NotificationService from './NotificationService.js';
+import DB_connect from '../utils/dbConnect.js';
+import notification_service from './NotificationService.js';
 
-class AchievementService 
+class achievement_service 
 {
     constructor() 
     {
@@ -46,7 +46,7 @@ class AchievementService
                 {
                 console.log('Achievement earned:', achievement_key, 'by user', user_id);
                 
-                await NotificationService.create({
+                await notification_service.create({
                     user_id: user_id,
                     type: 'system',
                     title: `Нова ачівка: ${result.achievement.title}!`,
@@ -71,7 +71,7 @@ class AchievementService
     // "Hello, World!" - first post
     async check_HelloWorld(user_id) 
     {
-        const [rows] = await dbConnect.make_request(
+        const [rows] = await DB_connect.make_request(
             'SELECT COUNT(*) as post_count FROM posts WHERE author_id = ? AND status = "active"',
             [user_id]
         );
@@ -84,7 +84,7 @@ class AchievementService
     // "Chatterbox" - 10 comments
     async check_Chatterbox(user_id) 
     {
-        const [rows] = await dbConnect.make_request(
+        const [rows] = await DB_connect.make_request(
             'SELECT COUNT(*) as comment_count FROM comments WHERE author_id = ? AND status = "active"',
             [user_id]
         );
@@ -97,7 +97,7 @@ class AchievementService
     // "Hero of the Day" - 10 likes in first 24 hours
     async checkHeroOfTheDay(post_id, author_id) 
     {
-        const [rows] = await dbConnect.make_request(`
+        const [rows] = await DB_connect.make_request(`
             SELECT 
                 p.publish_date,
                 COUNT(l.id) as like_count
@@ -116,7 +116,7 @@ class AchievementService
     // "Wise One" - 60+ likes on any post
     async check_WiseOne(author_id) 
     {
-        const [rows] = await dbConnect.make_request(`
+        const [rows] = await DB_connect.make_request(`
             SELECT 
                 p.id,
                 COUNT(l.id) as like_count
@@ -147,12 +147,12 @@ class AchievementService
     // "Legend" - thanks from 50% of users
     async check_Legend(user_id) 
     {
-        const [total_sers] = await dbConnect.make_request(
+        const [total_sers] = await DB_connect.make_request(
             'SELECT COUNT(*) as total FROM users WHERE role = "user" AND id != ?',
             [user_id]
         );
         
-        const [thanks_rows] = await dbConnect.make_request(`
+        const [thanks_rows] = await DB_connect.make_request(`
             SELECT COUNT(DISTINCT l.author_id) as unique_thanks
             FROM likes l
             INNER JOIN posts p ON l.post_id = p.id
@@ -228,4 +228,4 @@ class AchievementService
     }
 }
 
-export default new AchievementService();
+export default new achievement_service();

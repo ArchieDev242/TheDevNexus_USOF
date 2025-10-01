@@ -1,6 +1,6 @@
 import userModel from '../models/User.js';
 import config from '../config.js';
-import dbConnect from '../utils/dbConnect.js';
+import DB_connect from '../utils/dbConnect.js';
 import MailService from '../services/MailService.js';
 
 import bcrypt from 'bcrypt';
@@ -118,18 +118,14 @@ export const verifyEmail = async (req, res) => {
     try {
         const { token, email } = req.query;
 
-        if (!token || !email) {
-            return res.status(400).send('Отсутствует токен или email');
-        }
+        if(!token || !email) return res.status(400).send('Отсутствует токен или email');
 
-        const [rows] = await dbConnect.make_request(
+        const [rows] = await DB_connect.make_request(
             'SELECT verification_token, email_verified FROM users WHERE email = ?',
             [email]
         );
 
-        if (!rows.length) {
-            return res.status(404).send('Пользователь не найден');
-        }
+        if(!rows.length) return res.status(404).send('Пользователь не найден');
 
         const user = rows[0];
 
@@ -143,7 +139,7 @@ export const verifyEmail = async (req, res) => {
             return res.status(400).send('Неверный или устаревший токен');
         }
 
-        await dbConnect.make_request(
+        await DB_connect.make_request(
             'UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE email = ?',
             [email]
         );
@@ -176,7 +172,7 @@ export const forgotPassword = async (req, res) => {
         const tokenHash = await bcrypt.hash(plainToken, 10);
         const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
 
-        await dbConnect.make_request(
+        await DB_connect.make_request(
             'UPDATE users SET reset_token_hash = ?, reset_token_expires_at = ? WHERE id = ?',
             [tokenHash, expiresAt, user.id]
         );
@@ -205,7 +201,7 @@ export const verifyResetToken = async (req, res) => {
         if (!token || !email) {
             return res.status(400).json({ error: 'Отсутствует токен или email' });
         }
-        const [rows] = await dbConnect.make_request(
+        const [rows] = await DB_connect.make_request(
             'SELECT role, email_verified, reset_token_hash, reset_token_expires_at FROM users WHERE email = ?',
             [email]
         );
@@ -236,7 +232,7 @@ export const resetPassword = async (req, res) => {
             return res.status(400).json({ error: 'Пароль должен быть не менее 8 символов' });
         }
 
-        const [rows] = await dbConnect.make_request(
+        const [rows] = await DB_connect.make_request(
             'SELECT id, role, email_verified, reset_token_hash, reset_token_expires_at FROM users WHERE email = ?',
             [email]
         );
@@ -252,13 +248,13 @@ export const resetPassword = async (req, res) => {
 
         const newHash = await bcrypt.hash(newPassword, 10);
         const changedAt = new Date();
-        await dbConnect.make_request(
+        await DB_connect.make_request(
             'UPDATE users SET password = ?, password_changed_at = ?, reset_token_hash = NULL, reset_token_expires_at = NULL WHERE id = ?',
             [newHash, changedAt, userId]
         );
 
         try {
-            const [userRows] = await dbConnect.make_request(
+            const [userRows] = await DB_connect.make_request(
                 'SELECT full_name FROM users WHERE id = ?',
                 [userId]
             );

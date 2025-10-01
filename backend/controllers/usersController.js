@@ -1,9 +1,10 @@
 import User from '../models/User.js';
 import SavedPost from '../models/SavedPost.js';
-import ErrorHandler from '../middleware/errorHandler.js';
-import FileUpload from '../middleware/fileUpload.js';
+import UserReputation from '../models/UserReputation.js';
+import error_handler from '../middleware/errorHandler.js';
+import file_upload from '../middleware/fileUpload.js';
 
-class UsersController 
+class users_controller 
 {
     // ===============================
     // ALL USERS
@@ -27,17 +28,22 @@ class UsersController
                         email: user.email,
                         profile_picture: user.profile_picture,
                         rating: user.rating,
+                        reputation_score: user.reputation_score,
+                        is_toxic: user.is_toxic,
                         role: user.role,
                         email_verified: user.email_verified,
                         created_at: user.created_at
                     };
-                } else {
+                } else 
+                    {
                     return {
                         id: user.id,
                         login: user.login,
                         full_name: user.full_name,
                         profile_picture: user.profile_picture,
                         rating: user.rating,
+                        reputation_score: user.reputation_score,
+                        is_toxic: user.is_toxic,
                         created_at: user.created_at
                     };
                 }
@@ -70,7 +76,7 @@ class UsersController
         }
     }
     
-    // GET /api/users/:user_id - get specified user data
+    // GET /api/users/:user_id
     static async get_public_profile(req, res) 
     {
         try 
@@ -78,10 +84,10 @@ class UsersController
             const { user_id } = req.params;
             const user = await User.find_by_id(user_id);
             
-            if(!user) throw ErrorHandler.not_found_error('User');
+            if(!user) throw error_handler.not_found_error('User');
             
-            // Якщо користувач адмін - повертаємо повну інформацію
-            if (req.user && req.user.role === 'admin') {
+            if(req.user && req.user.role === 'admin') 
+                {
                 const admin_data = {
                     id: user.id,
                     login: user.login,
@@ -89,6 +95,8 @@ class UsersController
                     email: user.email,
                     profile_picture: user.profile_picture,
                     rating: user.rating,
+                    reputation_score: user.reputation_score,
+                    is_toxic: user.is_toxic,
                     role: user.role,
                     email_verified: user.email_verified,
                     created_at: user.created_at,
@@ -101,13 +109,14 @@ class UsersController
                 });
             }
             
-            // Для звичайних користувачів - тільки публічні дані
             const public_data = {
                 id: user.id,
                 login: user.login,
                 full_name: user.full_name,
                 profile_picture: user.profile_picture,
                 rating: user.rating,
+                reputation_score: user.reputation_score,
+                is_toxic: user.is_toxic,
                 created_at: user.created_at
             };
             
@@ -122,17 +131,118 @@ class UsersController
     }
 
     // ===============================
+    // REP
+    // ===============================
+
+    // POST /api/users/:user_id/reputation - rate a user (+rep / -rep)
+    static async rate_user(req, res) 
+    {
+        try 
+        {
+            const { user_id } = req.params;
+            const { value } = req.body;
+
+            const numeric_value = parseInt(value);
+
+            const result = await UserReputation.rate_user(req.user, user_id, numeric_value);
+            const updated_user = await User.find_by_id(user_id);
+
+            res.json(
+                {
+                    status: 'success',
+                    data: 
+                    {
+                        action: result.action,
+                        summary: result.summary,
+                        reputation: result.entry
+                            ? 
+                            {
+                                id: result.entry.id,
+                                giver_id: result.entry.giver_id,
+                                receiver_id: result.entry.receiver_id,
+                                value: result.entry.value,
+                                created_at: result.entry.created_at,
+                                updated_at: result.entry.updated_at
+                            }
+                            : null,
+                        user: 
+                        {
+                            id: updated_user.id,
+                            reputation_score: updated_user.reputation_score,
+                            is_toxic: updated_user.is_toxic
+                        }
+                    }
+                }
+            );
+        } 
+        catch(error) 
+        {
+            throw error;
+        }
+    }
+
+    // GET /api/users/:user_id/reputation
+    static async get_reputation(req, res) 
+    {
+        try 
+        {
+            const { user_id } = req.params;
+            const page = Math.max(parseInt(req.query.page) || 1, 1);
+            const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+            const offset = (page - 1) * limit;
+
+            const user = await User.find_by_id(user_id);
+            if(!user) throw error_handler.not_found_error('User');
+
+            const summary = await UserReputation.get_summary(user.id);
+            const history = await UserReputation.list_for_user(user.id, limit, offset);
+
+            res.json(
+                {
+                    status: 'success',
+                    data: 
+                    {
+                        user_id: user.id,
+                        summary: summary,
+                        history: history.map(record => (
+                            {
+                                id: record.id,
+                                giver_id: record.giver_id,
+                                giver_login: record.giver_login,
+                                giver_name: record.giver_name,
+                                value: record.value,
+                                created_at: record.created_at,
+                                updated_at: record.updated_at
+                            }
+                        )),
+                        pagination: 
+                        {
+                            page: page,
+                            limit: limit,
+                            total: summary.total
+                        }
+                    }
+                }
+            );
+        } 
+        catch(error) 
+        {
+            throw error;
+        }
+    }
+
+    // ===============================
     // AUTHORIZED USERS
     // ===============================
 
-    // GET /api/users/profile - get own profile
+    // GET /api/users/profile
     static async get_profile(req, res) 
     {
         try 
         {
             const user = await User.find_by_id(req.user.id);
             
-            if(!user) throw ErrorHandler.not_found_error('User');
+            if(!user) throw error_handler.not_found_error('User');
             
             const profile_data = {
                 id: user.id,
@@ -141,6 +251,8 @@ class UsersController
                 email: user.email,
                 profile_picture: user.profile_picture,
                 rating: user.rating,
+                reputation_score: user.reputation_score,
+                is_toxic: user.is_toxic,
                 role: user.role,
                 email_verified: user.email_verified,
                 created_at: user.created_at,
@@ -157,24 +269,24 @@ class UsersController
         }
     }
 
-    // PATCH /api/users/avatar - upload user avatar
+    // PATCH /api/users/avatar
     static async upload_avatar(req, res) 
     {
         try 
         {
-            if(!req.file) throw ErrorHandler.validationError(['Avatar file is required']);
+            if(!req.file) throw error_handler.validationError(['Avatar file is required']);
 
             const user = await User.find_by_id(req.user.id);
-            if(!user) throw ErrorHandler.not_found_error('User');
+            if(!user) throw error_handler.not_found_error('User');
 
             // delete old avatar if it's not default
             if(user.profile_picture && user.profile_picture !== 'default_avatar.png') 
                 {
-                FileUpload.delete_file(`public/uploads/avatars/${user.profile_picture}`);
+                file_upload.delete_file(`public/uploads/avatars/${user.profile_picture}`);
             }
 
             // update user with new avatar
-            const avatar_url = FileUpload.get_file_url(req, req.file.filename, 'avatars');
+            const avatar_url = file_upload.get_file_url(req, req.file.filename, 'avatars');
             await user.update_avatar(req.file.filename);
 
             res.json({
@@ -192,7 +304,7 @@ class UsersController
         }
     }
 
-    // PATCH /api/users/:user_id - update user data
+    // PATCH /api/users/:user_id
     static async update_profile(req, res) 
     {
         try 
@@ -201,66 +313,63 @@ class UsersController
             const { login, full_name, email, role, email_verified, password } = req.body;
 
             const user = await User.find_by_id(user_id);
-            if(!user) throw ErrorHandler.not_found_error('User');
+            if(!user) throw error_handler.not_found_error('User');
 
-            // Створюємо об'єкт з даними для оновлення
-            const updateData = {};
+            const update_data = {};
             
-            if (login !== undefined) updateData.login = login;
-            if (full_name !== undefined) updateData.full_name = full_name;
-            if (email !== undefined) updateData.email = email;
-            if (role !== undefined) updateData.role = role;
-            if (email_verified !== undefined) updateData.email_verified = email_verified;
+            if(login !== undefined) update_data.login = login;
+            if(full_name !== undefined) update_data.full_name = full_name;
+            if(email !== undefined) update_data.email = email;
+            if(role !== undefined) update_data.role = role;
+            if(email_verified !== undefined) update_data.email_verified = email_verified;
             
-            // Спеціальна обробка для паролю
-            if (password && password.trim() !== '') {
+            if(password && password.trim() !== '') 
+                {
                 const bcrypt = await import('bcrypt');
-                updateData.password = await bcrypt.default.hash(password, 10);
+                update_data.password = await bcrypt.default.hash(password, 10);
             }
 
-            // Перевіряємо чи email не зайнятий іншим користувачем
             if(email && email !== user.email) 
                 {
                 const user_exists = await User.find_by_email(email);
                 
                 if(user_exists && user_exists.id !== user.id) 
                     {
-                    throw ErrorHandler.validationError(['Email is already taken']);
+                    throw error_handler.validationError(['Email is already taken']);
                 }
             }
 
-            // Перевіряємо чи логін не зайнятий іншим користувачем
             if(login && login !== user.login) 
                 {
                 const user_exists = await User.find_by_login(login);
                 
                 if(user_exists && user_exists.id !== user.id) 
                     {
-                    throw ErrorHandler.validationError(['Login is already taken']);
+                    throw error_handler.validationError(['Login is already taken']);
                 }
             }
 
-            // Оновлюємо дані користувача
-            const updatedUser = await user.update(updateData);
+            const updated_user = await user.update(update_data);
 
-            // Повертаємо оновлені дані (без пароля)
-            const responseData = {
-                id: updatedUser.id,
-                login: updatedUser.login,
-                full_name: updatedUser.full_name,
-                email: updatedUser.email,
-                profile_picture: updatedUser.profile_picture,
-                rating: updatedUser.rating,
-                role: updatedUser.role,
-                email_verified: updatedUser.email_verified,
-                created_at: updatedUser.created_at,
-                updated_at: updatedUser.updated_at
+            const response_data = {
+                id: updated_user.id,
+                login: updated_user.login,
+                full_name: updated_user.full_name,
+                email: updated_user.email,
+                profile_picture: updated_user.profile_picture,
+                rating: updated_user.rating,
+                reputation_score: updated_user.reputation_score,
+                is_toxic: updated_user.is_toxic,
+                role: updated_user.role,
+                email_verified: updated_user.email_verified,
+                created_at: updated_user.created_at,
+                updated_at: updated_user.updated_at
             };
 
             res.json({
                 status: 'success',
                 message: 'User updated successfully',
-                data: responseData
+                data: response_data
             });
         } catch(error) 
         {
@@ -268,7 +377,7 @@ class UsersController
         }
     }
 
-    // DELETE /api/users/:user_id - delete user
+    // DELETE /api/users/:user_id
     static async delete_account(req, res) 
     {
         try 
@@ -276,7 +385,7 @@ class UsersController
             const { user_id } = req.params;
             
             const user = await User.find_by_id(user_id);
-            if(!user) throw ErrorHandler.not_found_error('User');
+            if(!user) throw error_handler.not_found_error('User');
 
             await user.delete();
 
@@ -294,7 +403,7 @@ class UsersController
     // ADMIN
     // ===============================
 
-    // POST /api/users - create a new user (admin only)
+    // POST /api/users
     static async admin_create(req, res) 
     {
         try 
@@ -303,10 +412,10 @@ class UsersController
 
             // check if user already exists
             const user_exists_by_login = await User.find_by_login(login);
-            if(user_exists_by_login) throw ErrorHandler.validationError(['Login is already taken']);
+            if(user_exists_by_login) throw error_handler.validationError(['Login is already taken']);
 
             const user_exists_by_email = await User.find_by_email(email);
-            if(user_exists_by_email) throw ErrorHandler.validationError(['Email is already taken']);
+            if(user_exists_by_email) throw error_handler.validationError(['Email is already taken']);
 
             const user_data = { login, password, full_name, email, role };
             const user = new User(user_data);
@@ -330,7 +439,7 @@ class UsersController
         }
     }
 
-    // GET /api/users/admin/all - get all users for admin
+    // GET /api/users/admin/all
     static async admin_get_all(req, res) 
     {
         try 
@@ -375,7 +484,7 @@ class UsersController
             const { id } = req.params;
             const user = await User.find_by_id(id);
             
-            if(!user) throw ErrorHandler.not_found_error('User');
+            if(!user) throw error_handler.not_found_error('User');
 
             res.json({
                 status: 'success',
@@ -394,10 +503,10 @@ class UsersController
             const { id } = req.params;
             const { role } = req.body;
 
-            if(!['user', 'admin'].includes(role)) throw ErrorHandler.validationError(['Invalid role']);
+            if(!['user', 'admin'].includes(role)) throw error_handler.validationError(['Invalid role']);
 
             const user = await User.find_by_id(id);
-            if(!user) throw ErrorHandler.not_found_error('User');
+            if(!user) throw error_handler.not_found_error('User');
 
             await user.update_role(role);
 
@@ -418,7 +527,7 @@ class UsersController
             const { id } = req.params;
             
             const user = await User.find_by_id(id);
-            if(!user) throw ErrorHandler.not_found_error('User');
+            if(!user) throw error_handler.not_found_error('User');
 
             await user.delete();
 
@@ -431,54 +540,51 @@ class UsersController
             throw error;
         }
     }
-
-    // ===============================
-    // ALIAS METHODS
-    // ===============================
     
     static async adminGetAll(req, res) 
     {
-        return await UsersController.admin_get_all(req, res);
+        return await users_controller.admin_get_all(req, res);
     }
 
     static async adminGetById(req, res) 
     {
-        return await UsersController.admin_get_by_id(req, res);
+        return await users_controller.admin_get_by_id(req, res);
     }
 
     static async adminUpdateRole(req, res) 
     {
-        return await UsersController.admin_update_role(req, res);
+        return await users_controller.admin_update_role(req, res);
     }
 
     static async adminDelete(req, res) 
     {
-        return await UsersController.admin_delete(req, res);
+        return await users_controller.admin_delete(req, res);
     }
 
-    // GET /api/users/saved-posts - get user's saved posts
+    // GET /api/users/saved-posts
     static async get_saved_posts(req, res) 
     {
         try 
         {
             const { page = 1, limit = 20 } = req.query;
-            const userId = req.user.id;
+            const user_id = req.user.id;
             
-            const savedPosts = await SavedPost.get_user_saved_posts(userId, page, limit);
+            const saved_posts = await SavedPost.get_user_saved_posts(user_id, page, limit);
             
             res.json({
                 status: 'success',
-                data: savedPosts,
-                pagination: {
+                data: saved_posts,
+                pagination: 
+                {
                     page: parseInt(page),
                     limit: parseInt(limit)
                 }
             });
-        } catch (error) 
+        } catch(error) 
         {
             throw error;
         }
     }
 }
 
-export default UsersController;
+export default users_controller;

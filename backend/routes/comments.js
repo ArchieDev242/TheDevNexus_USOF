@@ -1,99 +1,96 @@
 import express from 'express';
-import CommentsController from '../controllers/commentsController.js';
-import AuthMiddleware from '../middleware/auth.js';
+import comments_controller from '../controllers/commentsController.js';
+import auth_middleware from '../middleware/auth.js';
 import Validator from '../middleware/validation.js';
-import RateLimit from '../middleware/rateLimit.js';
-import ErrorHandler from '../middleware/errorHandler.js';
+import error_handler from '../middleware/errorHandler.js';
 
 const router = express.Router();
 
-router.use(AuthMiddleware.identify_user);
+router.use(auth_middleware.identify_user);
 
 router.get('/post/:postId', 
     Validator.validate_id('postId'), 
-    ErrorHandler.async_handler(CommentsController.getByPost)
+    error_handler.async_handler(comments_controller.get_by_post)
 );
 
 router.get('/:id', 
     Validator.validate_id('id'), 
-    ErrorHandler.async_handler(CommentsController.getById)
+    error_handler.async_handler(comments_controller.get_by_id)
 );
 
 // GET /api/comments/:comment_id/like - get all likes under the specified comment
 router.get('/:id/like', 
     Validator.validate_id('id'), 
-    ErrorHandler.async_handler(CommentsController.getCommentLikes)
+    error_handler.async_handler(comments_controller.get_comment_likes)
 );
 
 // POST /api/comments/:comment_id/like - create a new like under a comment
 router.post('/:id/like', 
-    AuthMiddleware.require_auth,
+    auth_middleware.require_auth,
     Validator.validate_id('id'),
-    ErrorHandler.async_handler(CommentsController.likeComment)
+    error_handler.async_handler(comments_controller.like_comment)
 );
 
 // DELETE /api/comments/:comment_id/like - delete a like under a comment
 router.delete('/:id/like', 
-    AuthMiddleware.require_auth,
+    auth_middleware.require_auth,
     Validator.validate_id('id'),
-    ErrorHandler.async_handler(CommentsController.unlike_comment)
+    error_handler.async_handler(comments_controller.unlike_comment)
 );
 
 // POST /api/comments/:comment_id/reply - create a reply to a comment
 router.post('/:id/reply',
-    AuthMiddleware.require_auth,
+    auth_middleware.require_auth,
     Validator.validate_id('id'),
-    RateLimit.commenting(),
     Validator.validate_comment,
-    ErrorHandler.async_handler(CommentsController.create_reply)
+    error_handler.async_handler(comments_controller.create_reply)
 );
 
 router.post('/', 
-    AuthMiddleware.require_auth,
-    RateLimit.commenting(),
+    auth_middleware.require_auth,
     Validator.validate_comment,
-    ErrorHandler.async_handler(CommentsController.create)
+    error_handler.async_handler(comments_controller.create)
 );
 
 router.put('/:id', 
-    AuthMiddleware.require_auth,
+    auth_middleware.require_auth,
     Validator.validate_id('id'),
     Validator.validate_comment,
-    ErrorHandler.async_handler(CommentsController.update)
+    error_handler.async_handler(comments_controller.update)
 );
 
 router.delete('/:id', 
-    AuthMiddleware.require_auth,
+    auth_middleware.require_auth,
     Validator.validate_id('id'),
-    ErrorHandler.async_handler(CommentsController.delete)
+    error_handler.async_handler(comments_controller.delete)
 );
 
 router.get('/admin/all', 
-    AuthMiddleware.require_admin,
-    ErrorHandler.async_handler(CommentsController.admin_get_all)
+    auth_middleware.require_admin,
+    error_handler.async_handler(comments_controller.admin_get_all)
 );
 
 router.get('/admin/moderate', 
-    AuthMiddleware.require_admin,
-    ErrorHandler.async_handler(CommentsController.admin_get_moderate)
+    auth_middleware.require_admin,
+    error_handler.async_handler(comments_controller.admin_get_moderate)
 );
 
 router.put('/admin/:id/approve', 
-    AuthMiddleware.require_admin,
+    auth_middleware.require_admin,
     Validator.validate_id('id'),
-    ErrorHandler.async_handler(CommentsController.admin_approve)
+    error_handler.async_handler(comments_controller.admin_approve)
 );
 
 router.put('/admin/:id/reject', 
-    AuthMiddleware.require_admin,
+    auth_middleware.require_admin,
     Validator.validate_id('id'),
-    ErrorHandler.async_handler(CommentsController.admin_reject)
+    error_handler.async_handler(comments_controller.admin_reject)
 );
 
 router.delete('/admin/:id', 
-    AuthMiddleware.require_admin,
+    auth_middleware.require_admin,
     Validator.validate_id('id'),
-    ErrorHandler.async_handler(CommentsController.admin_delete)
+    error_handler.async_handler(comments_controller.admin_delete)
 );
 
 export default router;

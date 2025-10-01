@@ -1,6 +1,6 @@
-import dbConnect from '../utils/dbConnect.js';
+import DB_connect from '../utils/dbConnect.js';
 
-class LikesController 
+class likes_controller 
 {
     // ===============================
     // ALL USERS
@@ -20,7 +20,7 @@ class LikesController
                 WHERE post_id = ?
             `;
             
-            const result = await dbConnect.make_request(query, [postId]);
+            const result = await DB_connect.make_request(query, [postId]);
             res.json(result[0][0]);
         } catch(error) 
         {
@@ -43,7 +43,7 @@ class LikesController
                 WHERE comment_id = ?
             `;
             
-            const result = await dbConnect.make_request(query, [commentId]);
+            const result = await DB_connect.make_request(query, [commentId]);
             res.json(result[0][0]);
         } catch(error) 
         {
@@ -64,14 +64,14 @@ class LikesController
             const { postId } = req.params;
 
             // post exists?
-            const post_check = await dbConnect.make_request(
+            const post_check = await DB_connect.make_request(
                 'SELECT id FROM posts WHERE id = ? AND status = "active"',
                 [postId]
             );
             
             if(post_check[0].length === 0) return res.status(404).json({ error: 'Post not found' });
 
-            const like_exists = await dbConnect.make_request(
+            const like_exists = await DB_connect.make_request(
                 'SELECT id, type FROM likes WHERE user_id = ? AND post_id = ?',
                 [user_id, postId]
             );
@@ -82,14 +82,14 @@ class LikesController
                 
                 if(current_type === 'like') 
                     {
-                    await dbConnect.make_request(
+                    await DB_connect.make_request(
                         'DELETE FROM likes WHERE user_id = ? AND post_id = ?',
                         [user_id, postId]
                     );
                     res.json({ success: true, message: 'Like removed', action: 'unliked' });
                 } else 
                     {
-                    await dbConnect.make_request(
+                    await DB_connect.make_request(
                         'UPDATE likes SET type = "like" WHERE user_id = ? AND post_id = ?',
                         [user_id, postId]
                     );
@@ -97,7 +97,7 @@ class LikesController
                 }
             } else 
                 {
-                await dbConnect.make_request(
+                await DB_connect.make_request(
                     'INSERT INTO likes (user_id, post_id, type) VALUES (?, ?, "like")',
                     [user_id, postId]
                 );
@@ -116,14 +116,14 @@ class LikesController
             const user_id = req.user?.id || 1;
             const { postId } = req.params;
             
-            const post_check = await dbConnect.make_request(
+            const post_check = await DB_connect.make_request(
                 'SELECT id FROM posts WHERE id = ? AND status = "active"',
                 [postId]
             );
             
             if(post_check[0].length === 0) return res.status(404).json({ error: 'Post not found' });
 
-            const like_exists = await dbConnect.make_request(
+            const like_exists = await DB_connect.make_request(
                 'SELECT id, type FROM likes WHERE user_id = ? AND post_id = ?',
                 [user_id, postId]
             );
@@ -134,14 +134,14 @@ class LikesController
                 
                 if(current_type === 'dislike') 
                     {
-                    await dbConnect.make_request(
+                    await DB_connect.make_request(
                         'DELETE FROM likes WHERE user_id = ? AND post_id = ?',
                         [user_id, postId]
                     );
                     res.json({ success: true, message: 'Dislike removed', action: 'undisliked' });
                 } else 
                     {
-                    await dbConnect.make_request(
+                    await DB_connect.make_request(
                         'UPDATE likes SET type = "dislike" WHERE user_id = ? AND post_id = ?',
                         [user_id, postId]
                     );
@@ -149,7 +149,7 @@ class LikesController
                 }
             } else 
                 {
-                await dbConnect.make_request(
+                await DB_connect.make_request(
                     'INSERT INTO likes (user_id, post_id, type) VALUES (?, ?, "dislike")',
                     [user_id, postId]
                 );
@@ -169,14 +169,14 @@ class LikesController
             const user_id = req.user?.id || 1;
             const { commentId } = req.params;
             
-            const comment_check = await dbConnect.make_request(
+            const comment_check = await DB_connect.make_request(
                 'SELECT id FROM comments WHERE id = ? AND status = "active"',
                 [commentId]
             );
             
             if(comment_check[0].length === 0) return res.status(404).json({ error: 'Comment not found' });
 
-            const like_exists = await dbConnect.make_request(
+            const like_exists = await DB_connect.make_request(
                 'SELECT id, type FROM likes WHERE user_id = ? AND comment_id = ?',
                 [user_id, commentId]
             );
@@ -187,14 +187,14 @@ class LikesController
                 
                 if(current_type === 'like') 
                     {
-                    await dbConnect.make_request(
+                    await DB_connect.make_request(
                         'DELETE FROM likes WHERE user_id = ? AND comment_id = ?',
                         [user_id, commentId]
                     );
                     res.json({ success: true, message: 'Like removed', action: 'unliked' });
                 } else 
                     {
-                    await dbConnect.make_request(
+                    await DB_connect.make_request(
                         'UPDATE likes SET type = "like" WHERE user_id = ? AND comment_id = ?',
                         [user_id, commentId]
                     );
@@ -202,7 +202,7 @@ class LikesController
                 }
             } else 
                 {
-                await dbConnect.make_request(
+                await DB_connect.make_request(
                     'INSERT INTO likes (user_id, comment_id, type) VALUES (?, ?, "like")',
                     [user_id, commentId]
                 );
@@ -222,14 +222,14 @@ class LikesController
             const user_id = req.user?.id || 1;
             const { commentId } = req.params;
             
-            const comment_check = await dbConnect.make_request(
+            const comment_check = await DB_connect.make_request(
                 'SELECT id FROM comments WHERE id = ? AND status = "active"',
                 [commentId]
             );
             
             if(comment_check[0].length === 0) return res.status(404).json({ error: 'Comment not found' });
 
-            const like_exists = await dbConnect.make_request(
+            const like_exists = await DB_connect.make_request(
                 'SELECT id, type FROM likes WHERE user_id = ? AND comment_id = ?',
                 [user_id, commentId]
             );
@@ -240,14 +240,14 @@ class LikesController
                 
                 if(current_type === 'dislike') 
                     {
-                    await dbConnect.make_request(
+                    await DB_connect.make_request(
                         'DELETE FROM likes WHERE user_id = ? AND comment_id = ?',
                         [user_id, commentId]
                     );
                     res.json({ success: true, message: 'Dislike removed', action: 'undisliked' });
                 } else 
                     {
-                    await dbConnect.make_request(
+                    await DB_connect.make_request(
                         'UPDATE likes SET type = "dislike" WHERE user_id = ? AND comment_id = ?',
                         [user_id, commentId]
                     );
@@ -255,7 +255,7 @@ class LikesController
                 }
             } else 
                 {
-                await dbConnect.make_request(
+                await DB_connect.make_request(
                     'INSERT INTO likes (user_id, comment_id, type) VALUES (?, ?, "dislike")',
                     [user_id, commentId]
                 );
@@ -292,7 +292,7 @@ class LikesController
                 LIMIT ? OFFSET ?
             `;
             
-            const result = await dbConnect.make_request(query, [user_id, parseInt(limit), offset]);
+            const result = await DB_connect.make_request(query, [user_id, parseInt(limit), offset]);
             res.json(result[0]);
         } catch(error) 
         {
@@ -319,7 +319,7 @@ class LikesController
                 FROM likes
             `;
             
-            const result = await dbConnect.make_request(query);
+            const result = await DB_connect.make_request(query);
             res.json(result[0][0]);
         } catch(error) 
         {
@@ -329,4 +329,4 @@ class LikesController
     }
 }
 
-export default LikesController;
+export default likes_controller;

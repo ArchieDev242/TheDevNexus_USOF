@@ -1,7 +1,7 @@
-import dbConnect from '../utils/dbConnect.js';
+import DB_connect from '../utils/dbConnect.js';
 import MailService from './MailService.js';
 
-class NotificationService 
+class notification_service 
 {
     static NOTIFICATION_TYPES = {
         COMMENT_ADDED: 'comment_added',
@@ -23,7 +23,7 @@ class NotificationService
                 message,
                 relatedEntityType = null, // 'post', 'comment', 'user'
                 relatedEntityId = null,
-                actionUserId = null // хто виконав дію
+                actionUserId = null
             } = data;
 
             const query = `
@@ -32,7 +32,7 @@ class NotificationService
                 VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
             `;
 
-            const result = await dbConnect.make_request(query, [
+            const result = await DB_connect.make_request(query, [
                 userId, type, title, message, 
                 relatedEntityType, relatedEntityId, actionUserId
             ]);
@@ -76,7 +76,7 @@ class NotificationService
             query += ' ORDER BY n.created_at DESC LIMIT ? OFFSET ?';
             params.push(limit, offset);
 
-            const result = await dbConnect.make_request(query, params);
+            const result = await DB_connect.make_request(query, params);
             const notifications = result[0];
 
             return {
@@ -100,7 +100,7 @@ class NotificationService
             const placeholders = notificationIds.map(() => '?').join(',');
             const query = `UPDATE notifications SET is_read = TRUE WHERE id IN (${placeholders})`;
 
-            await dbConnect.make_request(query, notificationIds);
+            await DB_connect.make_request(query, notificationIds);
 
             return { success: true };
         } 
@@ -119,7 +119,7 @@ class NotificationService
                 WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY)
             `;
 
-            const result = await dbConnect.make_request(query, [daysOld]);
+            const result = await DB_connect.make_request(query, [daysOld]);
 
             return {
                 success: true,
@@ -224,7 +224,7 @@ class NotificationService
                 params.push(targetRole);
             }
 
-            const result = await dbConnect.make_request(query, params);
+            const result = await DB_connect.make_request(query, params);
             const users = result[0];
 
             const notifications = [];
@@ -255,7 +255,7 @@ class NotificationService
         try 
         {
             const query = 'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = FALSE';
-            const result = await dbConnect.make_request(query, [userId]);
+            const result = await DB_connect.make_request(query, [userId]);
             
             return {
                 success: true,
@@ -269,4 +269,4 @@ class NotificationService
     }
 }
 
-export default NotificationService;
+export default notification_service;

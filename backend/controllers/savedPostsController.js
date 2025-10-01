@@ -1,9 +1,9 @@
 import SavedPost from '../models/SavedPost.js';
 import Post from '../models/Post.js';
-import ErrorHandler from '../middleware/errorHandler.js';
-import dbConnect from '../utils/dbConnect.js';
+import error_handler from '../middleware/errorHandler.js';
+import DB_connect from '../utils/dbConnect.js';
 
-class SavedPostsController 
+class saved_posts_controller 
 {
     // GET /api/users/saved-posts
     static async get_user_saved_posts(req, res) 
@@ -11,14 +11,15 @@ class SavedPostsController
         try 
         {
             const { page = 1, limit = 20 } = req.query;
-            const userId = req.user.id;
+            const user_id = req.user.id;
             
-            const savedPosts = await SavedPost.get_user_saved_posts(userId, page, limit);
+            const saved_posts = await SavedPost.get_user_saved_posts(user_id, page, limit);
             
             res.json({
                 status: 'success',
-                data: savedPosts,
-                pagination: {
+                data: saved_posts,
+                pagination: 
+                {
                     page: parseInt(page),
                     limit: parseInt(limit)
                 }
@@ -39,10 +40,10 @@ class SavedPostsController
             const userId = req.user.id;
             
             const post = await Post.find_by_id(post_id);
-            if(!post) throw ErrorHandler.not_found_error('Post');
+            if(!post) throw error_handler.not_found_error('Post');
             
             const save_existing = await SavedPost.find_by_user_and_post(userId, post_id);
-            if(save_existing) throw ErrorHandler.validation_error(['Post is already saved']);
+            if(save_existing) throw error_handler.validation_error(['Post is already saved']);
             
             const saved_post = new SavedPost({
                 user_id: userId,
@@ -77,7 +78,7 @@ class SavedPostsController
             const userId = req.user.id;
             
             const saved_post = await SavedPost.find_by_user_and_post(userId, post_id);
-            if(!saved_post) throw ErrorHandler.not_found_error('Saved post');
+            if(!saved_post) throw error_handler.not_found_error('Saved post');
             
             await saved_post.unsave();
             
@@ -101,10 +102,10 @@ class SavedPostsController
             const user_id = req.user.id;
             
             const query = 'SELECT * FROM saved_posts WHERE id = ? AND user_id = ?';
-            const result = await dbConnect.make_request(query, [saved_post_id, user_id]);
+            const result = await DB_connect.make_request(query, [saved_post_id, user_id]);
             const rows = result[0];
             
-            if(rows.length === 0) throw ErrorHandler.not_found_error('Saved post');
+            if(rows.length === 0) throw error_handler.not_found_error('Saved post');
             
             const saved_post = new SavedPost(rows[0]);
             await saved_post.update_notes(notes);
@@ -153,4 +154,4 @@ class SavedPostsController
     }
 }
 
-export default SavedPostsController;
+export default saved_posts_controller;

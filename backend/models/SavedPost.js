@@ -1,4 +1,4 @@
-import dbConnect from '../utils/dbConnect.js';
+import DB_connect from '../utils/dbConnect.js';
 
 class SavedPost 
 {
@@ -20,7 +20,7 @@ class SavedPost
                 VALUES (?, ?, ?)
             `;
             
-            const result = await dbConnect.make_request(query, [
+            const result = await DB_connect.make_request(query, [
                 this.user_id,
                 this.post_id,
                 this.notes
@@ -40,7 +40,7 @@ class SavedPost
         try 
         {
             const query = 'UPDATE saved_posts SET notes = ? WHERE id = ?';
-            await dbConnect.make_request(query, [notes, this.id]);
+            await DB_connect.make_request(query, [notes, this.id]);
             this.notes = notes;
             return this;
         } 
@@ -55,7 +55,7 @@ class SavedPost
         try 
         {
             const query = 'DELETE FROM saved_posts WHERE id = ?';
-            await dbConnect.make_request(query, [this.id]);
+            await DB_connect.make_request(query, [this.id]);
             return true;
         } 
         catch(error) 
@@ -69,7 +69,7 @@ class SavedPost
         try 
         {
             const query = 'SELECT * FROM saved_posts WHERE user_id = ? AND post_id = ?';
-            const result = await dbConnect.make_request(query, [userId, postId]);
+            const result = await DB_connect.make_request(query, [userId, postId]);
             const rows = result[0];
             
             return rows.length > 0 ? new SavedPost(rows[0]) : null;
@@ -119,7 +119,7 @@ class SavedPost
                 LIMIT ${limit} OFFSET ${offset}
             `;
             
-            const result = await dbConnect.make_request(query, [userId]);
+            const result = await DB_connect.make_request(query, [userId]);
             const rows = result[0];
             
             return rows.map(row => ({

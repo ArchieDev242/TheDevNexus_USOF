@@ -1,4 +1,4 @@
-import dbConnect from '../utils/dbConnect.js';
+import DB_connect from '../utils/dbConnect.js';
 import Permission from './Permission.js';
 
 class Comment 
@@ -23,7 +23,7 @@ class Comment
                 VALUES (?, ?, ?, ?, ?)
             `;
             
-            const result = await dbConnect.make_request(query, [
+            const result = await DB_connect.make_request(query, [
                 this.post_id,
                 this.author_id,
                 this.parent_comment_id,
@@ -126,7 +126,7 @@ class Comment
                 WHERE c.id = ?
             `;
             
-            const result = await dbConnect.make_request(query, [id]);
+            const result = await DB_connect.make_request(query, [id]);
             const rows = result[0];
             
             if(rows.length === 0) return null;
@@ -155,7 +155,7 @@ class Comment
                 ORDER BY c.publish_date ASC
             `;
             
-            const result = await dbConnect.make_request(query, [postId]);
+            const result = await DB_connect.make_request(query, [postId]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -183,7 +183,7 @@ class Comment
                 ORDER BY c.publish_date DESC
             `;
             
-            const result = await dbConnect.make_request(query);
+            const result = await DB_connect.make_request(query);
             const rows = result[0];
             
             return rows.map(row => {
@@ -213,7 +213,7 @@ class Comment
                 ORDER BY c.publish_date DESC
             `;
             
-            const result = await dbConnect.make_request(query, [authorId]);
+            const result = await DB_connect.make_request(query, [authorId]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -250,7 +250,7 @@ class Comment
             values.push(this.id);
             
             const query = `UPDATE comments SET ${fields.join(', ')} WHERE id = ?`;
-            await dbConnect.make_request(query, values);
+            await DB_connect.make_request(query, values);
             
             Object.assign(this, updateData);
             
@@ -267,7 +267,7 @@ class Comment
         try 
         {
             const query = 'DELETE FROM comments WHERE id = ?';
-            await dbConnect.make_request(query, [this.id]);
+            await DB_connect.make_request(query, [this.id]);
             
             return true;
         } 
@@ -289,7 +289,7 @@ class Comment
                 WHERE comment_id = ?
             `;
             
-            const result = await dbConnect.make_request(query, [this.id]);
+            const result = await DB_connect.make_request(query, [this.id]);
             const rows = result[0];
             
             return {
@@ -349,7 +349,7 @@ class Comment
                 ORDER BY c.publish_date ASC
             `;
             
-            const result = await dbConnect.make_request(query, [postId]);
+            const result = await DB_connect.make_request(query, [postId]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -372,7 +372,7 @@ class Comment
         try 
         {
             const query = `UPDATE comments SET status = ? WHERE id = ?`;
-            await dbConnect.make_request(query, [status, this.id]);
+            await DB_connect.make_request(query, [status, this.id]);
             this.status = status;
             return true;
         } 
@@ -403,7 +403,7 @@ class Comment
                 LIMIT ${parseInt(limit)} OFFSET ${offset}
             `;
             
-            const result = await dbConnect.make_request(query, [status]);
+            const result = await DB_connect.make_request(query, [status]);
             const rows = result[0];
             
             return rows.map(row => ({
@@ -465,7 +465,7 @@ class Comment
                 WHERE c.id = ?
             `;
             
-            const result = await dbConnect.make_request(query, [comment_id]);
+            const result = await DB_connect.make_request(query, [comment_id]);
             const rows = result[0];
             
             if(rows.length === 0) return null;

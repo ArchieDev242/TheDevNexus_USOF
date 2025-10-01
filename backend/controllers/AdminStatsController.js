@@ -1,15 +1,15 @@
-import dbConnect from '../utils/dbConnect.js';
+import DB_connect from '../utils/dbConnect.js';
 
-class AdminStatsController 
+class admin_stats_controller 
 {
     static async get_basic(req, res) 
     {
         try 
         {
-            const users_result = await dbConnect.make_request('SELECT COUNT(*) as count FROM users');
-            const posts_result = await dbConnect.make_request('SELECT COUNT(*) as count FROM posts');
-            const comments_result = await dbConnect.make_request('SELECT COUNT(*) as count FROM comments');
-            const categories_result = await dbConnect.make_request('SELECT COUNT(*) as count FROM categories');
+            const users_result = await DB_connect.make_request('SELECT COUNT(*) as count FROM users');
+            const posts_result = await DB_connect.make_request('SELECT COUNT(*) as count FROM posts');
+            const comments_result = await DB_connect.make_request('SELECT COUNT(*) as count FROM comments');
+            const categories_result = await DB_connect.make_request('SELECT COUNT(*) as count FROM categories');
 
             res.json({
                 users: users_result[0][0].count,
@@ -28,15 +28,15 @@ class AdminStatsController
     {
         try 
         {
-            const users_by_role_result = await dbConnect.make_request(
+            const users_by_role_result = await DB_connect.make_request(
                 'SELECT role, COUNT(*) as count FROM users GROUP BY role'
             );
 
-            const posts_by_status_result = await dbConnect.make_request(
+            const posts_by_status_result = await DB_connect.make_request(
                 'SELECT status, COUNT(*) as count FROM posts GROUP BY status'
             );
 
-            const top_categories_result = await dbConnect.make_request(`
+            const top_categories_result = await DB_connect.make_request(`
                 SELECT c.title, COUNT(pc.post_id) as posts_count
                 FROM categories c
                 LEFT JOIN post_categories pc ON c.id = pc.category_id
@@ -58,4 +58,4 @@ class AdminStatsController
     }
 }
 
-export default AdminStatsController;
+export default admin_stats_controller;

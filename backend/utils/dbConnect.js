@@ -1,7 +1,7 @@
 import mysql from 'mysql2/promise';
 import config from '../config.js';
 
-class dbConnect 
+class DB_connect 
 {
 
     static async make_request(sql, values = null) 
@@ -9,12 +9,27 @@ class dbConnect
         try 
         {
             const connection = await this.connect_to_db();
-            const [result] = await connection.execute(sql, values);
+            let params;
+            if(Array.isArray(values)) 
+                {
+                params = values;
+            } else if(values === null || values === undefined) 
+                {
+                params = [];
+            } else if(typeof values === 'object') 
+                {
+                params = values;
+            } else 
+                {
+                params = [values];
+            }
+            const [rows, fields] = await connection.execute(sql, params);
             await connection.end();
 
-            return [result];
+            return [rows, fields];
         } catch(err) 
         {
+            console.error('DB query error:', { sql, values, error: err.message });
             throw err;
         }
     }
@@ -33,7 +48,8 @@ class dbConnect
 
     static async connect() 
     {
-        try {
+        try 
+        {
             const connection = await this.connect_to_db();
             await connection.ping();
             await connection.end();
@@ -46,4 +62,4 @@ class dbConnect
     }
 }
 
-export default dbConnect;
+export default DB_connect;

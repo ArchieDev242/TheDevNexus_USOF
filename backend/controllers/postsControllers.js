@@ -3,22 +3,17 @@ import Comment from '../models/Comment.js';
 import Like from '../models/Like.js';
 import Category from '../models/Category.js';
 import SavedPost from '../models/SavedPost.js';
-import ErrorHandler from '../middleware/errorHandler.js';
-import FileUpload from '../middleware/fileUpload.js';
-import AchievementService from '../services/AchievementService.js';
+import error_handler from '../middleware/errorHandler.js';
+import file_upload from '../middleware/fileUpload.js';
+import achievement_service from '../services/AchievementService.js';
 
-// Import services - temporarily comment out until converted to ES6 modules
-// const CodeSnippetService = require('../services/CodeSnippetService');
-// const FileProcessingService = require('../services/FileProcessingService');
-// const NotificationService = require('../services/NotificationService');
-
-class PostsController 
+class posts_controller 
 {
     // ===============================
     // ALL USERS
     // ===============================
     
-    // GET /api/posts - get all posts (with sorting and filtering)
+    // GET /api/posts
     static async get_all_public(req, res) 
     {
         try 
@@ -70,7 +65,7 @@ class PostsController
         }
     }
     
-    // GET /api/posts/:post_id - get specified post data
+    // GET /api/posts/:post_id
     static async get_by_id(req, res) 
     {
         try 
@@ -78,12 +73,12 @@ class PostsController
             const { post_id } = req.params;
             const post = await Post.find_by_id(post_id);
             
-            if(!post) throw ErrorHandler.not_found_error('Post');
+            if(!post) throw error_handler.not_found_error('Post');
             
             // can user see this post?
             if(post.status !== 'active' && (!req.user || (req.user.role !== 'admin' && post.author_id !== req.user.id))) 
                 {
-                throw ErrorHandler.forbidden_error('Post not available');
+                throw error_handler.forbidden_error('Post not available');
             }
             
             const post_data = await Post.get_full_post_data(post_id);
@@ -98,7 +93,7 @@ class PostsController
         }
     }
     
-    // GET /api/posts/:post_id/comments - get all comments for the specified post
+    // GET /api/posts/:post_id/comments
     static async get_post_comments(req, res) 
     {
         try 
@@ -107,14 +102,15 @@ class PostsController
             const { page = 1, limit = 20 } = req.query;
             
             const post = await Post.find_by_id(post_id);
-            if(!post) throw ErrorHandler.not_found_error('Post'); 
+            if(!post) throw error_handler.not_found_error('Post'); 
             
             const comments = await Comment.get_by_post(post_id, page, limit);
             
             res.json({
                 status: 'success',
                 data: comments,
-                pagination: {
+                pagination: 
+                {
                     page: parseInt(page),
                     limit: parseInt(limit)
                 }
@@ -125,7 +121,7 @@ class PostsController
         }
     }
     
-    // GET /api/posts/:post_id/categories - get all categories associated with the specified post
+    // GET /api/posts/:post_id/categories
     static async get_post_categories(req, res) 
     {
         try 
@@ -133,7 +129,7 @@ class PostsController
             const { post_id } = req.params;
             
             const post = await Post.find_by_id(post_id);
-            if(!post) throw ErrorHandler.not_found_error('Post');
+            if(!post) throw error_handler.not_found_error('Post');
             
             const categories = await Post.get_post_categories(post_id);
             
@@ -147,7 +143,7 @@ class PostsController
         }
     }
     
-    // GET /api/posts/:post_id/like - get all likes under the specified post
+    // GET /api/posts/:post_id/like
     static async get_post_likes(req, res) 
     {
         try 
@@ -155,7 +151,7 @@ class PostsController
             const { post_id } = req.params;
             
             const post = await Post.find_by_id(post_id);
-            if(!post) throw ErrorHandler.not_found_error('Post');
+            if(!post) throw error_handler.not_found_error('Post');
             
             const likes = await Like.get_post_likes(post_id);
             
@@ -173,23 +169,18 @@ class PostsController
     // AUTHORIZED USERS
     // ===============================
     
-    // POST /api/posts/ - create a new post
+    // POST /api/posts/
     static async create(req, res) 
     {
         try 
         {
             const { title, content, categories, author_id: provided_author_id, code_snippets } = req.body;
             
-            // Якщо адміністратор і надав author_id, використовуємо його
-            // Інакше використовуємо поточного користувача
             let author_id;
-            if (provided_author_id && req.user.role === 'admin') {
-                author_id = provided_author_id;
-            } else {
-                author_id = req.user.id;
-            }
 
-            // TODO: Обробити код сніппети коли буде конвертовано в ES6 модулі
+            if(provided_author_id && req.user.role === 'admin') author_id = provided_author_id;
+            else author_id = req.user.id;
+
             let processed_content = content;
             
             // create post
@@ -207,24 +198,25 @@ class PostsController
             console.log('Post ID after create:', post.id);
             console.log('Categories to add:', categories);
             
-            if(categories && Array.isArray(categories) && categories.length > 0) {
+            if(categories && Array.isArray(categories) && categories.length > 0) 
+                {
                 console.log('Adding categories to post...');
+
                 await post.add_categories(categories);
             }
             
-            // TODO: Обробити завантажені зображення коли буде конвертовано в ES6 модулі
             if(req.files && req.files.length > 0) 
                 {
                 const image_urls = req.files.map(file => 
-                    FileUpload.get_file_url(req, file.filename, 'posts')
+                    file_upload.get_file_url(req, file.filename, 'posts')
                 );
-                // TODO: Implement add_images method in Post model
+
                 console.log('Image URLs:', image_urls);
             }
             
             try 
             {
-                const achievements = await AchievementService.check_achievements_after_post(
+                const achievements = await achievement_service.check_achievements_after_post(
                     author_id, 
                     post.id, 
                     processed_content
@@ -261,9 +253,9 @@ class PostsController
             const author_id = req.user.id;
             
             const post = await Post.find_by_id(post_id);
-            if(!post) throw ErrorHandler.not_found_error('Post');
+            if(!post) throw error_handler.not_found_error('Post');
             
-            if(post.status !== 'active') throw ErrorHandler.forbidden_error('Cannot comment on inactive post');
+            if(post.status !== 'active') throw error_handler.forbidden_error('Cannot comment on inactive post');
             
             const comment_data = {
                 author_id,
@@ -276,7 +268,7 @@ class PostsController
             
             try 
             {
-                const achievements = await AchievementService.check_achievements_after_comment(author_id);
+                const achievements = await achievement_service.check_achievements_after_comment(author_id);
                 console.log('Achievements checked for comment creation:', achievements.length, 'earned');
             } catch(achievement_error) 
             {
@@ -307,7 +299,7 @@ class PostsController
             const author_id = req.user.id;
             
             const post = await Post.find_by_id(post_id);
-            if(!post) throw ErrorHandler.not_found_error('Post');
+            if(!post) throw error_handler.not_found_error('Post');
             
             const like_exist = await Like.find_user_post_like(author_id, post_id);
             
@@ -315,7 +307,7 @@ class PostsController
                 {
                 if(like_exist.type === type) 
                     {
-                    throw ErrorHandler.validation_error(['You already ' + type + 'd this post']);
+                    throw error_handler.validation_error(['You already ' + type + 'd this post']);
                 } else 
                     {
                     await like_exist.update_type(type);
@@ -335,7 +327,7 @@ class PostsController
             
             try 
             {
-                const achievements = await AchievementService.check_achievements_after_like(
+                const achievements = await achievement_service.check_achievements_after_like(
                     post_id, 
                     post.author_id, 
                     type
@@ -365,11 +357,11 @@ class PostsController
             const { title, content, categories, status } = req.body;
             
             const post = await Post.find_by_id(post_id);
-            if(!post) throw ErrorHandler.not_found_error('Post');
+            if(!post) throw error_handler.not_found_error('Post');
             
             if(req.user.role !== 'admin' && post.author_id !== req.user.id) 
                 {
-                throw ErrorHandler.forbidden_error('You can only edit your own posts');
+                throw error_handler.forbidden_error('You can only edit your own posts');
             }
             
             const update_data = { title, content };
@@ -401,11 +393,11 @@ class PostsController
             const { post_id } = req.params;
             
             const post = await Post.find_by_id(post_id);
-            if(!post) throw ErrorHandler.not_found_error('Post');
+            if(!post) throw error_handler.not_found_error('Post');
             
             if(req.user.role !== 'admin' && post.author_id !== req.user.id) 
                 {
-                throw ErrorHandler.forbidden_error('You can only delete your own posts');
+                throw error_handler.forbidden_error('You can only delete your own posts');
             }
             
             await post.delete();
@@ -429,7 +421,7 @@ class PostsController
             const author_id = req.user.id;
             
             const like = await Like.find_user_post_like(author_id, post_id);
-            if(!like) throw ErrorHandler.not_found_error('Like');
+            if(!like) throw error_handler.not_found_error('Like');
             
             await like.delete();
             
@@ -475,10 +467,10 @@ class PostsController
             const { post_id } = req.params;
             const { status } = req.body;
             
-            if(!['active', 'inactive'].includes(status)) throw ErrorHandler.validation_error(['Invalid status']);
+            if(!['active', 'inactive'].includes(status)) throw error_handler.validation_error(['Invalid status']);
             
             const post = await Post.find_by_id(post_id);
-            if(!post) throw ErrorHandler.not_found_error('Post');
+            if(!post) throw error_handler.not_found_error('Post');
             
             await post.update_status(status);
             
@@ -498,8 +490,8 @@ class PostsController
         {
             const { page = 1, limit = 20, status = '' } = req.query;
             const limit_num = parseInt(limit);
-            const pageNum = parseInt(page);
-            const offset = (pageNum - 1) * limit_num;
+            const page_num = parseInt(page);
+            const offset = (page_num - 1) * limit_num;
             
             const posts = await Post.find_all(limit_num, offset);
             
@@ -511,7 +503,7 @@ class PostsController
                 data: filtered_posts,
                 pagination: 
                 {
-                    page: pageNum,
+                    page: page_num,
                     limit: limit_num,
                     total: filtered_posts.length
                 }
@@ -529,10 +521,10 @@ class PostsController
             const { post_id } = req.params;
             const { status } = req.body;
             
-            if(!['active', 'inactive'].includes(status)) throw ErrorHandler.validationError(['Invalid status']);
+            if(!['active', 'inactive'].includes(status)) throw error_handler.validationError(['Invalid status']);
             
             const post = await Post.find_by_id(post_id);
-            if(!post) throw ErrorHandler.notFoundError('Post');
+            if(!post) throw error_handler.notFoundError('Post');
             
             await post.update_status(status);
             
@@ -562,7 +554,8 @@ class PostsController
             res.json({
                 status: 'success',
                 data: comments,
-                pagination: {
+                pagination: 
+                {
                     page: parseInt(page),
                     limit: parseInt(limit)
                 }
@@ -572,10 +565,6 @@ class PostsController
             throw error;
         }
     }
-
-    // ===============================
-    // SAVED POSTS
-    // ===============================
 
     // POST /api/posts/:post_id/save
     static async save_post(req, res) 
@@ -587,11 +576,11 @@ class PostsController
             const user_id = req.user.id;
             
             const post = await Post.find_by_id(post_id);
-            if(!post) throw ErrorHandler.not_found_error('Post');
+            if(!post) throw error_handler.not_found_error('Post');
             
             const save_existing = await SavedPost.find_by_user_and_post(user_id, post_id);
             
-            if(save_existing) throw ErrorHandler.validation_error(['Post is already saved']);
+            if(save_existing) throw error_handler.validation_error(['Post is already saved']);
             
             const saved_post = new SavedPost({
                 user_id: user_id,
@@ -625,7 +614,7 @@ class PostsController
             const user_id = req.user.id;
             
             const saved_post = await SavedPost.find_by_user_and_post(user_id, post_id);
-            if(!saved_post) throw ErrorHandler.not_found_error('Saved post');
+            if(!saved_post) throw error_handler.not_found_error('Saved post');
             
             await saved_post.unsave();
             
@@ -661,13 +650,12 @@ class PostsController
                 status: 'success',
                 data: { is_saved: isSaved }
             });
-        } catch (error) 
+        } catch(error) 
         {
             throw error;
         }
     }
 
-    // TODO: Activate when services are converted to ES6 modules
     // POST /api/posts/execute-code
     static async execute_code(req, res) 
     {
@@ -696,4 +684,4 @@ class PostsController
     }
 }
 
-export default PostsController;
+export default posts_controller;
