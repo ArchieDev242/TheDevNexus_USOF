@@ -50,6 +50,7 @@ export const post_model = {
             ]
         },
         publish_date: { type: 'datetime' },
+        rating: { type: 'number' },
         created_at: { type: 'datetime' },
         updated_at: { type: 'datetime' }
     }
@@ -104,7 +105,8 @@ export const achievement_model = {
         icon: { type: 'string', required: true },
         points: { type: 'number' },
         is_active: { type: 'boolean' },
-        created_at: { type: 'datetime' }
+        created_at: { type: 'datetime' },
+        updated_at: { type: 'datetime' }
     }
 };
 
@@ -125,6 +127,7 @@ export const like_model = {
                 { value: 'thanks', label: 'Thanks (Подяка)' }
             ]
         },
-        publish_date: { type: 'datetime' }
+        publish_date: { type: 'datetime' },
+        created_at: { type: 'datetime' }
     }
 };

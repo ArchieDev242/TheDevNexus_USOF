@@ -1,4 +1,4 @@
-class AdminDashboard 
+class admin_dashboard 
 {
     constructor() 
     {
@@ -9,23 +9,23 @@ class AdminDashboard
 
     init() 
     {
-        this.bindEvents();
+        this.bind_events();
         this.load_dashboard_data();
-        this.checkMobileView();
+        this.check_mobile_view();
     }
 
-    bindEvents() 
+    bind_events() 
     {
         document.querySelectorAll('.sidebar-menu a').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const section = e.target.closest('a').dataset.section;
-                this.showSection(section);
+                this.show_section(section);
             });
         });
 
         document.getElementById('sidebarToggle').addEventListener('click', () => {
-            this.toggleSidebar();
+            this.toggle_sidebar();
         });
 
         document.querySelector('.close').addEventListener('click', () => {
@@ -73,11 +73,11 @@ class AdminDashboard
         });
 
         window.addEventListener('resize', () => {
-            this.checkMobileView();
+            this.check_mobile_view();
         });
     }
 
-    showSection(sectionName) 
+    show_section(sectionName) 
     {
         document.querySelectorAll('.content-section').forEach(section => {
             section.classList.remove('active');
@@ -91,12 +91,12 @@ class AdminDashboard
         document.querySelector(`[data-section="${sectionName}"]`).parentElement.classList.add('active');
 
         const titles = {
-            dashboard: 'Дашборд',
-            users: 'Користувачі',
-            posts: 'Пости',
-            comments: 'Коментарі',
-            categories: 'Категорії',
-            settings: 'Налаштування'
+            dashboard: 'Dashboard',
+            users: 'Users',
+            posts: 'Posts',
+            comments: 'Comments',
+            categories: 'Categories',
+            settings: 'Settings'
         };
         document.getElementById('pageTitle').textContent = titles[sectionName];
 
@@ -105,13 +105,13 @@ class AdminDashboard
         this.load_section_data(sectionName);
     }
 
-    toggleSidebar() 
+    toggle_sidebar() 
     {
         const sidebar = document.querySelector('.sidebar');
         sidebar.classList.toggle('active');
     }
 
-    checkMobileView() 
+    check_mobile_view() 
     {
         const is_mobile = window.innerWidth <= 768;
         const sidebar = document.querySelector('.sidebar');
@@ -176,7 +176,7 @@ class AdminDashboard
         } catch(error) 
         {
             console.error('API call failed:', error);
-            this.showNotification('Помилка при завантаженні даних', 'error');
+            this.showNotification('Error loading data', 'error');
             return null;
         }
     }
@@ -184,8 +184,8 @@ class AdminDashboard
     handleAuthError(status)
     {
         const message = status === 401
-            ? 'Сесія завершилась. Увійдіть повторно.'
-            : 'Недостатньо прав доступу.';
+            ? 'Session expired. Please log in again.'
+            : 'Insufficient permissions.';
 
         this.showNotification(message, 'error');
 
@@ -224,7 +224,7 @@ class AdminDashboard
         } catch(error) 
         {
             console.error('Failed to load dashboard data:', error);
-            this.showNotification('Помилка завантаження статистики', 'error');
+            this.showNotification('Error loading statistics', 'error');
         } finally 
         {
             this.hideLoading();
@@ -255,7 +255,7 @@ class AdminDashboard
         } catch(error) 
         {
             console.error('Failed to load users:', error);
-            this.showNotification('Помилка завантаження користувачів', 'error');
+            this.showNotification('Error loading users', 'error');
         } finally 
         {
             this.hideLoading();
@@ -265,9 +265,9 @@ class AdminDashboard
     translateRole(role) 
     {
         const role_translations = {
-            'guest': 'Гість',
-            'user': 'Користувач', 
-            'admin': 'Адміністратор'
+            'guest': 'Guest',
+            'user': 'User', 
+            'admin': 'Administrator'
         };
         return role_translations[role] || role;
     }
@@ -283,17 +283,17 @@ class AdminDashboard
                 <td>${user.login}</td>
                 <td>${user.full_name || 'N/A'}</td>
                 <td>${user.email}</td>
-                <td><span class="status-badge ${user.role}">${this.translateRole(user.role)}</span></td>
-                <td><span class="status-badge ${user.email_verified ? 'verified' : 'inactive'}">
-                    ${user.email_verified ? 'Підтверджено' : 'Не підтверджено'}
+                <td><span class = "status-badge ${user.role}">${this.translateRole(user.role)}</span></td>
+                <td><span class = "status-badge ${user.email_verified ? 'verified' : 'inactive'}">
+                    ${user.email_verified ? 'Confirmed' : 'Not Confirmed'}
                 </span></td>
-                <td>${new Date(user.created_at).toLocaleDateString('uk-UA')}</td>
+                <td>${new Date(user.created_at).toLocaleDateString('en-US')}</td>
                 <td>
-                    <button class="btn btn-small btn-primary" onclick="editUser(${user.id})">
-                        <i class="fas fa-edit"></i>
+                    <button class = "btn btn-small btn-primary" onclick = "editUser(${user.id})">
+                        <i class = "fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-small btn-danger" onclick="deleteUser(${user.id})">
-                        <i class="fas fa-trash"></i>
+                    <button class = "btn btn-small btn-danger" onclick = "deleteUser(${user.id})">
+                        <i class = "fas fa-trash"></i>
                     </button>
                 </td>
             </tr>
@@ -329,15 +329,15 @@ class AdminDashboard
                 <td>${post.title}</td>
                 <td>${post.author_id}</td>
                 <td><span class="status-badge ${post.status}">${post.status}</span></td>
-                <td>${new Date(post.publish_date).toLocaleDateString('uk-UA')}</td>
+                <td>${new Date(post.publish_date).toLocaleDateString('en-US')}</td>
                 <td>${post.likes_count || 0}</td>
                 <td>${post.comments_count || 0}</td>
                 <td>
-                    <button class="btn btn-small btn-primary" onclick="editPost(${post.id})">
-                        <i class="fas fa-edit"></i>
+                    <button class = "btn btn-small btn-primary" onclick = "editPost(${post.id})">
+                        <i class = "fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-small btn-danger" onclick="deletePost(${post.id})">
-                        <i class="fas fa-trash"></i>
+                    <button class = "btn btn-small btn-danger" onclick = "deletePost(${post.id})">
+                        <i class = "fas fa-trash"></i>
                     </button>
                 </td>
             </tr>
@@ -374,13 +374,13 @@ class AdminDashboard
                 <td>${comment.author_id}</td>
                 <td>${comment.post_id}</td>
                 <td><span class="status-badge ${comment.status}">${comment.status}</span></td>
-                <td>${new Date(comment.publish_date).toLocaleDateString('uk-UA')}</td>
+                <td>${new Date(comment.publish_date).toLocaleDateString('en-US')}</td>
                 <td>
-                    <button class="btn btn-small btn-primary" onclick="editComment(${comment.id})">
-                        <i class="fas fa-edit"></i>
+                    <button class = "btn btn-small btn-primary" onclick = "editComment(${comment.id})">
+                        <i class = "fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-small btn-danger" onclick="deleteComment(${comment.id})">
-                        <i class="fas fa-trash"></i>
+                    <button class = "btn btn-small btn-danger" onclick = "deleteComment(${comment.id})">
+                        <i class = "fas fa-trash"></i>
                     </button>
                 </td>
             </tr>
@@ -415,13 +415,13 @@ class AdminDashboard
                 <td>${category.id}</td>
                 <td>${category.title}</td>
                 <td>${category.description}</td>
-                <td>${new Date(category.created_at).toLocaleDateString('uk-UA')}</td>
+                <td>${new Date(category.created_at).toLocaleDateString('en-US')}</td>
                 <td>
-                    <button class="btn btn-small btn-primary" onclick="editCategory(${category.id})">
-                        <i class="fas fa-edit"></i>
+                    <button class = "btn btn-small btn-primary" onclick = "editCategory(${category.id})">
+                        <i class = "fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-small btn-danger" onclick="deleteCategory(${category.id})">
-                        <i class="fas fa-trash"></i>
+                    <button class = "btn btn-small btn-danger" onclick = "deleteCategory(${category.id})">
+                        <i class = "fas fa-trash"></i>
                     </button>
                 </td>
             </tr>
@@ -512,33 +512,33 @@ class AdminDashboard
     showAddUserModal() 
     {
         const modal_content = `
-            <h2>Додати нового користувача</h2>
-            <form id="addUserForm">
-                <div style="margin-bottom: 15px;">
-                    <label>Логін:</label>
-                    <input type="text" name="login" required class="setting-input">
+            <h2>Add new user</h2>
+            <form id = "addUserForm">
+                <div style = "margin-bottom: 15px;">
+                    <label>Login:</label>
+                    <input type = "text" name = "login" required class = "setting-input">
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label>Повне ім'я:</label>
-                    <input type="text" name="full_name" required class="setting-input">
+                <div style = "margin-bottom: 15px;">
+                    <label>Full Name:</label>
+                    <input type = "text" name = "full_name" required class = "setting-input">
                 </div>
-                <div style="margin-bottom: 15px;">
+                <div style = "margin-bottom: 15px;">
                     <label>Email:</label>
-                    <input type="email" name="email" required class="setting-input">
+                    <input type = "email" name = "email" required class = "setting-input">
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label>Пароль:</label>
-                    <input type="password" name="password" required class="setting-input">
+                <div style = "margin-bottom: 15px;">
+                    <label>Password:</label>
+                    <input type = "password" name = "password" required class = "setting-input">
                 </div>
-                <div style="margin-bottom: 20px;">
-                    <label>Роль:</label>
-                    <select name="role" class="setting-input">
-                        <option value="guest">Гість</option>
-                        <option value="user">Користувач</option>
-                        <option value="admin">Адміністратор</option>
+                <div style = "margin-bottom: 20px;">
+                    <label>Role:</label>
+                    <select name = "role" class = "setting-input">
+                        <option value = "guest">Guest</option>
+                        <option value = "user">User</option>
+                        <option value = "admin">Administrator</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Створити користувача</button>
+                <button type = "submit" class = "btn btn-primary">Create User</button>
             </form>
         `;
         
@@ -566,38 +566,38 @@ class AdminDashboard
         ).join('') || '';
         
         const modal_content = `
-            <h2>Додати новий пост</h2>
-            <form id="addPostForm">
-                <div style="margin-bottom: 15px;">
-                    <label>Автор:</label>
-                    <select name="author_id" required class="setting-input">
-                        <option value="">Оберіть автора</option>
+            <h2>Add new post</h2>
+            <form id = "addPostForm">
+                <div style = "margin-bottom: 15px;">
+                    <label>Author:</label>
+                    <select name = "author_id" required class = "setting-input">
+                        <option value = "">Select author</option>
                         ${user_options}
                     </select>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label>Заголовок:</label>
-                    <input type="text" name="title" required class="setting-input" minlength="5">
+                <div style = "margin-bottom: 15px;">
+                    <label>Title:</label>
+                    <input type = "text" name = "title" required class = "setting-input" minlength = "5">
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label>Контент:</label>
-                    <textarea name="content" required class="setting-input" rows="5" minlength="10"></textarea>
+                <div style = "margin-bottom: 15px;">
+                    <label>Content:</label>
+                    <textarea name = "content" required class = "setting-input" rows = "5" minlength = "10"></textarea>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label>Категорії:</label>
-                    <select name="categories" multiple required class="setting-input" style="height: 100px;">
+                <div style = "margin-bottom: 15px;">
+                    <label>Categories:</label>
+                    <select name = "categories" multiple required class = "setting-input" style = "height: 100px;">
                         ${category_options}
                     </select>
-                    <small style="color: #666;">Утримуйте Ctrl для вибору кількох категорій</small>
+                    <small style = "color: #666;">Hold Ctrl to select multiple categories</small>
                 </div>
-                <div style="margin-bottom: 20px;">
-                    <label>Статус:</label>
-                    <select name="status" class="setting-input">
-                        <option value="active">Активний</option>
-                        <option value="inactive">Неактивний</option>
+                <div style = "margin-bottom: 20px;">
+                    <label>Status:</label>
+                    <select name = "status" class = "setting-input">
+                        <option value = "active">Active</option>
+                        <option value = "inactive">Inactive</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Створити пост</button>
+                <button type = "submit" class = "btn btn-primary">Create post</button>
             </form>
         `;
         
@@ -612,17 +612,17 @@ class AdminDashboard
     showAddCategoryModal() 
     {
         const modal_content = `
-            <h2>Додати нову категорію</h2>
-            <form id="addCategoryForm">
-                <div style="margin-bottom: 15px;">
-                    <label>Назва:</label>
-                    <input type="text" name="title" required class="setting-input">
+            <h2>Add new category</h2>
+            <form id = "addCategoryForm">
+                <div style = "margin-bottom: 15px;">
+                    <label>Name:</label>
+                    <input type = "text" name = "title" required class = "setting-input">
                 </div>
-                <div style="margin-bottom: 20px;">
-                    <label>Опис:</label>
-                    <textarea name="description" class="setting-input" rows="3"></textarea>
+                <div style = "margin-bottom: 20px;">
+                    <label>Description:</label>
+                    <textarea name = "description" class = "setting-input" rows = "3"></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Створити категорію</button>
+                <button type = "submit" class = "btn btn-primary">Create category</button>
             </form>
         `;
         
@@ -641,7 +641,7 @@ class AdminDashboard
         
         if(result) 
             {
-            this.showNotification('Користувач успішно створений', 'success');
+            this.showNotification('User successfully created', 'success');
             this.closeModal();
             this.load_users();
         }
@@ -660,14 +660,14 @@ class AdminDashboard
             
             if(result) 
                 {
-                this.showNotification('Користувач успішно оновлений', 'success');
+                this.showNotification('User successfully updated', 'success');
                 this.closeModal();
                 this.load_users();
             }
         } catch(error) 
         {
             console.error('Failed to update user:', error);
-            this.showNotification('Помилка оновлення користувача', 'error');
+            this.showNotification('Error updating user', 'error');
         }
     }
 
@@ -694,7 +694,7 @@ class AdminDashboard
         
         if(result) 
             {
-            this.showNotification('Пост успішно створений', 'success');
+            this.showNotification('Post successfully created', 'success');
             this.closeModal();
             this.load_posts();
         }
@@ -713,14 +713,14 @@ class AdminDashboard
             
             if(result) 
                 {
-                this.showNotification('Пост успішно оновлений', 'success');
+                this.showNotification('Post successfully updated', 'success');
                 this.closeModal();
                 this.load_posts();
             }
         } catch(error) 
         {
             console.error('Failed to update post:', error);
-            this.showNotification('Помилка оновлення поста', 'error');
+            this.showNotification('Error updating post', 'error');
         }
     }
 
@@ -731,7 +731,7 @@ class AdminDashboard
         
         if(result) 
         {
-            this.showNotification('Категорія успішно створена', 'success');
+            this.showNotification('Category successfully created', 'success');
             this.closeModal();
             this.load_categories();
         }
@@ -747,14 +747,14 @@ class AdminDashboard
             
             if(result) 
                 {
-                this.showNotification('Коментар успішно оновлений', 'success');
+                this.showNotification('Comment successfully updated', 'success');
                 this.closeModal();
                 this.load_comments();
             }
         } catch(error) 
         {
             console.error('Failed to update comment:', error);
-            this.showNotification('Помилка оновлення коментаря', 'error');
+            this.showNotification('Error updating comment', 'error');
         }
     }
 
@@ -769,14 +769,14 @@ class AdminDashboard
             
             if(result) 
                 {
-                this.showNotification('Категорія успішно оновлена', 'success');
+                this.showNotification('Category successfully updated', 'success');
                 this.closeModal();
                 this.load_categories();
             }
         } catch(error) 
         {
             console.error('Failed to update category:', error);
-            this.showNotification('Помилка оновлення категорії', 'error');
+            this.showNotification('Error updating category', 'error');
         }
     }
 
@@ -792,45 +792,45 @@ class AdminDashboard
             const user = response;
             if(!user) 
                 {
-                this.showNotification('Не вдалося завантажити дані користувача', 'error');
+                this.showNotification('Failed to load user data', 'error');
                 return;
             }
 
             const modal_content = `
-                <h2>Редагувати користувача</h2>
-                <form id="editUserForm">
-                    <input type="hidden" name="id" value="${user.id}">
-                    <div style="margin-bottom: 15px;">
-                        <label>Логін:</label>
-                        <input type="text" name="login" value="${user.login}" required class="setting-input">
+                <h2>Edit User</h2>
+                <form id = "editUserForm">
+                    <input type = "hidden" name = "id" value = "${user.id}">
+                    <div style = "margin-bottom: 15px;">
+                        <label>Login:</label>
+                        <input type = "text" name = "login" value = "${user.login}" required class = "setting-input">
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <label>Повне ім'я:</label>
-                        <input type="text" name="full_name" value="${user.full_name || ''}" required class="setting-input">
+                    <div style = "margin-bottom: 15px;">
+                        <label>Full Name:</label>
+                        <input type = "text" name = "full_name" value = "${user.full_name || ''}" required class = "setting-input">
                     </div>
-                    <div style="margin-bottom: 15px;">
+                    <div style = "margin-bottom: 15px;">
                         <label>Email:</label>
-                        <input type="email" name="email" value="${user.email}" required class="setting-input">
+                        <input type = "email" name = "email" value = "${user.email}" required class = "setting-input">
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <label>Новий пароль (залиште порожнім, щоб не змінювати):</label>
-                        <input type="password" name="password" class="setting-input">
+                    <div style = "margin-bottom: 15px;">
+                        <label>New Password (leave blank to keep unchanged):</label>
+                        <input type = "password" name = "password" class = "setting-input">
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <label>Роль:</label>
-                        <select name="role" class="setting-input">
-                            <option value="guest" ${user.role === 'guest' ? 'selected' : ''}>Гість</option>
-                            <option value="user" ${user.role === 'user' ? 'selected' : ''}>Користувач</option>
-                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Адміністратор</option>
+                    <div style = "margin-bottom: 15px;">
+                        <label>Role:</label>
+                        <select name = "role" class = "setting-input">
+                            <option value = "guest" ${user.role === 'guest' ? 'selected' : ''}>Guest</option>
+                            <option value = "user" ${user.role === 'user' ? 'selected' : ''}>User</option>
+                            <option value = "admin" ${user.role === 'admin' ? 'selected' : ''}>Administrator</option>
                         </select>
                     </div>
-                    <div style="margin-bottom: 20px;">
+                    <div style = "margin-bottom: 20px;">
                         <label>
-                            <input type="checkbox" name="email_verified" ${user.email_verified ? 'checked' : ''}> Email підтверджено
+                            <input type = "checkbox" name = "email_verified" ${user.email_verified ? 'checked' : ''}> Email verified
                         </label>
                     </div>
-                    <button type="submit" class="btn btn-primary">Зберегти зміни</button>
-                    <button type="button" class="btn btn-secondary" onclick="dashboard.closeModal()">Скасувати</button>
+                    <button type = "submit" class = "btn btn-primary">Save Changes</button>
+                    <button type = "button" class = "btn btn-secondary" onclick = "dashboard.closeModal()">Cancel</button>
                 </form>
             `;
 
@@ -844,19 +844,19 @@ class AdminDashboard
         } catch(error) 
         {
             console.error('Failed to load user for editing:', error);
-            this.showNotification('Помилка завантаження даних користувача', 'error');
+            this.showNotification('Error loading user data', 'error');
         }
     }
 
     async delete_user(id) 
     {
-        if(confirm('Ви впевнені, що хочете видалити цього користувача?')) 
+        if(confirm('Are you sure you want to delete this user?')) 
             {
             const result = await this.api_call(`/users/${id}`, 'DELETE');
             
             if(result) 
                 {
-                this.showNotification('Користувач видалений', 'success');
+                this.showNotification('User deleted', 'success');
                 this.load_users();
             }
         }
@@ -870,26 +870,26 @@ class AdminDashboard
             if(!post) return;
 
             const modal_content = `
-                <h2>Редагувати пост</h2>
-                <form id="editPostForm">
-                    <input type="hidden" name="id" value="${post.id}">
-                    <div style="margin-bottom: 15px;">
-                        <label>Заголовок:</label>
-                        <input type="text" name="title" value="${post.title}" required class="setting-input">
+                <h2>Edit Post</h2>
+                <form id = "editPostForm">
+                    <input type = "hidden" name = "id" value = "${post.id}">
+                    <div style = "margin-bottom: 15px;">
+                        <label>Title:</label>
+                        <input type = "text" name = "title" value = "${post.title}" required class = "setting-input">
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <label>Контент:</label>
-                        <textarea name="content" required class="setting-input" rows="8">${post.content}</textarea>
+                    <div style = "margin-bottom: 15px;">
+                        <label>Content:</label>
+                        <textarea name = "content" required class = "setting-input" rows = "8">${post.content}</textarea>
                     </div>
-                    <div style="margin-bottom: 20px;">
-                        <label>Статус:</label>
-                        <select name="status" class="setting-input">
-                            <option value="active" ${post.status === 'active' ? 'selected' : ''}>Активний</option>
-                            <option value="inactive" ${post.status === 'inactive' ? 'selected' : ''}>Неактивний</option>
+                    <div style = "margin-bottom: 20px;">
+                        <label>Status:</label>
+                        <select name = "status" class = "setting-input">
+                            <option value = "active" ${post.status === 'active' ? 'selected' : ''}>Active</option>
+                            <option value = "inactive" ${post.status === 'inactive' ? 'selected' : ''}>Inactive</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">Зберегти зміни</button>
-                    <button type="button" class="btn btn-secondary" onclick="dashboard.closeModal()">Скасувати</button>
+                    <button type = "submit" class = "btn btn-primary">Save Changes</button>
+                    <button type = "button" class = "btn btn-secondary" onclick = "dashboard.closeModal()">Cancel</button>
                 </form>
             `;
 
@@ -900,21 +900,22 @@ class AdminDashboard
                 await this.update_post(id, new FormData(e.target));
             });
 
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Failed to load post for editing:', error);
-            this.showNotification('Помилка завантаження даних поста', 'error');
+            this.showNotification('Error loading post data', 'error');
         }
     }
 
     async delete_post(id) 
     {
-        if(confirm('Ви впевнені, що хочете видалити цей пост?')) 
+        if(confirm('Are you sure you want to delete this post?')) 
             {
             const result = await this.api_call(`/posts/${id}`, 'DELETE');
             
             if(result) 
                 {
-                this.showNotification('Пост видалений', 'success');
+                this.showNotification('Post deleted', 'success');
                 this.load_posts();
             }
         }
@@ -928,22 +929,22 @@ class AdminDashboard
             if(!comment) return;
 
             const modal_content = `
-                <h2>Редагувати коментар</h2>
-                <form id="editCommentForm">
-                    <input type="hidden" name="id" value="${comment.id}">
-                    <div style="margin-bottom: 15px;">
-                        <label>Контент:</label>
-                        <textarea name="content" required class="setting-input" rows="6">${comment.content}</textarea>
+                <h2>Edit Comment</h2>
+                <form id = "editCommentForm">
+                    <input type = "hidden" name = "id" value = "${comment.id}">
+                    <div style = "margin-bottom: 15px;">
+                        <label>Content:</label>
+                        <textarea name = "content" required class = "setting-input" rows = "6">${comment.content}</textarea>
                     </div>
-                    <div style="margin-bottom: 20px;">
-                        <label>Статус:</label>
-                        <select name="status" class="setting-input">
-                            <option value="active" ${comment.status === 'active' ? 'selected' : ''}>Активний</option>
-                            <option value="inactive" ${comment.status === 'inactive' ? 'selected' : ''}>Неактивний</option>
+                    <div style = "margin-bottom: 20px;">
+                        <label>Status:</label>
+                        <select name = "status" class = "setting-input">
+                            <option value = "active" ${comment.status === 'active' ? 'selected' : ''}>Active</option>
+                            <option value = "inactive" ${comment.status === 'inactive' ? 'selected' : ''}>Inactive</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">Зберегти зміни</button>
-                    <button type="button" class="btn btn-secondary" onclick="dashboard.closeModal()">Скасувати</button>
+                    <button type = "submit" class = "btn btn-primary">Save Changes</button>
+                    <button type = "button" class = "btn btn-secondary" onclick = "dashboard.closeModal()">Cancel</button>
                 </form>
             `;
 
@@ -957,19 +958,19 @@ class AdminDashboard
         } catch(error) 
         {
             console.error('Failed to load comment for editing:', error);
-            this.showNotification('Помилка завантаження даних коментаря', 'error');
+            this.showNotification('Error loading comment data', 'error');
         }
     }
 
     async delete_comment(id) 
     {
-        if(confirm('Ви впевнені, що хочете видалити цей коментар?')) 
+        if(confirm('Are you sure you want to delete this comment?')) 
             {
             const result = await this.api_call(`/comments/${id}`, 'DELETE');
             
             if(result) 
                 {
-                this.showNotification('Коментар видалений', 'success');
+                this.showNotification('Comment deleted', 'success');
                 this.load_comments();
             }
         }
@@ -983,19 +984,19 @@ class AdminDashboard
             if(!category) return;
 
             const modal_content = `
-                <h2>Редагувати категорію</h2>
-                <form id="editCategoryForm">
-                    <input type="hidden" name="id" value="${category.id}">
-                    <div style="margin-bottom: 15px;">
-                        <label>Назва:</label>
-                        <input type="text" name="title" value="${category.title}" required class="setting-input">
+                <h2>Edit Category</h2>
+                <form id = "editCategoryForm">
+                    <input type = "hidden" name = "id" value = "${category.id}">
+                    <div style = "margin-bottom: 15px;">
+                        <label>Name:</label>
+                        <input type = "text" name = "title" value = "${category.title}" required class = "setting-input">
                     </div>
-                    <div style="margin-bottom: 20px;">
-                        <label>Опис:</label>
-                        <textarea name="description" class="setting-input" rows="4">${category.description || ''}</textarea>
+                    <div style = "margin-bottom: 20px;">
+                        <label>Description:</label>
+                        <textarea name = "description" class = "setting-input" rows = "4">${category.description || ''}</textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary">Зберегти зміни</button>
-                    <button type="button" class="btn btn-secondary" onclick="dashboard.closeModal()">Скасувати</button>
+                    <button type = "submit" class = "btn btn-primary">Save Changes</button>
+                    <button type = "button" class = "btn btn-secondary" onclick = "dashboard.closeModal()">Cancel</button>
                 </form>
             `;
 
@@ -1009,19 +1010,19 @@ class AdminDashboard
         } catch(error) 
         {
             console.error('Failed to load category for editing:', error);
-            this.showNotification('Помилка завантаження даних категорії', 'error');
+            this.showNotification('Error loading category data', 'error');
         }
     }
 
     async delete_category(id) 
     {
-        if(confirm('Ви впевнені, що хочете видалити цю категорію?')) 
+        if(confirm('Are you sure you want to delete this category?')) 
             {
             const result = await this.api_call(`/categories/${id}`, 'DELETE');
             
             if(result) 
                 {
-                this.showNotification('Категорія видалена', 'success');
+                this.showNotification('Category deleted', 'success');
                 this.load_categories();
             }
         }
@@ -1073,9 +1074,8 @@ class AdminDashboard
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    window.dashboard = new AdminDashboard();
+    window.dashboard = new admin_dashboard();
     
-    // Глобальні функції для кнопок
     window.editUser = (id) => window.dashboard.edit_user(id);
     window.deleteUser = (id) => window.dashboard.delete_user(id);
     window.editPost = (id) => window.dashboard.edit_post(id);

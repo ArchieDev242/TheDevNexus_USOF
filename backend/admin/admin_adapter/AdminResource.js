@@ -60,7 +60,7 @@ class admin_resource extends base_resource
 {
     constructor(model) 
     {
-        super(model?.tableName);
+        super(model.tableName);
         this.model = model;
         this.tableName = model.tableName;
         this.primaryKey = model.primaryKey || 'id';
@@ -76,6 +76,7 @@ class admin_resource extends base_resource
             this.propertyMap.set(key, property);
             return property;
         });
+        
     }
 
     static isAdapterFor(model) 
@@ -88,9 +89,19 @@ class admin_resource extends base_resource
         return this.database;
     }
 
+    databaseName() 
+    {
+        return this.database_name();
+    }
+
     database_type() 
     {
         return 'mysql';
+    }
+
+    databaseType() 
+    {
+        return this.database_type();
     }
 
     name() 

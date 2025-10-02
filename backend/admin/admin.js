@@ -19,15 +19,6 @@ AdminJS.registerAdapter({
     Resource: admin_resource,
 });
 
-const database = new admin_database({
-    User: user_model,
-    Post: post_model,
-    Comment: comment_model,
-    Category: category_model,
-    Achievement: achievement_model,
-    Like: like_model
-});
-
 const build_resource_options = (model, baseOptions = {}) => {
     const enum_props = Object.entries(model.properties || {}).reduce((acc, [key, definition]) => {
         if(Array.isArray(definition.availableValues)) 
@@ -60,10 +51,10 @@ const build_resource_options = (model, baseOptions = {}) => {
 };
 
 const adminJS_config = {
-    databases: [database],
+    databases: [],
     resources: [
         {
-            resource: database.resource('User'),
+            resource: user_model,
             options: build_resource_options(user_model, {
                 listProperties: ['id', 'login', 'full_name', 'email', 'role', 'email_verified', 'created_at'],
                 filterProperties: ['login', 'email', 'role', 'email_verified'],
@@ -102,7 +93,7 @@ const adminJS_config = {
             })
         },
         {
-            resource: database.resource('Post'),
+            resource: post_model,
             options: build_resource_options(post_model, {
                 listProperties: ['id', 'title', 'author_id', 'status', 'publish_date', 'rating'],
                 filterProperties: ['title', 'author_id', 'status'],
@@ -111,7 +102,7 @@ const adminJS_config = {
             })
         },
         {
-            resource: database.resource('Comment'),
+            resource: comment_model,
             options: build_resource_options(comment_model, {
                 listProperties: ['id', 'content', 'author_id', 'post_id', 'status', 'publish_date'],
                 filterProperties: ['author_id', 'post_id', 'status'],
@@ -120,7 +111,7 @@ const adminJS_config = {
             })
         },
         {
-            resource: database.resource('Category'),
+            resource: category_model,
             options: build_resource_options(category_model, {
                 listProperties: ['id', 'title', 'description', 'created_at'],
                 filterProperties: ['title'],
@@ -129,7 +120,7 @@ const adminJS_config = {
             })
         },
         {
-            resource: database.resource('Achievement'),
+            resource: achievement_model,
             options: build_resource_options(achievement_model, {
                 listProperties: ['id', 'title', 'key_name', 'points', 'is_active', 'created_at'],
                 filterProperties: ['title', 'key_name', 'is_active'],
@@ -138,7 +129,7 @@ const adminJS_config = {
             })
         },
         {
-            resource: database.resource('Like'),
+            resource: like_model,
             options: build_resource_options(like_model, {
                 listProperties: ['id', 'author_id', 'post_id', 'comment_id', 'type', 'created_at'],
                 filterProperties: ['author_id', 'post_id', 'comment_id', 'type'],
@@ -239,46 +230,46 @@ const adminJS_config = {
     },
     locale: 
     {
-        language: 'ua',
-        availableLanguages: ['ua', 'en'],
+        language: 'en',
+        availableLanguages: ['en', 'ua'],
         translations: 
         {
             labels: 
             {
-                User: 'Користувачі',
-                Post: 'Пости',
-                Comment: 'Коментарі', 
-                Category: 'Категорії',
-                Achievement: 'Досягнення',
-                Like: 'Лайки'
+                User: 'Users',
+                Post: 'Posts',
+                Comment: 'Comments', 
+                Category: 'Categories',
+                Achievement: 'Achievements',
+                Like: 'Likes'
             },
             properties: 
             {
                 id: 'ID',
-                login: 'Логін',
-                full_name: 'Повне ім\'я',
+                login: 'Login',
+                full_name: 'Full name',
                 email: 'Email',
-                password: 'Пароль',
-                role: 'Роль',
-                email_verified: 'Email підтверджено',
-                created_at: 'Створено',
-                updated_at: 'Оновлено',
-                title: 'Заголовок',
-                content: 'Контент',
-                author_id: 'ID автора',
-                post_id: 'ID поста',
-                comment_id: 'ID коментаря',
-                parent_comment_id: 'ID батьківського коментаря',
-                status: 'Статус',
-                publish_date: 'Дата публікації',
-                description: 'Опис',
-                rating: 'Рейтинг',
-                profile_picture: 'Фото профілю',
-                key_name: 'Ключ ачівки',
-                icon: 'Іконка',
-                points: 'Бали',
-                is_active: 'Активна',
-                type: 'Тип'
+                password: 'Password',
+                role: 'Role',
+                email_verified: 'Email verified',
+                created_at: 'Created at',
+                updated_at: 'Updated at',
+                title: 'Title',
+                content: 'Content',
+                author_id: 'Author ID',
+                post_id: 'Post ID',
+                comment_id: 'Comment ID',
+                parent_comment_id: 'Parent comment ID',
+                status: 'Status',
+                publish_date: 'Publish date',
+                description: 'Description',
+                rating: 'Rating',
+                profile_picture: 'Profile picture',
+                key_name: 'Achievement key',
+                icon: 'Icon',
+                points: 'Points',
+                is_active: 'Active',
+                type: 'Type'
             }
         }
     }
@@ -314,7 +305,6 @@ export {
     admin_js as adminJs, 
     admin_router as adminRouter, 
     adminJS_config as adminJsConfig, 
-    database as adminDatabase,
     admin_database as AdminDatabase,
     admin_resource as AdminResource
 };

@@ -1,32 +1,46 @@
 import { BaseDatabase as base_database } from 'adminjs';
 import DB_connect from '../../utils/dbConnect.js';
-import AdminResource from './AdminResource.js';
+import admin_resource from './AdminResource.js';
 
 class admin_database extends base_database 
 {
     constructor(models = {}) 
     {
-        super(models);
+        super();
         this.models = models;
         this.resourceMap = {};
-        Object.entries(models).forEach(([name, model]) => {
-            this.resourceMap[name] = new AdminResource(model);
-        });
     }
 
-    static is_adapter_for(database) 
+    static isAdapterFor(database) 
     {
         return !!(database && typeof database === 'object' && database.models);
     }
 
+    static is_adapter_for(database) 
+    {
+        return this.isAdapterFor(database);
+    }
+
     resources() 
     {
+        Object.entries(this.models).forEach(([name, model]) => {
+            if(!this.resourceMap[name]) 
+                {
+                this.resourceMap[name] = new admin_resource(model);
+            }
+        });
+
         return Object.values(this.resourceMap);
     }
 
     resource(name) 
     {
-        return this.resourceMap[name];
+        if(!this.resourceMap[name] && this.models[name]) 
+            {
+            this.resourceMap[name] = new admin_resource(this.models[name]);
+        }
+
+        return this.resourceMap[name] || null;
     }
 
     async is_connected() 
