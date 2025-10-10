@@ -1,0 +1,142 @@
+:root {
+    color-scheme: light dark;
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    --border-radius: 14px;
+    --border-radius-small: 7px;
+    --container-width: 1240px;
+    --container-padding-x: 20px;
+}
+
+.container {
+    max-width: calc(var(--container-width) + var(--container-padding-x) * 2);
+    margin-inline: auto;
+    padding-inline: var(--container-padding-x);
+}
+
+body {
+    margin: 0;
+    padding: 2rem;
+}
+
+.app {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+h1 {
+    line-height: 1.1;
+}
+
+code {
+    background: rgba(127, 127, 127, 0.15);
+    padding: 0.2rem 0.35rem;
+    border-radius: 4px;
+}
+
+.status-bar {
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(127, 127, 127, 0.3);
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 12px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: rgb(170, 97, 239);
+}
+
+.app-header .logo {
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.nav-list {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 1.2rem;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-list li {
+    position: relative;
+    opacity: 0.75;
+    transition: opacity 0.2s ease;
+    font-size: 1.2rem;
+}
+
+.nav-list li:hover,.nav-list li:hover:focus {
+    opacity: 1;
+}
+
+.nav-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    height: 3px;
+    width: 0%;
+    background-color: #031D44;
+    transition: width 220ms ease;
+}
+
+.nav-list li:hover::before {
+    width: 100%;
+}
+
+.app-header .logo-img {
+    height: 64px;
+    width: auto;
+    display: block;
+}
+
+.app-header a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.search {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    gap: 1rem;
+}
+
+.search__input {
+    height: 2rem;
+    width: 14rem;
+    border-radius: var(--border-radius-small);
+    border-color: #FFF;
+    border-color: transparent;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.search__input:focus,.search__input:hover {
+    font-size: 1.2rem;
+    font-weight: 400;
+}
+
+
+.search__button {
+    font-size: 1.5rem;
+    height: 2.2rem;
+    border-radius: var(--border-radius-small);
+    border-color: transparent;
+    outline: none;
+    align-items: center;
+    transform: translateY(var(--search-button-offset));
+    transition: transform 0.4s ease;
+}
+
+.search__button:focus,.search__button:hover  {
+    transform: scale(1.2);
+}
