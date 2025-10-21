@@ -124,7 +124,7 @@ class Post
         try 
         {
             const query = `
-                SELECT p.*, u.login as author_login, u.full_name as author_name
+                SELECT p.*, u.login as author_login, u.full_name as author_name, u.profile_picture as author_avatar
                 FROM posts p
                 JOIN users u ON p.author_id = u.id
                 WHERE p.id = ?
@@ -133,11 +133,12 @@ class Post
             const result = await DB_connect.make_request(query, [id]);
             const rows = result[0];
             
-            if (rows.length === 0) return null;
+            if(rows.length === 0) return null;
             
             const post = new Post(rows[0]);
             post.author_login = rows[0].author_login;
             post.author_name = rows[0].author_name;
+            post.author_avatar = rows[0].author_avatar;
             
             return post;
         } 
@@ -152,7 +153,7 @@ class Post
         try 
         {
             const query = `
-                SELECT p.*, u.login as author_login, u.full_name as author_name
+                SELECT p.*, u.login as author_login, u.full_name as author_name, u.profile_picture as author_avatar
                 FROM posts p
                 JOIN users u ON p.author_id = u.id
                 WHERE p.status = 'active'
@@ -167,6 +168,7 @@ class Post
                 const post = new Post(row);
                 post.author_login = row.author_login;
                 post.author_name = row.author_name;
+                post.author_avatar = row.author_avatar;
                 return post;
             });
         } 
@@ -181,7 +183,7 @@ class Post
         try 
         {
             const query = `
-                SELECT p.*, u.login as author_login, u.full_name as author_name
+                SELECT p.*, u.login as author_login, u.full_name as author_name, u.profile_picture as author_avatar
                 FROM posts p
                 JOIN users u ON p.author_id = u.id
                 ORDER BY p.publish_date DESC
@@ -195,6 +197,7 @@ class Post
                 const post = new Post(row);
                 post.author_login = row.author_login;
                 post.author_name = row.author_name;
+                post.author_avatar = row.author_avatar;
                 return post;
             });
         } 
@@ -405,7 +408,7 @@ class Post
         try 
         {
             const query = `
-                SELECT p.*, u.login as author_login, u.full_name as author_name,
+                SELECT p.*, u.login as author_login, u.full_name as author_name, u.profile_picture as author_avatar,
                        COALESCE(SUM(CASE WHEN l.type = 'like' THEN 1 ELSE 0 END), 0) - 
                        COALESCE(SUM(CASE WHEN l.type = 'dislike' THEN 1 ELSE 0 END), 0) as like_score
                 FROM posts p
@@ -424,6 +427,7 @@ class Post
                 const post = new Post(row);
                 post.author_login = row.author_login;
                 post.author_name = row.author_name;
+                post.author_avatar = row.author_avatar;
                 post.like_score = row.like_score;
                 return post;
             });
@@ -470,7 +474,7 @@ class Post
         {
             const offset = (page - 1) * limit;
             let query = `
-                SELECT p.*, u.login as author_login, u.full_name as author_name,
+                SELECT p.*, u.login as author_login, u.full_name as author_name, u.profile_picture as author_avatar,
                        COALESCE(SUM(CASE WHEN l.type = 'like' THEN 1 ELSE 0 END), 0) - 
                        COALESCE(SUM(CASE WHEN l.type = 'dislike' THEN 1 ELSE 0 END), 0) as like_score,
                        COUNT(c.id) as comments_count
@@ -488,6 +492,13 @@ class Post
                 {
                 whereConditions.push('p.status = ?');
                 queryParams.push(filters.status);
+            }
+
+            // author filter
+            if(filters.author) 
+                {
+                whereConditions.push('p.author_id = ?');
+                queryParams.push(filters.author);
             }
             
             // categories filter
@@ -547,6 +558,7 @@ class Post
                 const post = new Post(row);
                 post.author_login = row.author_login;
                 post.author_name = row.author_name;
+                post.author_avatar = row.author_avatar;
                 post.like_score = parseInt(row.like_score) || 0;
                 post.comments_count = parseInt(row.comments_count) || 0;
                 return post;

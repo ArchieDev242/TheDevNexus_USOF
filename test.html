@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TheDevNexus - Gamer's Paradise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#6C63FF',
+              secondary: '#FF6584',
+              dark: '#121212',
+              darker: '#0A0A0A',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Rubik:wght@300;400;500;600&display=swap');
+      
+      body {
+        font-family: 'Rubik', sans-serif;
+        background-color: #0A0A0A;
+        color: #FFFFFF;
+      }
+      
+      .orbitron {
+        font-family: 'Orbitron', sans-serif;
+      }
+      
+      .gradient-text {
+        background: linear-gradient(90deg, #6C63FF 0%, #FF6584 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      
+      .neon-shadow {
+        box-shadow: 0 0 15px rgba(108, 99, 255, 0.5);
+      }
+      
+      .glow-text {
+        text-shadow: 0 0 10px rgba(108, 99, 255, 0.7);
+      }
+      
+      .pixel-border {
+        border-image: linear-gradient(45deg, #6C63FF, #FF6584) 1;
+        border-style: solid;
+        border-width: 2px;
+      }
+      
+      .animated-bg {
+        animation: gradientShift 8s ease infinite;
+        background: linear-gradient(-45deg, #121212, #1A1A2E, #16213E, #121212);
+        background-size: 400% 400%;
+      }
+      
+      @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      
+      .forum-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(108, 99, 255, 0.3);
+      }
+      
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    
+    function App() {
+      const [vantaEffect, setVantaEffect] = useState(null);
+      
+      useEffect(() => {
+        if (!vantaEffect) {
+          setVantaEffect(
+            VANTA.NET({
+              el: "#vanta-background",
+              THREE: THREE,
+              color: 0x6c63ff,
+              backgroundColor: 0x0a0a0a,
+              points: 12.00,
+              maxDistance: 22.00,
+              spacing: 18.00
+            })
+          );
+        }
+        feather.replace();
+        
+        return () => {
+          if (vantaEffect) vantaEffect.destroy();
+        };
+      }, [vantaEffect]);
+      
+      return (
+        <div className="min-h-screen">
+          {/* Vanta.js Background */}
+          <div id="vanta-background" className="fixed top-0 left-0 w-full h-full -z-10"></div>
+          
+          {/* Navigation */}
+          <nav className="bg-dark bg-opacity-90 backdrop-blur-md border-b border-gray-800">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between h-16">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <h1 className="text-2xl font-bold gradient-text orbitron">TheDevNexus</h1>
+                  </div>
+                  <div className="hidden md:block">
+                    <div className="ml-10 flex items-baseline space-x-4">
+                      <a href="#" className="px-3 py-2 rounded-md text-sm font-medium text-white bg-primary hover:bg-opacity-80 transition-all">Home</a>
+                      <a href="#" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 transition-all">Forums</a>
+                      <a href="#" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 transition-all">Game Dev</a>
+                      <a href="#" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 transition-all">Resources</a>
+                      <a href="#" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 transition-all">Community</a>
+                    </div>
+                  </div>
+                </div>
+                <div className="hidden md:block">
+                  <div className="ml-4 flex items-center md:ml-6">
+                    <button className="p-1 rounded-full text-gray-400 hover:text-white focus:outline-none">
+                      <i data-feather="search"></i>
+                    </button>
+                    <button className="ml-3 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none">
+                      <i data-feather="bell"></i>
+                    </button>
+                    <div className="ml-3 relative">
+                      <div className="flex items-center">
+                        <button className="flex text-sm rounded-full focus:outline-none">
+                          <img className="h-8 w-8 rounded-full" src="http://static.photos/gaming/200x200/42" alt="Profile" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="-mr-2 flex md:hidden">
+                  <button type="button" className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none">
+                    <i data-feather="menu"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </nav>
+          
+          {/* Hero Section */}
+          <section className="relative py-20 overflow-hidden">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="relative z-10 text-center">
+                <h1 className="text-5xl md:text-7xl font-bold mb-6 orbitron glow-text">
+                  <span className="gradient-text">TheDevNexus</span>
+                </h1>
+                <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto mb-10">
+                  Where game developers and enthusiasts unite to create, share, and conquer the digital realm.
+                </p>
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <button className="px-8 py-3 rounded-lg bg-primary hover:bg-opacity-90 text-white font-medium transition-all transform hover:scale-105 neon-shadow">
+                    Join the Community
+                  </button>
+                  <button className="px-8 py-3 rounded-lg border-2 border-primary text-primary hover:bg-primary hover:bg-opacity-10 font-medium transition-all transform hover:scale-105">
+                    Explore Forums
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* Trending Topics */}
+          <section className="py-16 bg-darker bg-opacity-80">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between mb-10">
+                <h2 className="text-3xl font-bold orbitron">
+                  <span className="gradient-text">Trending Topics</span>
+                </h2>
+                <a href="#" className="flex items-center text-primary hover:text-opacity-80 transition-all">
+                  View all <i data-feather="chevron-right" className="ml-1"></i>
+                </a>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((item) => (
+                  <div key={item} className="forum-card bg-dark border border-gray-800 rounded-xl p-6 transition-all duration-300 hover:border-primary">
+                    <div className="flex items-start mb-4">
+                      <img src={`http://static.photos/gaming/200x200/${item + 10}`} className="w-12 h-12 rounded-full mr-4" alt="User" />
+                      <div>
+                        <h3 className="font-bold text-lg hover:text-primary transition-colors cursor-pointer">Next-Gen Game Engine Discussion</h3>
+                        <p className="text-sm text-gray-400">by DevMaster{item}</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-300 mb-4 line-clamp-2">Exploring the possibilities of the newest game engines and how they're revolutionizing indie game development...</p>
+                    <div className="flex justify-between items-center text-sm">
+                      <div className="flex items-center text-gray-400">
+                        <i data-feather="message-square" className="w-4 h-4 mr-1"></i>
+                        <span>{item * 24} comments</span>
+                      </div>
+                      <div className="flex items-center text-gray-400">
+                        <i data-feather="clock" className="w-4 h-4 mr-1"></i>
+                        <span>{item} hour{item !== 1 ? 's' : ''} ago</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+          
+          {/* Categories */}
+          <section className="py-16">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 className="text-3xl font-bold orbitron mb-10 text-center">
+                <span className="gradient-text">Explore Categories</span>
+              </h2>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                  { name: 'Game Development', icon: 'code', posts: 1243, color: 'primary' },
+                  { name: 'Unity Engine', icon: 'box', posts: 876, color: 'secondary' },
+                  { name: 'Unreal Engine', icon: 'cpu', posts: 754, color: 'primary' },
+                  { name: 'Art & Design', icon: 'image', posts: 932, color: 'secondary' },
+                  { name: 'Programming', icon: 'terminal', posts: 1567, color: 'primary' },
+                  { name: 'VR/AR', icon: 'glasses', posts: 432, color: 'secondary' },
+                  { name: 'Indie Games', icon: 'star', posts: 689, color: 'primary' },
+                  { name: 'Career Advice', icon: 'briefcase', posts: 321, color: 'secondary' },
+                ].map((category, index) => (
+                  <div key={index} className={`bg-dark border border-gray-800 rounded-xl p-6 hover:border-${category.color} transition-all cursor-pointer`}>
+                    <div className={`w-12 h-12 rounded-full bg-${category.color} bg-opacity-20 flex items-center justify-center mb-4`}>
+                      <i data-feather={category.icon} className={`text-${category.color}`}></i>
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">{category.name}</h3>
+                    <p className="text-gray-400">{category.posts.toLocaleString()} posts</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+          
+          {/* Community Highlights */}
+          <section className="py-16 bg-darker bg-opacity-80">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 className="text-3xl font-bold orbitron mb-10">
+                <span className="gradient-text">Community Highlights</span>
+              </h2>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-dark border border-gray-800 rounded-xl overflow-hidden">
+                  <div className="relative h-48 overflow-hidden">
+                    <img src="http://static.photos/technology/1200x630/10" className="w-full h-full object-cover" alt="Featured" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-80"></div>
+                    <div className="absolute bottom-4 left-4">
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-primary">Featured</span>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold mb-2">The Future of Indie Game Development</h3>
+                    <p className="text-gray-300 mb-4">An in-depth look at how indie developers are shaping the future of gaming with innovative approaches and technologies...</p>
+                    <div className="flex items-center">
+                      <img src="http://static.photos/people/200x200/15" className="w-8 h-8 rounded-full mr-3" alt="Author" />
+                      <span className="text-sm text-gray-400">Posted by IndieVision</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="mb-6 bg-dark border border-gray-800 rounded-xl p-6">
+                    <h3 className="text-lg font-bold mb-4">Top Contributors</h3>
+                    <div className="space-y-4">
+                      {[1, 2, 3].map((user) => (
+                        <div key={user} className="flex items-center">
+                          <div className="relative">
+                            <img src={`http://static.photos/people/200x200/${user + 20}`} className="w-10 h-10 rounded-full mr-4" alt="User" />
+                            {user === 1 && (
+                              <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-yellow-400 flex items-center justify-center">
+                                <i data-feather="award" className="w-3 h-3 text-dark"></i>
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="font-medium">GameDevPro{user}</h4>
+                            <p className="text-sm text-gray-400">{user * 245} posts</p>
+                          </div>
+                          <div className="ml-auto flex items-center text-yellow-400">
+                            <i data-feather="star" className="w-4 h-4 mr-1"></i>
+                            <span>{user * 56}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-dark border border-gray-800 rounded-xl p-6">
+                    <h3 className="text-lg font-bold mb-4">Latest Resources</h3>
+                    <div className="space-y-4">
+                      {['Free 3D Models Pack', 'Ultimate Shader Guide', 'Game Design eBook'].map((resource, i) => (
+                        <div key={i} className="flex items-center group">
+                          <div className="w-8 h-8 rounded-md bg-primary bg-opacity-20 flex items-center justify-center mr-3 group-hover:bg-opacity-30 transition-all">
+                            <i data-feather="download" className="w-4 h-4 text-primary"></i>
+                          </div>
+                          <span className="group-hover:text-primary transition-colors">{resource}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* Call to Action */}
+          <section className="py-20">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              <h2 className="text-3xl md:text-5xl font-bold orbitron mb-6">
+                <span className="gradient-text">Ready to Level Up?</span>
+              </h2>
+              <p className="text-xl text-gray-300 mb-8">Join thousands of game developers and enthusiasts in our thriving community. Share knowledge, get feedback, and connect with like-minded creators.</p>
+              <button className="px-10 py-4 rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold text-lg hover:opacity-90 transition-all transform hover:scale-105 neon-shadow">
+                Create Free Account
+              </button>
+            </div>
+          </section>
+          
+          {/* Footer */}
+          <footer className="bg-darker border-t border-gray-800 py-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                  <h3 className="text-xl font-bold orbitron mb-4 gradient-text">TheDevNexus</h3>
+                  <p className="text-gray-400">The ultimate hub for game developers and gaming enthusiasts to connect, learn, and create.</p>
+                </div>
+                <div>
+                  <h4 className="text-lg font-medium mb-4">Quick Links</h4>
+                  <ul className="space-y-2">
+                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Forums</a></li>
+                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Resources</a></li>
+                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Community</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-lg font-medium mb-4">Categories</h4>
+                  <ul className="space-y-2">
+                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Game Dev</a></li>
+                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Programming</a></li>
+                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Art & Design</a></li>
+                    <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Career</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-lg font-medium mb-4">Connect</h4>
+                  <div className="flex space-x-4">
+                    <a href="#" className="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary transition-all flex items-center justify-center">
+                      <i data-feather="twitter" className="text-gray-300 hover:text-white"></i>
+                    </a>
+                    <a href="#" className="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary transition-all flex items-center justify-center">
+                      <i data-feather="github" className="text-gray-300 hover:text-white"></i>
+                    </a>
+                    <a href="#" className="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary transition-all flex items-center justify-center">
+                      <i data-feather="youtube" className="text-gray-300 hover:text-white"></i>
+                    </a>
+                    <a href="#" className="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary transition-all flex items-center justify-center">
+                      <i data-feather="discord" className="text-gray-300 hover:text-white"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-400 text-sm">
+                <p>© 2023 TheDevNexus. All rights reserved.</p>
+              </div>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+    
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+  
+  <script>feather.replace();</script>
+</body>
+</html>

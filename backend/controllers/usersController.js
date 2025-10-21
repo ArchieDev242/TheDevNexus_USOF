@@ -279,23 +279,44 @@ class users_controller
             const user = await User.find_by_id(req.user.id);
             if(!user) throw error_handler.not_found_error('User');
 
-            // delete old avatar if it's not default
-            if(user.profile_picture && user.profile_picture !== 'default_avatar.png') 
-                {
-                file_upload.delete_file(`public/uploads/avatars/${user.profile_picture}`);
-            }
+            const fs = await import('fs');
+            const file_buff = fs.readFileSync(req.file.path);
+            const base64_str = `data:${req.file.mimetype};base64,${file_buff.toString('base64')}`;
 
-            // update user with new avatar
-            const avatar_url = file_upload.get_file_url(req, req.file.filename, 'avatars');
-            await user.update_avatar(req.file.filename);
+            await user.update_avatar(base64_str);
+
+            fs.unlinkSync(req.file.path);
 
             res.json({
                 status: 'success',
                 message: 'Avatar uploaded successfully',
                 data: 
                 {
-                    profile_picture: req.file.filename,
-                    avatar_url: avatar_url
+                    avatar: base64_str
+                }
+            });
+        } catch(error) 
+        {
+            throw error;
+        }
+    }
+
+    // DELETE /api/users/avatar
+    static async delete_avatar(req, res) 
+    {
+        try 
+        {
+            const user = await User.find_by_id(req.user.id);
+            if(!user) throw error_handler.not_found_error('User');
+
+            await user.update_avatar(null);
+
+            res.json({
+                status: 'success',
+                message: 'Avatar deleted successfully',
+                data: 
+                {
+                    avatar: null
                 }
             });
         } catch(error) 
@@ -310,7 +331,9 @@ class users_controller
         try 
         {
             const { user_id } = req.params;
-            const { login, full_name, email, role, email_verified, password } = req.body;
+            const { login, full_name, email, role, email_verified, password, bio, website, twitter, github, linkedin } = req.body;
+
+            console.log('Update profile request body:', { login, full_name, email, bio, website, twitter, github, linkedin });
 
             const user = await User.find_by_id(user_id);
             if(!user) throw error_handler.not_found_error('User');
@@ -322,6 +345,11 @@ class users_controller
             if(email !== undefined) update_data.email = email;
             if(role !== undefined) update_data.role = role;
             if(email_verified !== undefined) update_data.email_verified = email_verified;
+            if(bio !== undefined) update_data.bio = bio;
+            if(website !== undefined) update_data.website = website;
+            if(twitter !== undefined) update_data.twitter = twitter;
+            if(github !== undefined) update_data.github = github;
+            if(linkedin !== undefined) update_data.linkedin = linkedin;
             
             if(password && password.trim() !== '') 
                 {
@@ -357,6 +385,11 @@ class users_controller
                 full_name: updated_user.full_name,
                 email: updated_user.email,
                 profile_picture: updated_user.profile_picture,
+                bio: updated_user.bio,
+                website: updated_user.website,
+                twitter: updated_user.twitter,
+                github: updated_user.github,
+                linkedin: updated_user.linkedin,
                 rating: updated_user.rating,
                 reputation_score: updated_user.reputation_score,
                 is_toxic: updated_user.is_toxic,
@@ -578,6 +611,49 @@ class users_controller
                 {
                     page: parseInt(page),
                     limit: parseInt(limit)
+                }
+            });
+        } catch(error) 
+        {
+            throw error;
+        }
+    }
+
+    // GET /api/users/me - get current authenticated user
+    static async get_current_user(req, res) 
+    {
+        try 
+        {
+            if(!req.user) 
+            {
+                return res.status(401).json({
+                    status: 'error',
+                    message: 'Not authenticated'
+                });
+            }
+
+            // Avatar: Base64 string or null for default
+            const avatar = req.user.profile_picture || null;
+
+            res.json({
+                status: 'success',
+                data: {
+                    id: req.user.id,
+                    login: req.user.login,
+                    full_name: req.user.full_name,
+                    email: req.user.email,
+                    avatar: avatar,
+                    profile_picture: req.user.profile_picture,
+                    bio: req.user.bio,
+                    website: req.user.website,
+                    twitter: req.user.twitter,
+                    github: req.user.github,
+                    linkedin: req.user.linkedin,
+                    rating: req.user.rating,
+                    reputation_score: req.user.reputation_score,
+                    role: req.user.role,
+                    email_verified: req.user.email_verified,
+                    created_at: req.user.created_at
                 }
             });
         } catch(error) 

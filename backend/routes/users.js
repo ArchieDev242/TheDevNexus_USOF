@@ -9,6 +9,9 @@ const router = express.Router();
 
 router.use(auth_middleware.identify_user);
 
+// GET /api/users/me - get current authenticated user (must be before /:user_id)
+router.get('/me', error_handler.async_handler(users_controller.get_current_user));
+
 // GET /api/users - get all users (public)
 router.get('/', error_handler.async_handler(users_controller.get_all_public));
 
@@ -44,6 +47,12 @@ router.patch('/avatar',
     auth_middleware.require_auth,
     file_upload.handle_upload_error(file_upload.upload_avatar),
     error_handler.async_handler(users_controller.upload_avatar)
+);
+
+// DELETE /api/users/avatar - delete user avatar (authenticated users)
+router.delete('/avatar',
+    auth_middleware.require_auth,
+    error_handler.async_handler(users_controller.delete_avatar)
 );
 
 // PATCH /api/users/:user_id - update user data

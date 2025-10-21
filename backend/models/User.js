@@ -12,7 +12,12 @@ class User
         this.password = userData?.password;
         this.full_name = userData?.full_name;
         this.email = userData?.email;
-        this.profile_picture = userData?.profile_picture || 'default_avatar.png';
+        this.profile_picture = userData?.profile_picture || null;
+        this.bio = userData?.bio || null;
+        this.website = userData?.website || null;
+        this.twitter = userData?.twitter || null;
+        this.github = userData?.github || null;
+        this.linkedin = userData?.linkedin || null;
         this.rating = userData?.rating || 0;
         this.reputation_score = userData?.reputation_score ?? 0;
         this.is_toxic = userData?.is_toxic ?? false;
@@ -35,11 +40,11 @@ class User
     {
         try 
         {
-            const hashedPassword = await bcrypt.hash(this.password, 10);
+            const hashed_pass = await bcrypt.hash(this.password, 10);
 
-            const plainToken = await bcrypt.genSalt(10); // generate random token (plain)
+            const plain_token = await bcrypt.genSalt(10); // generate random token (plain)
 
-            this.verification_token = await bcrypt.hash(plainToken, 10);//hash code with bcrypt
+            this.verification_token = await bcrypt.hash(plain_token, 10); //hash code with bcrypt
 
             const query = `
                 INSERT INTO users (login, password, full_name, email, profile_picture, role, verification_token)
@@ -48,7 +53,7 @@ class User
 
             const result = await DB_connect.make_request(query, [
                 this.login,
-                hashedPassword,
+                hashed_pass,
                 this.full_name,
                 this.email,
                 this.profile_picture ?? 'default_avatar.png',
@@ -57,11 +62,11 @@ class User
             ]);
 
             console.log('Вставка в БД:', this.login, this.email);
-            console.log('Plain token (отправить пользователю):', plainToken);
+            console.log('Plain token (отправить пользователю):', plain_token);
             console.log('Hashed token (в БД):', this.verification_token);
 
             this.id = result[0].insertId;
-            return { user: this, plainToken };
+            return { user: this, plainToken: plain_token };
         } catch(error) 
         {
             throw new Error(`Error creating user: ${error.message}`);
@@ -233,14 +238,31 @@ class User
         return !!this.is_toxic;
     }
 
-    async update_password(newPassword) {
-        try {
+    async update_password(newPassword) 
+    {
+        try 
+        {
             const hashedPassword = await bcrypt.hash(newPassword, 10);
             const changedAt = new Date();
             await this.update({ password: hashedPassword, password_changed_at: changedAt });
             return true;
-        } catch (error) {
+        } catch(error) 
+        {
             throw new Error(`Error updating password: ${error.message}`);
+        }
+    }
+
+    async update_avatar(base64String) 
+    {
+        try 
+        {
+            await this.update({ profile_picture: base64String });
+            this.profile_picture = base64String;
+            return true;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error updating avatar: ${error.message}`);
         }
     }
 
@@ -261,33 +283,42 @@ class User
         }
     }
 
-    async set_reset_token(plainToken, ttlMinutes = 30) {
-        try {
+    async set_reset_token(plainToken, ttlMinutes = 30) 
+    {
+        try 
+        {
             const hash = await bcrypt.hash(plainToken, 10);
             const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
             await this.update({ reset_token_hash: hash, reset_token_expires_at: expiresAt });
             return true;
-        } catch (error) {
+        } catch(error) 
+        {
             throw new Error(`Error setting reset token: ${error.message}`);
         }
     }
 
-    async clear_reset_token() {
-        try {
+    async clear_reset_token() 
+    {
+        try 
+        {
             await this.update({ reset_token_hash: null, reset_token_expires_at: null });
             return true;
-        } catch (error) {
+        } catch(error) 
+        {
             throw new Error(`Error clearing reset token: ${error.message}`);
         }
     }
 
-    async verify_reset_token(plainToken) {
-        try {
-            if (!this.reset_token_hash || !this.reset_token_expires_at) return false;
+    async verify_reset_token(plainToken) 
+    {
+        try 
+        {
+            if(!this.reset_token_hash || !this.reset_token_expires_at) return false;
             const now = new Date();
-            if (new Date(this.reset_token_expires_at) < now) return false;
+            if(new Date(this.reset_token_expires_at) < now) return false;
             return await bcrypt.compare(plainToken, this.reset_token_hash);
-        } catch (error) {
+        } catch(error) 
+        {
             throw new Error(`Error verifying reset token: ${error.message}`);
         }
     }

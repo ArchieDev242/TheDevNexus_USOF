@@ -148,7 +148,7 @@ class Comment
         try 
         {
             const query = `
-                SELECT c.*, u.login as author_login, u.full_name as author_name
+                SELECT c.*, u.login as author_login, u.full_name as author_name, u.profile_picture as author_avatar
                 FROM comments c
                 JOIN users u ON c.author_id = u.id
                 WHERE c.post_id = ? AND c.status = 'active'
@@ -162,6 +162,7 @@ class Comment
                 const comment = new Comment(row);
                 comment.author_login = row.author_login;
                 comment.author_name = row.author_name;
+                comment.author_avatar = row.author_avatar;
                 return comment;
             });
         } 

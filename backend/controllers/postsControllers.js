@@ -25,7 +25,8 @@ class posts_controller
                 categories = '', 
                 date_from = '', 
                 date_to = '',
-                status = 'active'
+                status = 'active',
+                author = ''
             } = req.query;
             
             const filters = {
@@ -33,6 +34,8 @@ class posts_controller
                 date_from,
                 date_to
             };
+
+            if(author) filters.author = author;
             
             if(req.user?.role === 'admin') 
                 {

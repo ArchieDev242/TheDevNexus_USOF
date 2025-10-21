@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users(
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(150) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    profile_picture VARCHAR(255) DEFAULT 'default_avatar.png',
+    profile_picture LONGTEXT DEFAULT NULL,
     rating INT DEFAULT 0,
     reputation_score INT DEFAULT 0,
     is_toxic BOOLEAN DEFAULT FALSE,
