@@ -41,10 +41,9 @@ class DB_connect
             user: config.database.user,
             password: config.database.password,
             database: config.database.database,
-            charset: 'utf8mb4'
+            charset: 'utf8mb4',
+            collation: 'utf8mb4_unicode_ci'
         });
-        
-        await connection.query("SET NAMES utf8mb4; SET collation_connection = utf8mb4_unicode_ci;");
 
         return connection;
     }
