@@ -16,11 +16,12 @@ class DataBase
                 host: config.database.host,
                 user: config.database.user,
                 password: config.database.password,
-                database: config.database.dbName,
+                database: config.database.database,
                 timezone: 'Z',
-                charset: 'utf8mb4',
-                collation: 'utf8mb4_unicode_ci'
+                charset: 'utf8mb4'
             });
+
+            await this.connection.query("SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'");
             
             console.log('Database connected successfully!');
         } 

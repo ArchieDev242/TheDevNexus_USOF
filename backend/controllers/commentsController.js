@@ -109,14 +109,14 @@ class comments_controller
             };
             
             const comment = new Comment(comment_data);
-            const result = await comment.create();
+            const created_comment = await comment.create();
             
             res.status(201).json({
                 status: 'success',
                 message: 'Comment created successfully',
                 data: 
                 {
-                    id: result.insertId,
+                    id: created_comment.id,
                     content,
                     post_id
                 }
@@ -159,14 +159,14 @@ class comments_controller
             };
             
             const comment = new Comment(comment_data);
-            const result = await comment.create();
+            const created_comment = await comment.create();
             
             res.status(201).json({
                 status: 'success',
                 message: 'Reply created successfully',
                 data: 
                 {
-                    id: result.insertId,
+                    id: created_comment.id,
                     content,
                     parent_comment_id: comment_id
                 }

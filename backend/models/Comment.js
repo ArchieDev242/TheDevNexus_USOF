@@ -9,7 +9,7 @@ class Comment
         this.id = commentData?.id;
         this.post_id = commentData?.post_id;
         this.author_id = commentData?.author_id;
-        this.parent_comment_id = commentData?.parent_comment_id;
+        this.parent_comment_id = commentData?.parent_comment_id || null;
         this.content = commentData?.content;
         this.status = commentData?.status || 'active';
         this.publish_date = commentData?.publish_date;
@@ -19,18 +19,66 @@ class Comment
     {
         try 
         {
-            const query = `
-                INSERT INTO comments (post_id, author_id, parent_comment_id, content, status)
-                VALUES (?, ?, ?, ?, ?)
-            `;
-            
-            const result = await DB_connect.make_request(query, [
-                this.post_id,
-                this.author_id,
-                this.parent_comment_id,
-                this.content,
-                this.status
-            ]);
+            const has_parent_column = await Comment.ensure_parent_comment_column();
+
+            let result;
+
+            if(has_parent_column)
+            {
+                try
+                {
+                    result = await DB_connect.make_request(`
+                        INSERT INTO comments (post_id, author_id, parent_comment_id, content, status)
+                        VALUES (?, ?, ?, ?, ?)
+                    `, [
+                        this.post_id,
+                        this.author_id,
+                        this.parent_comment_id || null,
+                        this.content,
+                        this.status
+                    ]);
+                } catch(error)
+                {
+                    if(/Unknown column 'parent_comment_id'/i.test(error.message))
+                    {
+                        Comment.parent_column_checked = true;
+                        Comment.has_parent_comment_column = false;
+                        if(this.parent_comment_id)
+                        {
+                            throw new Error('Replies are not supported: missing parent_comment_id column');
+                        }
+
+                        result = await DB_connect.make_request(`
+                            INSERT INTO comments (post_id, author_id, content, status)
+                            VALUES (?, ?, ?, ?)
+                        `, [
+                            this.post_id,
+                            this.author_id,
+                            this.content,
+                            this.status
+                        ]);
+                    } else
+                    {
+                        throw error;
+                    }
+                }
+            } else 
+            {
+                if(this.parent_comment_id)
+                {
+                    throw new Error('Replies are not supported: missing parent_comment_id column');
+                }
+
+                result = await DB_connect.make_request(`
+                    INSERT INTO comments (post_id, author_id, content, status)
+                    VALUES (?, ?, ?, ?)
+                `, [
+                    this.post_id,
+                    this.author_id,
+                    this.content,
+                    this.status
+                ]);
+            }
             
             this.id = result[0].insertId;
             return this;
@@ -541,6 +589,32 @@ class Comment
     {
         return await Comment.find_by_post_id(post_id, userId);
     }
+
+    static async ensure_parent_comment_column()
+    {
+        if(Comment.parent_column_checked)
+        {
+            return Comment.has_parent_comment_column;
+        }
+
+        try
+        {
+            const result = await DB_connect.make_request("SHOW COLUMNS FROM comments LIKE 'parent_comment_id'");
+            const rows = result[0];
+            Comment.has_parent_comment_column = rows.length > 0;
+        } catch(error)
+        {
+            console.error('Failed to verify parent_comment_id column:', error.message);
+            Comment.has_parent_comment_column = false;
+        }
+
+        Comment.parent_column_checked = true;
+
+        return Comment.has_parent_comment_column;
+    }
 }
+
+Comment.parent_column_checked = false;
+Comment.has_parent_comment_column = null;
 
 export default Comment;
