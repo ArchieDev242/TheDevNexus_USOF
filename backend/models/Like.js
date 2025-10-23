@@ -243,6 +243,20 @@ class Like
         }
     }
 
+    async update_type(new_type) 
+    {
+        try 
+        {
+            await DB_connect.make_request('UPDATE likes SET type = ? WHERE id = ?', [new_type, this.id]);
+            this.type = new_type;
+            return this;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error updating like type: ${error.message}`);
+        }
+    }
+
     static async delete_user_post_like(authorId, postId) 
     {
         try 
@@ -318,26 +332,53 @@ class Like
         }
     }
 
-    static async get_post_likes_stats(postId) 
+    static async get_post_likes_stats(postId, userId = null) 
     {
         try 
         {
-            const query = `
+            const stats_query = `
                 SELECT 
-                    SUM(CASE WHEN type = 'like' THEN 1 ELSE 0 END) as likes,
-                    SUM(CASE WHEN type = 'dislike' THEN 1 ELSE 0 END) as dislikes,
+                    SUM(CASE WHEN type = 'like' THEN 1 ELSE 0 END) as likes_count,
+                    SUM(CASE WHEN type = 'dislike' THEN 1 ELSE 0 END) as dislikes_count,
                     COUNT(*) as total
                 FROM likes 
                 WHERE post_id = ?
             `;
-            
-            const result = await DB_connect.make_request(query, [postId]);
+
+            const result = await DB_connect.make_request(stats_query, [postId]);
             const rows = result[0];
-            
+
+            let liked = false;
+            let disliked = false;
+
+            if(userId) 
+            {
+                const reaction_query = `
+                    SELECT type FROM likes 
+                    WHERE post_id = ? AND author_id = ?
+                    LIMIT 1
+                `;
+
+                const reaction_result = await DB_connect.make_request(reaction_query, [postId, userId]);
+                const reaction_row = reaction_result[0][0];
+
+                if(reaction_row) 
+                {
+                    liked = reaction_row.type === 'like';
+                    disliked = reaction_row.type === 'dislike';
+                }
+            }
+
+            const likes_count = rows[0]?.likes_count || 0;
+            const dislikes_count = rows[0]?.dislikes_count || 0;
+
             return {
-                likes: rows[0]?.likes || 0,
-                dislikes: rows[0]?.dislikes || 0,
-                total: rows[0]?.total || 0
+                liked,
+                disliked,
+                likes_count,
+                dislikes_count,
+                total: rows[0]?.total || likes_count + dislikes_count,
+                count: likes_count
             };
         } 
         catch(error) 
@@ -346,26 +387,53 @@ class Like
         }
     }
 
-    static async get_comment_likes_stats(commentId) 
+    static async get_comment_likes_stats(commentId, userId = null) 
     {
         try 
         {
-            const query = `
+            const stats_query = `
                 SELECT 
-                    SUM(CASE WHEN type = 'like' THEN 1 ELSE 0 END) as likes,
-                    SUM(CASE WHEN type = 'dislike' THEN 1 ELSE 0 END) as dislikes,
+                    SUM(CASE WHEN type = 'like' THEN 1 ELSE 0 END) as likes_count,
+                    SUM(CASE WHEN type = 'dislike' THEN 1 ELSE 0 END) as dislikes_count,
                     COUNT(*) as total
                 FROM likes 
                 WHERE comment_id = ?
             `;
-            
-            const result = await DB_connect.make_request(query, [commentId]);
+
+            const result = await DB_connect.make_request(stats_query, [commentId]);
             const rows = result[0];
-            
+
+            let liked = false;
+            let disliked = false;
+
+            if(userId) 
+            {
+                const reaction_query = `
+                    SELECT type FROM likes 
+                    WHERE comment_id = ? AND author_id = ?
+                    LIMIT 1
+                `;
+
+                const reaction_result = await DB_connect.make_request(reaction_query, [commentId, userId]);
+                const reaction_row = reaction_result[0][0];
+
+                if(reaction_row) 
+                {
+                    liked = reaction_row.type === 'like';
+                    disliked = reaction_row.type === 'dislike';
+                }
+            }
+
+            const likes_count = rows[0]?.likes_count || 0;
+            const dislikes_count = rows[0]?.dislikes_count || 0;
+
             return {
-                likes: rows[0]?.likes || 0,
-                dislikes: rows[0]?.dislikes || 0,
-                total: rows[0]?.total || 0
+                liked,
+                disliked,
+                likes_count,
+                dislikes_count,
+                total: rows[0]?.total || likes_count + dislikes_count,
+                count: likes_count
             };
         } 
         catch(error) 
@@ -397,6 +465,22 @@ class Like
         }
     }
 
+    static async find_user_post_like(userId, postId) 
+    {
+        try 
+        {
+            const query = 'SELECT * FROM likes WHERE author_id = ? AND post_id = ?';
+            const result = await DB_connect.make_request(query, [userId, postId]);
+            const rows = result[0];
+            
+            return rows.length > 0 ? new Like(rows[0]) : null;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error finding user post like: ${error.message}`);
+        }
+    }
+
     static async find_user_comment_like(userId, commentId) 
     {
         try 
@@ -423,28 +507,7 @@ class Like
     {
         try 
         {
-            // Get total likes count
-            const stats_query = `
-                SELECT COUNT(*) as count
-                FROM likes 
-                WHERE post_id = ? AND type = 'like'
-            `;
-            
-            const stats_result = await DB_connect.make_request(stats_query, [post_id]);
-            const count = stats_result[0][0]?.count || 0;
-
-            // Check if user liked this post
-            let liked = false;
-            if (user_id) {
-                const user_like_query = `
-                    SELECT id FROM likes 
-                    WHERE post_id = ? AND author_id = ? AND type = 'like'
-                `;
-                const user_like_result = await DB_connect.make_request(user_like_query, [post_id, user_id]);
-                liked = user_like_result[0].length > 0;
-            }
-
-            return { liked, count };
+            return await Like.get_post_likes_stats(post_id, user_id);
         } 
         catch(error) 
         {

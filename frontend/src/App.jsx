@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import PostsPage from './pages/PostsPage';
 import PostDetailPage from './pages/PostDetailPage';
+import UserProfilePage from './pages/UserProfilePage';
 import AboutPage from './pages/AboutPage';
 import SettingsPage from './pages/SettingsPage';
 import CategoriesPage from './pages/CategoriesPage';
@@ -20,24 +21,25 @@ export default function App()
                 <Route path = "/" element = {<HomePage />} />
                 <Route path = "/posts" element = {<PostsPage />} />
                 <Route path = "/posts/:post_id" element = {<PostDetailPage />} />
+                <Route path = "/users/:userId" element = {<UserProfilePage />} />
                 <Route path = "/about" element = {<AboutPage />} />
                 <Route path = "/categories" element = {<CategoriesPage />} />
-                <Route path = "/login" element={
+                <Route path = "/login" element = {
                     <PublicRoute>
                         <LoginPage />
                     </PublicRoute>
                 } />
-                <Route path = "/register" element={
+                <Route path = "/register" element = {
                     <PublicRoute>
                         <RegisterPage />
                     </PublicRoute>
                 } />
-                <Route path = "/profile" element={
+                <Route path = "/profile" element = {
                     <ProtectedRoute>
                         <ProfilePage />
                     </ProtectedRoute>
                 } />
-                <Route path = "/settings" element={
+                <Route path = "/settings" element = {
                     <ProtectedRoute>
                         <SettingsPage />
                     </ProtectedRoute>

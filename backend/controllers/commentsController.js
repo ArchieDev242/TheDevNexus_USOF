@@ -20,7 +20,8 @@ class comments_controller
             const post = await Post.find_by_id(postId);
             if(!post) throw error_handler.not_found_error('Post');
             
-            const comments = await Comment.get_by_post(postId, page, limit);
+            const user_id = req.user?.id || null;
+            const comments = await Comment.get_by_post(postId, page, limit, user_id);
             
             res.json({
                 status: 'success',
@@ -64,12 +65,12 @@ class comments_controller
     {
         try 
         {
-            const { comment_id } = req.params;
+            const { id } = req.params;
             
-            const comment = await Comment.find_by_id(comment_id);
+            const comment = await Comment.find_by_id(id);
             if(!comment) throw error_handler.not_found_error('Comment');
             
-            const likes = await Like.get_comment_likes(comment_id);
+            const likes = await Like.get_comment_likes(id);
             
             res.json({
                 status: 'success',
@@ -236,14 +237,14 @@ class comments_controller
     {
         try 
         {
-            const { comment_id } = req.params;
+            const { id } = req.params;
             const { type = 'like' } = req.body; // like or dislike
             const author_id = req.user.id;
             
-            const comment = await Comment.find_by_id(comment_id);
+            const comment = await Comment.find_by_id(id);
             if(!comment) throw error_handler.not_found_error('Comment');
             
-            const like_exists = await Like.find_user_comment_like(author_id, comment_id);
+            const like_exists = await Like.find_user_comment_like(author_id, id);
             
             if(like_exists) 
                 {
@@ -258,7 +259,7 @@ class comments_controller
                 {
                 const like_data = {
                     author_id,
-                    comment_id,
+                    comment_id: id,
                     type
                 };
                 
@@ -266,9 +267,12 @@ class comments_controller
                 await like.create();
             }
             
+            const stats = await Like.get_comment_likes_stats(id, author_id);
+
             res.json({
                 status: 'success',
-                message: `Comment ${type}d successfully`
+                message: `Comment ${type}d successfully`,
+                data: stats
             });
         } catch(error) 
         {
@@ -281,17 +285,19 @@ class comments_controller
     {
         try 
         {
-            const { comment_id } = req.params;
+            const { id } = req.params;
             const author_id = req.user.id;
             
-            const like = await Like.find_user_comment_like(author_id, comment_id);
+            const like = await Like.find_user_comment_like(author_id, id);
             if(!like) throw error_handler.not_found_error('Like');
             
             await like.delete();
+            const stats = await Like.get_comment_likes_stats(id, author_id);
             
             res.json({
                 status: 'success',
-                message: 'Like removed successfully'
+                message: 'Like removed successfully',
+                data: stats
             });
         } catch(error) 
         {

@@ -62,6 +62,13 @@
     height: 48px;
     border-radius: 50%;
     object-fit: cover;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.author-avatar:hover 
+{
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(var(--primary-color-rgb), 0.4);
 }
 
 .author-details 
@@ -76,6 +83,12 @@
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
+    transition: color 0.2s;
+}
+
+.author-name:hover 
+{
+    color: var(--primary-color);
 }
 
 .post-date 
@@ -145,8 +158,15 @@
     font-size: 32px;
     font-weight: 700;
     color: var(--text-primary);
-    margin: 0 0 16px 0;
+    margin: 0 0 8px 0;
     line-height: 1.3;
+}
+
+.post-edited-info {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    font-style: italic;
 }
 
 .post-categories 
@@ -287,6 +307,48 @@
     background: var(--primary);
     border-color: var(--primary);
     color: white;
+}
+
+.action-btn svg {
+    font-size: 18px;
+}
+
+.action-btn.like-button.liked 
+{
+    background: rgba(239, 68, 68, 0.12);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.action-btn.like-button.liked svg 
+{
+    color: #ef4444;
+}
+
+.action-btn.like-button.liked:hover 
+{
+    background: rgba(239, 68, 68, 0.18);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.action-btn.dislike-button.disliked 
+{
+    background: rgba(107, 114, 128, 0.12);
+    border-color: #6b7280;
+    color: #6b7280;
+}
+
+.action-btn.dislike-button.disliked svg 
+{
+    color: #6b7280;
+}
+
+.action-btn.dislike-button.disliked:hover 
+{
+    background: rgba(107, 114, 128, 0.18);
+    border-color: #6b7280;
+    color: #6b7280;
 }
 
 .comments-section 
@@ -478,9 +540,17 @@
     transition: color 0.2s;
 }
 
-.comment-action:hover { color: var(--primary); }
+.comment-action svg { font-size: 16px; }
 
-.comment-action.active { color: var(--primary); }
+.comment-action:not(.liked):not(.disliked):hover { color: var(--primary); }
+
+.comment-action.like-action.liked { color: #ef4444; }
+.comment-action.like-action.liked svg { color: #ef4444; }
+
+.comment-action.dislike-action.disliked { color: #6b7280; }
+.comment-action.dislike-action.disliked svg { color: #6b7280; }
+
+.comment-action.reply-action:hover { color: var(--primary); }
 
 @media (max-width: 768px) 
 {

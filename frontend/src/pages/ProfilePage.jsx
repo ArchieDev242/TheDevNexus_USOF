@@ -56,6 +56,27 @@ export default function ProfilePage() {
 
     const [avatar_preview, set_avatar_preview] = useState(null);
 
+    const strip_markdown = (text) => {
+        if(!text) return '';
+        
+        let cleaned = text
+            .replace(/```[\s\S]*?```/g, '')
+            .replace(/`[^`]+`/g, '')
+            .replace(/(\*\*|__)(.*?)\1/g, '$2')
+            .replace(/(\*|_)(.*?)\1/g, '$2')
+            .replace(/^#{1,6}\s+/gm, '')
+            .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+            .replace(/!\[([^\]]*)\]\([^\)]+\)/g, '')
+            .replace(/^>\s+/gm, '')
+            .replace(/^(-{3,}|_{3,}|\*{3,})$/gm, '')
+            .replace(/^[\s]*[-*+]\s+/gm, '')
+            .replace(/^[\s]*\d+\.\s+/gm, '')
+            .replace(/\n\s*\n/g, '\n')
+            .trim();
+        
+        return cleaned;
+    };
+
     useEffect(() => {
         if(user) 
             {
@@ -111,6 +132,19 @@ export default function ProfilePage() {
         
         if(file) 
             {
+            // Validate file type
+            const allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowed_types.includes(file.type)) {
+                alert('Підтримуються тільки формати: JPG, PNG, GIF, WEBP');
+                return;
+            }
+
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Файл занадто великий. Максимум 5MB');
+                return;
+            }
+
             const reader = new FileReader();
             reader.onloadend = () => {
                 set_avatar_preview(reader.result);
@@ -322,7 +356,7 @@ export default function ProfilePage() {
                                             <input 
                                                 type = "file" 
                                                 id = "avatar-upload"
-                                                accept = "image/*"
+                                                accept = "image/jpeg,image/jpg,image/png,image/gif,image/webp"
                                                 onChange = {handle_avatar_change}
                                                 style = {{ display: 'none' }}
                                             />
@@ -333,6 +367,9 @@ export default function ProfilePage() {
                                             <FiTrash2 /> Remove Avatar
                                         </button>
                                     )}
+                                    <p className = "avatar-hint">
+                                        Підтримуються: JPG, PNG, GIF, WEBP (макс. 5MB)
+                                    </p>
                                 </div>
 
                                 <div className = "profile-info">
@@ -453,7 +490,10 @@ export default function ProfilePage() {
                                                             <h4>{post.title}</h4>
                                                             <span className = "post-status">{post.status}</span>
                                                         </div>
-                                                        <p className = "post-content">{post.content.substring(0, 150)}...</p>
+                                                        <p className = "post-content">
+                                                            {strip_markdown(post.content || '').substring(0, 150)}
+                                                            {post.content && strip_markdown(post.content).length > 150 ? '...' : ''}
+                                                        </p>
                                                         <div className = "post-footer">
                                                             <span className = "post-category">{post.categories?.[0]}</span>
                                                             <span className = "post-date">{new Date(post.publish_date).toLocaleDateString()}</span>

@@ -4,6 +4,7 @@ import UserReputation from '../models/UserReputation.js';
 import error_handler from '../middleware/errorHandler.js';
 import file_upload from '../middleware/fileUpload.js';
 import { normalize_avatar, DEFAULT_AVATAR } from '../utils/avatarUtils.js';
+import DB_connect from '../utils/dbConnect.js';
 
 const build_user_response = (user, includeSensitive = false) => {
     if(!user) return null;
@@ -588,6 +589,100 @@ class users_controller
             res.json({
                 status: 'success',
                 data: build_user_response(req.user, true)
+            });
+        } catch(error) 
+        {
+            throw error;
+        }
+    }
+
+    // GET /api/users/:user_id/posts - get user's posts
+    static async get_user_posts(req, res) 
+    {
+        try 
+        {
+            const { user_id } = req.params;
+            const { page = 1, limit = 20 } = req.query;
+            const offset = (page - 1) * limit;
+
+            const user = await User.find_by_id(user_id);
+            if(!user) throw error_handler.not_found_error('User');
+
+            const query = `
+                SELECT 
+                    p.*,
+                    u.login as author_login,
+                    u.full_name as author_name,
+                    u.profile_picture as author_avatar,
+                    COUNT(DISTINCT l.id) as likes_count,
+                    COUNT(DISTINCT c.id) as comments_count,
+                    GROUP_CONCAT(DISTINCT cat.title) as categories
+                FROM posts p
+                LEFT JOIN users u ON p.author_id = u.id
+                LEFT JOIN likes l ON p.id = l.post_id AND l.type = 'like'
+                LEFT JOIN comments c ON p.id = c.id
+                LEFT JOIN post_categories pc ON p.id = pc.post_id
+                LEFT JOIN categories cat ON pc.category_id = cat.id
+                WHERE p.author_id = ? AND p.status = 'active'
+                GROUP BY p.id
+                ORDER BY p.created_at DESC
+                LIMIT ? OFFSET ?
+            `;
+
+            const result = await DB_connect.make_request(query, [user_id, parseInt(limit), offset]);
+            const posts = result[0].map(post => ({
+                ...post,
+                author_avatar: normalize_avatar(post.author_avatar),
+                categories: post.categories ? post.categories.split(',') : []
+            }));
+
+            const count_query = 'SELECT COUNT(*) as total FROM posts WHERE author_id = ? AND status = "active"';
+            const count_result = await DB_connect.make_request(count_query, [user_id]);
+            const total = count_result[0][0].total;
+
+            res.json({
+                status: 'success',
+                data: posts,
+                pagination: 
+                {
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    total: total,
+                    total_pages: Math.ceil(total / limit)
+                }
+            });
+        } catch(error) 
+        {
+            throw error;
+        }
+    }
+
+    // GET /api/users/:user_id/achievements - get user's achievements
+    static async get_user_achievements(req, res) 
+    {
+        try 
+        {
+            const { user_id } = req.params;
+
+            const user = await User.find_by_id(user_id);
+            if(!user) throw error_handler.not_found_error('User');
+
+            const query = `
+                SELECT 
+                    a.*,
+                    ua.earned_at,
+                    ua.progress
+                FROM user_achievements ua
+                JOIN achievements a ON ua.achievement_id = a.id
+                WHERE ua.user_id = ?
+                ORDER BY ua.earned_at DESC
+            `;
+
+            const result = await DB_connect.make_request(query, [user_id]);
+
+            res.json({
+                status: 'success',
+                data: result[0]
             });
         } catch(error) 
         {

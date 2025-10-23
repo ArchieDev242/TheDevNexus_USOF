@@ -103,11 +103,12 @@ class posts_controller
         {
             const { post_id } = req.params;
             const { page = 1, limit = 20 } = req.query;
+            const user_id = req.user?.id || null;
             
             const post = await Post.find_by_id(post_id);
             if(!post) throw error_handler.not_found_error('Post'); 
             
-            const comments = await Comment.get_by_post(post_id, page, limit);
+            const comments = await Comment.get_by_post(post_id, page, limit, user_id);
             
             res.json({
                 status: 'success',
@@ -342,9 +343,12 @@ class posts_controller
                 console.error('❌ Error checking achievements:', achievement_error);
             }
 
+            const stats = await Like.get_post_likes(post_id, author_id);
+
             res.json({
                 status: 'success',
-                message: `Post ${type}d successfully`
+                message: `Post ${type}d successfully`,
+                data: stats
             });
         } catch(error) 
         {
@@ -379,9 +383,12 @@ class posts_controller
             
             if(req.files && req.files.length > 0) await Post.add_images(post_id, req.files.map(f => f.filename));
             
+            const updated_post = await Post.get_full_post_data(post_id);
+            
             res.json({
                 status: 'success',
-                message: 'Post updated successfully'
+                message: 'Post updated successfully',
+                data: updated_post
             });
         } catch(error) 
         {
@@ -428,10 +435,12 @@ class posts_controller
             if(!like) throw error_handler.not_found_error('Like');
             
             await like.delete();
+            const stats = await Like.get_post_likes(post_id, author_id);
             
             res.json({
                 status: 'success',
-                message: 'Like removed successfully'
+                message: 'Like removed successfully',
+                data: stats
             });
         } catch(error) 
         {

@@ -10,7 +10,7 @@ class likes_controller
     {
         try 
         {
-            const { postId } = req.params;
+            const { id } = req.params;
             
             const query = `
                 SELECT 
@@ -20,7 +20,7 @@ class likes_controller
                 WHERE post_id = ?
             `;
             
-            const result = await DB_connect.make_request(query, [postId]);
+            const result = await DB_connect.make_request(query, [id]);
             res.json(result[0][0]);
         } catch(error) 
         {
@@ -33,7 +33,7 @@ class likes_controller
     {
         try 
         {
-            const { commentId } = req.params;
+            const { id } = req.params;
             
             const query = `
                 SELECT 
@@ -43,7 +43,7 @@ class likes_controller
                 WHERE comment_id = ?
             `;
             
-            const result = await DB_connect.make_request(query, [commentId]);
+            const result = await DB_connect.make_request(query, [id]);
             res.json(result[0][0]);
         } catch(error) 
         {
@@ -60,20 +60,20 @@ class likes_controller
     {
         try 
         {
-            const user_id = req.user?.id || 1; // for testing
-            const { postId } = req.params;
+            const author_id = req.user?.id || 1; // for testing
+            const { id } = req.params;
 
             // post exists?
             const post_check = await DB_connect.make_request(
                 'SELECT id FROM posts WHERE id = ? AND status = "active"',
-                [postId]
+                [id]
             );
             
             if(post_check[0].length === 0) return res.status(404).json({ error: 'Post not found' });
 
             const like_exists = await DB_connect.make_request(
-                'SELECT id, type FROM likes WHERE user_id = ? AND post_id = ?',
-                [user_id, postId]
+                'SELECT id, type FROM likes WHERE author_id = ? AND post_id = ?',
+                [author_id, id]
             );
 
             if(like_exists[0].length > 0) 
@@ -83,23 +83,23 @@ class likes_controller
                 if(current_type === 'like') 
                     {
                     await DB_connect.make_request(
-                        'DELETE FROM likes WHERE user_id = ? AND post_id = ?',
-                        [user_id, postId]
+                        'DELETE FROM likes WHERE author_id = ? AND post_id = ?',
+                        [author_id, id]
                     );
                     res.json({ success: true, message: 'Like removed', action: 'unliked' });
                 } else 
                     {
                     await DB_connect.make_request(
-                        'UPDATE likes SET type = "like" WHERE user_id = ? AND post_id = ?',
-                        [user_id, postId]
+                        'UPDATE likes SET type = "like" WHERE author_id = ? AND post_id = ?',
+                        [author_id, id]
                     );
                     res.json({ success: true, message: 'Changed to like', action: 'liked' });
                 }
             } else 
                 {
                 await DB_connect.make_request(
-                    'INSERT INTO likes (user_id, post_id, type) VALUES (?, ?, "like")',
-                    [user_id, postId]
+                    'INSERT INTO likes (author_id, post_id, type) VALUES (?, ?, "like")',
+                    [author_id, id]
                 );
                 res.json({ success: true, message: 'Post liked', action: 'liked' });
             }
@@ -113,19 +113,19 @@ class likes_controller
     static async dislike_post(req, res) 
     {
         try {
-            const user_id = req.user?.id || 1;
-            const { postId } = req.params;
+            const author_id = req.user?.id || 1;
+            const { id } = req.params;
             
             const post_check = await DB_connect.make_request(
                 'SELECT id FROM posts WHERE id = ? AND status = "active"',
-                [postId]
+                [id]
             );
             
             if(post_check[0].length === 0) return res.status(404).json({ error: 'Post not found' });
 
             const like_exists = await DB_connect.make_request(
-                'SELECT id, type FROM likes WHERE user_id = ? AND post_id = ?',
-                [user_id, postId]
+                'SELECT id, type FROM likes WHERE author_id = ? AND post_id = ?',
+                [author_id, id]
             );
 
             if(like_exists[0].length > 0) 
@@ -135,23 +135,23 @@ class likes_controller
                 if(current_type === 'dislike') 
                     {
                     await DB_connect.make_request(
-                        'DELETE FROM likes WHERE user_id = ? AND post_id = ?',
-                        [user_id, postId]
+                        'DELETE FROM likes WHERE author_id = ? AND post_id = ?',
+                        [author_id, id]
                     );
                     res.json({ success: true, message: 'Dislike removed', action: 'undisliked' });
                 } else 
                     {
                     await DB_connect.make_request(
-                        'UPDATE likes SET type = "dislike" WHERE user_id = ? AND post_id = ?',
-                        [user_id, postId]
+                        'UPDATE likes SET type = "dislike" WHERE author_id = ? AND post_id = ?',
+                        [author_id, id]
                     );
                     res.json({ success: true, message: 'Changed to dislike', action: 'disliked' });
                 }
             } else 
                 {
                 await DB_connect.make_request(
-                    'INSERT INTO likes (user_id, post_id, type) VALUES (?, ?, "dislike")',
-                    [user_id, postId]
+                    'INSERT INTO likes (author_id, post_id, type) VALUES (?, ?, "dislike")',
+                    [author_id, id]
                 );
                 res.json({ success: true, message: 'Post disliked', action: 'disliked' });
             }
@@ -166,19 +166,19 @@ class likes_controller
     {
         try 
         {
-            const user_id = req.user?.id || 1;
-            const { commentId } = req.params;
+            const author_id = req.user?.id || 1;
+            const { id } = req.params;
             
             const comment_check = await DB_connect.make_request(
                 'SELECT id FROM comments WHERE id = ? AND status = "active"',
-                [commentId]
+                [id]
             );
             
             if(comment_check[0].length === 0) return res.status(404).json({ error: 'Comment not found' });
 
             const like_exists = await DB_connect.make_request(
-                'SELECT id, type FROM likes WHERE user_id = ? AND comment_id = ?',
-                [user_id, commentId]
+                'SELECT id, type FROM likes WHERE author_id = ? AND comment_id = ?',
+                [author_id, id]
             );
 
             if(like_exists[0].length > 0) 
@@ -188,23 +188,23 @@ class likes_controller
                 if(current_type === 'like') 
                     {
                     await DB_connect.make_request(
-                        'DELETE FROM likes WHERE user_id = ? AND comment_id = ?',
-                        [user_id, commentId]
+                        'DELETE FROM likes WHERE author_id = ? AND comment_id = ?',
+                        [author_id, id]
                     );
                     res.json({ success: true, message: 'Like removed', action: 'unliked' });
                 } else 
                     {
                     await DB_connect.make_request(
-                        'UPDATE likes SET type = "like" WHERE user_id = ? AND comment_id = ?',
-                        [user_id, commentId]
+                        'UPDATE likes SET type = "like" WHERE author_id = ? AND comment_id = ?',
+                        [author_id, id]
                     );
                     res.json({ success: true, message: 'Changed to like', action: 'liked' });
                 }
             } else 
                 {
                 await DB_connect.make_request(
-                    'INSERT INTO likes (user_id, comment_id, type) VALUES (?, ?, "like")',
-                    [user_id, commentId]
+                    'INSERT INTO likes (author_id, comment_id, type) VALUES (?, ?, "like")',
+                    [author_id, id]
                 );
                 res.json({ success: true, message: 'Comment liked', action: 'liked' });
             }
@@ -219,19 +219,19 @@ class likes_controller
     {
         try 
         {
-            const user_id = req.user?.id || 1;
-            const { commentId } = req.params;
+            const author_id = req.user?.id || 1;
+            const { id } = req.params;
             
             const comment_check = await DB_connect.make_request(
                 'SELECT id FROM comments WHERE id = ? AND status = "active"',
-                [commentId]
+                [id]
             );
             
             if(comment_check[0].length === 0) return res.status(404).json({ error: 'Comment not found' });
 
             const like_exists = await DB_connect.make_request(
-                'SELECT id, type FROM likes WHERE user_id = ? AND comment_id = ?',
-                [user_id, commentId]
+                'SELECT id, type FROM likes WHERE author_id = ? AND comment_id = ?',
+                [author_id, id]
             );
 
             if(like_exists[0].length > 0) 
@@ -241,23 +241,23 @@ class likes_controller
                 if(current_type === 'dislike') 
                     {
                     await DB_connect.make_request(
-                        'DELETE FROM likes WHERE user_id = ? AND comment_id = ?',
-                        [user_id, commentId]
+                        'DELETE FROM likes WHERE author_id = ? AND comment_id = ?',
+                        [author_id, id]
                     );
                     res.json({ success: true, message: 'Dislike removed', action: 'undisliked' });
                 } else 
                     {
                     await DB_connect.make_request(
-                        'UPDATE likes SET type = "dislike" WHERE user_id = ? AND comment_id = ?',
-                        [user_id, commentId]
+                        'UPDATE likes SET type = "dislike" WHERE author_id = ? AND comment_id = ?',
+                        [author_id, id]
                     );
                     res.json({ success: true, message: 'Changed to dislike', action: 'disliked' });
                 }
             } else 
                 {
                 await DB_connect.make_request(
-                    'INSERT INTO likes (user_id, comment_id, type) VALUES (?, ?, "dislike")',
-                    [user_id, commentId]
+                    'INSERT INTO likes (author_id, comment_id, type) VALUES (?, ?, "dislike")',
+                    [author_id, id]
                 );
                 res.json({ success: true, message: 'Comment disliked', action: 'disliked' });
             }
@@ -272,7 +272,7 @@ class likes_controller
     {
         try 
         {
-            const user_id = req.user?.id || 1;
+            const author_id = req.user?.id || 1;
             const { page = 1, limit = 20 } = req.query;
             const offset = (page - 1) * limit;
             
@@ -287,17 +287,155 @@ class likes_controller
                 FROM likes l
                 LEFT JOIN posts p ON l.post_id = p.id
                 LEFT JOIN comments c ON l.comment_id = c.id
-                WHERE l.user_id = ?
+                WHERE l.author_id = ?
                 ORDER BY l.id DESC
                 LIMIT ? OFFSET ?
             `;
             
-            const result = await DB_connect.make_request(query, [user_id, parseInt(limit), offset]);
+            const result = await DB_connect.make_request(query, [author_id, parseInt(limit), offset]);
             res.json(result[0]);
         } catch(error) 
         {
             console.error('Error fetching user likes:', error);
             res.status(500).json({ error: 'Failed to fetch user likes' });
+        }
+    }
+
+    // ===============================
+    // USER RATING/REPUTATION SYSTEM
+    // ===============================
+
+    static async rate_user(req, res) 
+    {
+        try 
+        {
+            const giver_id = req.user?.id;
+            const { userId } = req.params;
+            const { value } = req.body; // 1 for like, -1 for dislike
+
+            if(!giver_id) return res.status(401).json({ error: 'Authentication required' });
+            
+            if(giver_id == userId) return res.status(400).json({ error: 'Cannot rate yourself' });
+            
+            if(value !== 1 && value !== -1) return res.status(400).json({ error: 'Value must be 1 or -1' });
+
+            // Check if user exists
+            const user_check = await DB_connect.make_request(
+                'SELECT id FROM users WHERE id = ?',
+                [userId]
+            );
+            
+            if(user_check[0].length === 0) return res.status(404).json({ error: 'User not found' });
+
+            // Check if rating already exists
+            const existing_rating = await DB_connect.make_request(
+                'SELECT * FROM user_reputations WHERE giver_id = ? AND receiver_id = ?',
+                [giver_id, userId]
+            );
+
+            if(existing_rating[0].length > 0) 
+            {
+                const current_value = existing_rating[0][0].value;
+                
+                if(current_value === value) 
+                {
+                    // Remove rating
+                    await DB_connect.make_request(
+                        'DELETE FROM user_reputations WHERE giver_id = ? AND receiver_id = ?',
+                        [giver_id, userId]
+                    );
+                    
+                    // Update user rating
+                    await DB_connect.make_request(
+                        'UPDATE users SET rating = rating - ? WHERE id = ?',
+                        [value, userId]
+                    );
+                    
+                    return res.json({ success: true, message: 'Rating removed', action: 'removed' });
+                } else 
+                {
+                    // Change rating
+                    await DB_connect.make_request(
+                        'UPDATE user_reputations SET value = ? WHERE giver_id = ? AND receiver_id = ?',
+                        [value, giver_id, userId]
+                    );
+                    
+                    // Update user rating (remove old, add new)
+                    const delta = value - current_value; // Will be +2 or -2
+                    await DB_connect.make_request(
+                        'UPDATE users SET rating = rating + ? WHERE id = ?',
+                        [delta, userId]
+                    );
+                    
+                    return res.json({ success: true, message: 'Rating updated', action: value === 1 ? 'liked' : 'disliked' });
+                }
+            } else 
+            {
+                // Create new rating
+                await DB_connect.make_request(
+                    'INSERT INTO user_reputations (giver_id, receiver_id, value) VALUES (?, ?, ?)',
+                    [giver_id, userId, value]
+                );
+                
+                // Update user rating
+                await DB_connect.make_request(
+                    'UPDATE users SET rating = rating + ? WHERE id = ?',
+                    [value, userId]
+                );
+                
+                return res.json({ success: true, message: 'Rating added', action: value === 1 ? 'liked' : 'disliked' });
+            }
+        } catch(error) 
+        {
+            console.error('Error rating user:', error);
+            res.status(500).json({ error: 'Failed to rate user' });
+        }
+    }
+
+    static async get_user_rating(req, res) 
+    {
+        try 
+        {
+            const { userId } = req.params;
+            const current_user_id = req.user?.id;
+
+            // Get user rating and reputation
+            const query = `
+                SELECT 
+                    u.rating,
+                    u.reputation_score,
+                    (SELECT COUNT(*) FROM user_reputations WHERE receiver_id = ? AND value = 1) as likes_count,
+                    (SELECT COUNT(*) FROM user_reputations WHERE receiver_id = ? AND value = -1) as dislikes_count
+                FROM users u
+                WHERE u.id = ?
+            `;
+            
+            const result = await DB_connect.make_request(query, [userId, userId, userId]);
+            
+            if(result[0].length === 0) return res.status(404).json({ error: 'User not found' });
+
+            const user_rating = result[0][0];
+
+            // Check if current user rated this user
+            let user_vote = null;
+            if(current_user_id) 
+            {
+                const vote_query = 'SELECT value FROM user_reputations WHERE giver_id = ? AND receiver_id = ?';
+                const vote_result = await DB_connect.make_request(vote_query, [current_user_id, userId]);
+                user_vote = vote_result[0].length > 0 ? vote_result[0][0].value : null;
+            }
+
+            res.json({
+                rating: user_rating.rating,
+                reputation_score: user_rating.reputation_score,
+                likes_count: user_rating.likes_count,
+                dislikes_count: user_rating.dislikes_count,
+                user_vote: user_vote
+            });
+        } catch(error) 
+        {
+            console.error('Error fetching user rating:', error);
+            res.status(500).json({ error: 'Failed to fetch user rating' });
         }
     }
 

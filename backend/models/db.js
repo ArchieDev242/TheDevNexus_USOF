@@ -17,8 +17,11 @@ class DataBase
                 user: config.database.user,
                 password: config.database.password,
                 database: config.database.dbName,
-                timezone: 'Z'
+                timezone: 'Z',
+                charset: 'utf8mb4'
             });
+
+            await this.connection.query("SET NAMES utf8mb4; SET collation_connection = utf8mb4_unicode_ci;");
             
             console.log('Database connected successfully!');
         } 

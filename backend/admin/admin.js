@@ -142,7 +142,8 @@ const adminJS_config = {
         'dashboard': {
             label: 'Dashboard',
             handler: async (request, response, context) => {
-                try {
+                try 
+                {
                     const user_count = await DB_connect.make_request('SELECT COUNT(*) as count FROM users');
                     const post_count = await DB_connect.make_request('SELECT COUNT(*) as count FROM posts');
                     const comment_count = await DB_connect.make_request('SELECT COUNT(*) as count FROM comments');
@@ -280,7 +281,8 @@ const admin_js = new AdminJS(adminJS_config);
 const authenticate = async (email, password) => {
     console.log('AdminJS login attempt:', email);
     
-    if(email === 'admin@usof.com' && password === 'admin123') {
+    if(email === 'admin@usof.com' && password === 'admin123') 
+        {
         console.log('AdminJS login successful');
         return { email: 'admin@usof.com', role: 'admin' };
     }
@@ -296,7 +298,8 @@ const admin_router = AdminJSExpress.buildAuthenticatedRouter(admin_js, {
 }, null, {
     resave: false,
     saveUninitialized: true,
-    cookie: {
+    cookie: 
+    {
         maxAge: 1000 * 60 * 60 * 24 // 24 hours
     }
 });

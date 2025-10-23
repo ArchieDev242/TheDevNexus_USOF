@@ -1,4 +1,7 @@
-CREATE DATABASE IF NOT EXISTS USOF;
+SET NAMES utf8mb4;
+SET collattion_connection = utf8mb4_unicode_ci;
+
+CREATE DATABASE IF NOT EXISTS USOF CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS 'mkopychko'@'localhost' IDENTIFIED BY 'securepass';
 GRANT ALL PRIVILEGES ON USOF.* TO 'mkopychko'@'localhost';
 

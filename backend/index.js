@@ -5,6 +5,7 @@ import usersRouter from './routes/users.js';
 import postsRouter from './routes/posts.js';
 import commentsRouter from './routes/comments.js';
 import categoriesRouter from './routes/categories.js';
+import likesRouter from './routes/likes.js';
 import commentsAdditionalRouter from './routes/comments-additional.js';
 import notificationsRouter from './routes/notifications.js';
 import achievementsRouter from './routes/achievements.js';
@@ -29,6 +30,10 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 app.use(cors());
+
+app.use('/api/users/me', (req, res, next) => {
+    next();
+});
 
 app.use('/api', RateLimit.api());
 
@@ -76,6 +81,7 @@ app.use("/api/posts", postsRouter);
 app.use("/api/comments", commentsRouter);
 app.use("/api/comments", commentsAdditionalRouter);
 app.use("/api/categories", categoriesRouter);
+app.use("/api/likes", likesRouter);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/achievements", achievementsRouter);
 app.use("/api/code", codeExecutionRouter);

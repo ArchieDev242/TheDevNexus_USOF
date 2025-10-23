@@ -58,7 +58,7 @@ class file_upload
         storage: file_upload.avatar_storage,
         limits: 
         {
-            fileSize: 2 * 1024 * 1024, // 2MB limit
+            fileSize: 5 * 1024 * 1024, // 5MB limit (increased for GIF support)
         },
         fileFilter: file_upload.image_filter
     }).single('avatar');

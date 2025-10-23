@@ -3,9 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { FiHeart, FiMessageCircle, FiBookmark, FiArrowLeft, FiMoreVertical, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiMessageCircle, FiBookmark, FiArrowLeft, FiMoreVertical, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FaHeart, FaRegHeart, FaThumbsDown, FaRegThumbsDown } from 'react-icons/fa';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import EditPostModal from '../components/EditPostModal';
 import '../style/post-detail.css';
 
 export default function PostDetailPage() {
@@ -20,7 +22,13 @@ export default function PostDetailPage() {
     const [new_comment, set_new_comment] = useState('');
     const [reply_to, set_reply_to] = useState(null);
     const [show_post_menu, set_show_post_menu] = useState(false);
-    const [like_status, set_like_status] = useState({ liked: false, count: 0 });
+    const [show_edit_modal, set_show_edit_modal] = useState(false);
+    const [post_reaction, set_post_reaction] = useState({
+        liked: false,
+        disliked: false,
+        likes_count: 0,
+        dislikes_count: 0
+    });
     const [save_status, set_save_status] = useState(false);
 
     useEffect(() => {
@@ -61,18 +69,21 @@ export default function PostDetailPage() {
                 set_categories(categories_data.data || []);
             }
 
-            // Fetch like status if authenticated
-            if (isAuthenticated) {
-                const like_response = await fetch(`/api/posts/${post_id}/like`, {
-                    credentials: 'include'
+            const like_response = await fetch(`/api/posts/${post_id}/like`, {
+                credentials: 'include'
+            });
+            const like_data = await like_response.json();
+            
+            if (like_data.status === 'success' && like_data.data) {
+                set_post_reaction({
+                    liked: Boolean(like_data.data.liked),
+                    disliked: Boolean(like_data.data.disliked),
+                    likes_count: like_data.data.likes_count ?? like_data.data.count ?? 0,
+                    dislikes_count: like_data.data.dislikes_count ?? 0
                 });
-                const like_data = await like_response.json();
-                
-                if (like_data.status === 'success') {
-                    set_like_status(like_data.data);
-                }
+            }
 
-                // Fetch save status
+            if (isAuthenticated) {
                 const save_response = await fetch(`/api/posts/${post_id}/save-status`, {
                     credentials: 'include'
                 });
@@ -83,46 +94,72 @@ export default function PostDetailPage() {
                 }
             }
 
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Error fetching post data:', error);
-        } finally {
+        } finally 
+        {
             set_loading(false);
         }
     };
 
-    const handle_like = async () => {
-        if (!isAuthenticated) {
-            alert('Увійдіть щоб поставити лайк');
+    const apply_post_reaction = (payload) => {
+        if(!payload) return;
+        set_post_reaction({
+            liked: Boolean(payload.liked),
+            disliked: Boolean(payload.disliked),
+            likes_count: payload.likes_count ?? payload.count ?? 0,
+            dislikes_count: payload.dislikes_count ?? 0
+        });
+    };
+
+    const handle_post_reaction = async (type) => {
+        if(!isAuthenticated) 
+            {
+            alert('Увійдіть щоб взаємодіяти з постом');
             return;
         }
 
-        try {
-            const method = like_status.liked ? 'DELETE' : 'POST';
-            const response = await fetch(`/api/posts/${post_id}/like`, {
-                method,
-                credentials: 'include'
-            });
+        const is_active = type === 'like' ? post_reaction.liked : post_reaction.disliked;
+        const method = is_active ? 'DELETE' : 'POST';
 
+        const options = {
+            method,
+            credentials: 'include'
+        };
+
+        if(method === 'POST') 
+            {
+            options.headers = {
+                'Content-Type': 'application/json'
+            };
+            options.body = JSON.stringify({ type });
+        }
+
+        try 
+        {
+            const response = await fetch(`/api/posts/${post_id}/like`, options);
             const data = await response.json();
-            
-            if (data.status === 'success') {
-                set_like_status({
-                    liked: !like_status.liked,
-                    count: like_status.count + (like_status.liked ? -1 : 1)
-                });
+
+            if(data.status === 'success' && data.data) 
+                {
+                apply_post_reaction(data.data);
             }
-        } catch (error) {
-            console.error('Error toggling like:', error);
+        } catch(error) 
+        {
+            console.error('Error toggling post reaction:', error);
         }
     };
 
     const handle_save = async () => {
-        if (!isAuthenticated) {
+        if(!isAuthenticated) 
+            {
             alert('Увійдіть щоб зберегти пост');
             return;
         }
 
-        try {
+        try 
+        {
             const method = save_status ? 'DELETE' : 'POST';
             const response = await fetch(`/api/posts/${post_id}/save`, {
                 method,
@@ -131,10 +168,12 @@ export default function PostDetailPage() {
 
             const data = await response.json();
             
-            if (data.status === 'success') {
+            if(data.status === 'success') 
+                {
                 set_save_status(!save_status);
             }
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Error toggling save:', error);
         }
     };
@@ -142,22 +181,27 @@ export default function PostDetailPage() {
     const handle_submit_comment = async (e) => {
         e.preventDefault();
         
-        if (!isAuthenticated) {
+        if(!isAuthenticated) 
+            {
             alert('Увійдіть щоб залишити коментар');
             return;
         }
 
-        if (!new_comment.trim()) {
+        if(!new_comment.trim()) 
+            {
             alert('Коментар не може бути порожнім');
             return;
         }
 
-        try {
+        try 
+        {
             const response = await fetch(`/api/posts/${post_id}/comments`, {
                 method: 'POST',
-                headers: {
+                headers: 
+                {
                     'Content-Type': 'application/json'
                 },
+
                 credentials: 'include',
                 body: JSON.stringify({
                     content: new_comment,
@@ -167,23 +211,28 @@ export default function PostDetailPage() {
 
             const data = await response.json();
             
-            if (data.status === 'success') {
+            if(data.status === 'success') 
+                {
                 set_new_comment('');
                 set_reply_to(null);
-                fetch_post_data(); // Reload comments
-            } else {
+                fetch_post_data();
+            } else 
+                {
                 alert(data.message || 'Помилка створення коментаря');
             }
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Error submitting comment:', error);
             alert('Помилка створення коментаря');
         }
     };
 
     const handle_delete_post = async () => {
-        if (!window.confirm('Ви впевнені що хочете видалити цей пост?')) {
+        if (!window.confirm('⚠️ УВАГА! Ви впевнені що хочете НАЗАВЖДИ видалити цей пост?\n\nЦю дію неможливо відмінити. Пост, всі коментарі та лайки будуть видалені безповоротно.')) {
             return;
         }
+
+        set_show_post_menu(false);
 
         try {
             const response = await fetch(`/api/posts/${post_id}`, {
@@ -194,13 +243,14 @@ export default function PostDetailPage() {
             const data = await response.json();
             
             if (data.status === 'success') {
+                alert('✅ Пост успішно видалено');
                 navigate('/posts');
             } else {
-                alert(data.message || 'Помилка видалення поста');
+                alert('❌ ' + (data.message || 'Помилка видалення поста'));
             }
         } catch (error) {
             console.error('Error deleting post:', error);
-            alert('Помилка видалення поста');
+            alert('❌ Помилка видалення поста');
         }
     };
 
@@ -263,9 +313,17 @@ export default function PostDetailPage() {
                                     src={post.author?.profile_picture || '/user/avatar.jpg'} 
                                     alt={post.author?.login || 'User'}
                                     className="author-avatar"
+                                    onClick={() => navigate(`/users/${post.author_id}`)}
+                                    style={{ cursor: 'pointer' }}
                                 />
                                 <div className="author-details">
-                                    <h3 className="author-name">{post.author?.login || 'Anonymous'}</h3>
+                                    <h3 
+                                        className="author-name"
+                                        onClick={() => navigate(`/users/${post.author_id}`)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        {post.author?.login || 'Anonymous'}
+                                    </h3>
                                     <span className="post-date">{format_date(post.publish_date)}</span>
                                 </div>
                             </div>
@@ -280,16 +338,20 @@ export default function PostDetailPage() {
                                     </button>
                                     {show_post_menu && (
                                         <div className="menu-dropdown">
-                                            {is_author && (
-                                                <button className="menu-item">
-                                                    <FiEdit2 /> Редагувати
-                                                </button>
-                                            )}
+                                            <button 
+                                                className = "menu-item"
+                                                onClick = {() => {
+                                                    set_show_edit_modal(true);
+                                                    set_show_post_menu(false);
+                                                }}
+                                            >
+                                                <FiEdit2 /> Редагувати
+                                            </button>
                                             <button 
                                                 className="menu-item delete"
                                                 onClick={handle_delete_post}
                                             >
-                                                <FiTrash2 /> Видалити
+                                                <FiTrash2 /> Видалити назавжди
                                             </button>
                                         </div>
                                     )}
@@ -298,6 +360,12 @@ export default function PostDetailPage() {
                         </div>
 
                         <h1 className="post-title">{post.title}</h1>
+
+                        {post.updated_at && post.updated_at !== post.created_at && (
+                            <div className = "post-edited-info">
+                                <i>Відредаговано {format_date(post.updated_at)}</i>
+                            </div>
+                        )}
 
                         {categories.length > 0 && (
                             <div className="post-categories">
@@ -331,10 +399,26 @@ export default function PostDetailPage() {
 
                         <div className="post-actions">
                             <button 
-                                className={`action-btn ${like_status.liked ? 'active' : ''}`}
-                                onClick={handle_like}
+                                className={`action-btn like-button ${post_reaction.liked ? 'liked' : ''}`}
+                                onClick={() => handle_post_reaction('like')}
                             >
-                                <FiHeart /> {like_status.count}
+                                {post_reaction.liked ? (
+                                    <FaHeart />
+                                ) : (
+                                    <FaRegHeart />
+                                )}
+                                {post_reaction.likes_count}
+                            </button>
+                            <button 
+                                className={`action-btn dislike-button ${post_reaction.disliked ? 'disliked' : ''}`}
+                                onClick={() => handle_post_reaction('dislike')}
+                            >
+                                {post_reaction.disliked ? (
+                                    <FaThumbsDown />
+                                ) : (
+                                    <FaRegThumbsDown />
+                                )}
+                                {post_reaction.dislikes_count}
                             </button>
                             <button className="action-btn">
                                 <FiMessageCircle /> {comments.length}
@@ -398,43 +482,87 @@ export default function PostDetailPage() {
                 </div>
             </main>
             <Footer />
+
+            <EditPostModal 
+                show={show_edit_modal}
+                onClose={() => set_show_edit_modal(false)}
+                post={{
+                    id: post.id,
+                    title: post.title,
+                    content: post.content,
+                    categories: categories,
+                    status: post.status
+                }}
+                onPostUpdated={(updated_post) => {
+                    set_post(updated_post);
+                    fetch_post_data();
+                }}
+            />
         </div>
     );
 }
 
 function Comment({ comment, on_reply, current_user, is_authenticated }) {
     const [show_menu, set_show_menu] = useState(false);
-    const [like_status, set_like_status] = useState({
-        liked: false,
-        count: comment.likes_count || 0
+    const [reaction, set_reaction] = useState({
+        liked: comment.user_reaction === 'like',
+        disliked: comment.user_reaction === 'dislike',
+        likes_count: comment.likes_count || 0,
+        dislikes_count: comment.dislikes_count || 0
     });
+
+    useEffect(() => {
+        set_reaction({
+            liked: comment.user_reaction === 'like',
+            disliked: comment.user_reaction === 'dislike',
+            likes_count: comment.likes_count || 0,
+            dislikes_count: comment.dislikes_count || 0
+        });
+    }, [comment.user_reaction, comment.likes_count, comment.dislikes_count]);
 
     const is_author = is_authenticated && current_user && current_user.id === comment.author_id;
     const is_admin = is_authenticated && current_user && current_user.role === 'admin';
 
-    const handle_like = async () => {
+    const apply_reaction = (payload) => {
+        if(!payload) return;
+        set_reaction({
+            liked: Boolean(payload.liked),
+            disliked: Boolean(payload.disliked),
+            likes_count: payload.likes_count ?? payload.count ?? 0,
+            dislikes_count: payload.dislikes_count ?? 0
+        });
+    };
+
+    const handle_reaction = async (type) => {
         if (!is_authenticated) {
-            alert('Увійдіть щоб поставити лайк');
+            alert('Увійдіть щоб взаємодіяти з коментарем');
             return;
         }
 
-        try {
-            const method = like_status.liked ? 'DELETE' : 'POST';
-            const response = await fetch(`/api/comments/${comment.id}/like`, {
-                method,
-                credentials: 'include'
-            });
+        const is_active = type === 'like' ? reaction.liked : reaction.disliked;
+        const method = is_active ? 'DELETE' : 'POST';
 
+        const options = {
+            method,
+            credentials: 'include'
+        };
+
+        if(method === 'POST') {
+            options.headers = {
+                'Content-Type': 'application/json'
+            };
+            options.body = JSON.stringify({ type });
+        }
+
+        try {
+            const response = await fetch(`/api/comments/${comment.id}/like`, options);
             const data = await response.json();
             
-            if (data.status === 'success') {
-                set_like_status({
-                    liked: !like_status.liked,
-                    count: like_status.count + (like_status.liked ? -1 : 1)
-                });
+            if (data.status === 'success' && data.data) {
+                apply_reaction(data.data);
             }
         } catch (error) {
-            console.error('Error toggling like:', error);
+            console.error('Error toggling comment reaction:', error);
         }
     };
 
@@ -457,7 +585,7 @@ function Comment({ comment, on_reply, current_user, is_authenticated }) {
     return (
         <div className="comment-item">
             <img 
-                src={comment.author_avatar} 
+                src={comment.author_avatar || '/user/avatar.jpg'} 
                 alt={comment.author_login}
                 className="comment-avatar"
             />
@@ -498,13 +626,19 @@ function Comment({ comment, on_reply, current_user, is_authenticated }) {
 
                 <div className="comment-actions">
                     <button 
-                        className={`comment-action ${like_status.liked ? 'active' : ''}`}
-                        onClick={handle_like}
+                        className={`comment-action like-action ${reaction.liked ? 'liked' : ''}`}
+                        onClick={() => handle_reaction('like')}
                     >
-                        <FiHeart /> {like_status.count}
+                        {reaction.liked ? <FaHeart /> : <FaRegHeart />} {reaction.likes_count}
+                    </button>
+                    <button 
+                        className={`comment-action dislike-action ${reaction.disliked ? 'disliked' : ''}`}
+                        onClick={() => handle_reaction('dislike')}
+                    >
+                        {reaction.disliked ? <FaThumbsDown /> : <FaRegThumbsDown />} {reaction.dislikes_count}
                     </button>
                     {is_authenticated && (
-                        <button className="comment-action" onClick={on_reply}>
+                        <button className="comment-action reply-action" onClick={on_reply}>
                             Відповісти
                         </button>
                     )}

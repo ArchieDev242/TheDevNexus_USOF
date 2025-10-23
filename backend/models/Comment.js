@@ -144,19 +144,44 @@ class Comment
         }
     }
 
-    static async find_by_post_id(postId) 
+    static async find_by_post_id(postId, userId = null) 
     {
         try 
         {
             const query = `
-                SELECT c.*, u.login as author_login, u.full_name as author_name, u.profile_picture as author_avatar
+                SELECT 
+                    c.*, 
+                    u.login as author_login, 
+                    u.full_name as author_name, 
+                    u.profile_picture as author_avatar,
+                    (
+                        SELECT COUNT(*) 
+                        FROM likes l 
+                        WHERE l.comment_id = c.id AND l.type = 'like'
+                    ) as likes_count,
+                    (
+                        SELECT COUNT(*) 
+                        FROM likes l 
+                        WHERE l.comment_id = c.id AND l.type = 'dislike'
+                    ) as dislikes_count,
+                    EXISTS(
+                        SELECT 1 
+                        FROM likes l 
+                        WHERE l.comment_id = c.id AND l.author_id = ? AND l.type = 'like'
+                    ) as liked_by_user,
+                    EXISTS(
+                        SELECT 1 
+                        FROM likes l 
+                        WHERE l.comment_id = c.id AND l.author_id = ? AND l.type = 'dislike'
+                    ) as disliked_by_user
                 FROM comments c
                 JOIN users u ON c.author_id = u.id
                 WHERE c.post_id = ? AND c.status = 'active'
                 ORDER BY c.publish_date ASC
             `;
             
-            const result = await DB_connect.make_request(query, [postId]);
+            const userParam = userId || 0;
+            const result = await DB_connect.make_request(query, [userParam, userParam, postId]);
             const rows = result[0];
             
             return rows.map(row => {
@@ -164,6 +189,11 @@ class Comment
                 comment.author_login = row.author_login;
                 comment.author_name = row.author_name;
                 comment.author_avatar = normalize_avatar(row.author_avatar);
+                comment.likes_count = Number(row.likes_count || 0);
+                comment.dislikes_count = Number(row.dislikes_count || 0);
+                const liked_by_user = typeof row.liked_by_user === 'boolean' ? row.liked_by_user : Boolean(row.liked_by_user);
+                const disliked_by_user = typeof row.disliked_by_user === 'boolean' ? row.disliked_by_user : Boolean(row.disliked_by_user);
+                comment.user_reaction = liked_by_user ? 'like' : (disliked_by_user ? 'dislike' : null);
                 return comment;
             });
         } 
@@ -507,9 +537,9 @@ class Comment
     }
 
     // Alias method for controller compatibility
-    static async get_by_post(post_id, page = 1, limit = 20) 
+    static async get_by_post(post_id, page = 1, limit = 20, userId = null) 
     {
-        return await Comment.find_by_post_id(post_id);
+        return await Comment.find_by_post_id(post_id, userId);
     }
 }
 

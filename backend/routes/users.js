@@ -12,8 +12,26 @@ router.use(auth_middleware.identify_user);
 // GET /api/users/me - get current authenticated user (must be before /:user_id)
 router.get('/me', error_handler.async_handler(users_controller.get_current_user));
 
+// GET /api/users/saved-posts - get user's saved posts (must be before /:user_id)
+router.get('/saved-posts', 
+    auth_middleware.require_auth,
+    error_handler.async_handler(users_controller.get_saved_posts)
+);
+
 // GET /api/users - get all users (public)
 router.get('/', error_handler.async_handler(users_controller.get_all_public));
+
+// GET /api/users/:user_id/posts - get user's posts
+router.get('/:user_id/posts',
+    Validator.validate_id('user_id'),
+    error_handler.async_handler(users_controller.get_user_posts)
+);
+
+// GET /api/users/:user_id/achievements - get user's achievements
+router.get('/:user_id/achievements',
+    Validator.validate_id('user_id'),
+    error_handler.async_handler(users_controller.get_user_achievements)
+);
 
 // GET /api/users/:user_id/reputation - get user reputation summary/history
 router.get('/:user_id/reputation',
@@ -69,12 +87,6 @@ router.delete('/:user_id',
     Validator.validate_id('user_id'),
     auth_middleware.require_ownership_or_admin((req) => parseInt(req.params.user_id)),
     error_handler.async_handler(users_controller.delete_account)
-);
-
-// GET /api/users/saved-posts - get user's saved posts
-router.get('/saved-posts', 
-    auth_middleware.require_auth,
-    error_handler.async_handler(users_controller.get_saved_posts)
 );
 
 export default router;

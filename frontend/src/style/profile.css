@@ -121,9 +121,17 @@
 .avatar-actions 
 {
     display: flex;
+    flex-direction: column;
     gap: 10px;
-    justify-content: center;
-    margin-top: 15px;
+    align-items: center;
+}
+
+.avatar-hint {
+    font-size: 0.75rem;
+    color: var(--gray);
+    text-align: center;
+    margin-top: 8px;
+    font-style: italic;
 }
 
 .btn-icon 

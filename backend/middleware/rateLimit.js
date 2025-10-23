@@ -57,7 +57,7 @@ class RateLimit
         }
         return this._authLimiter.limit({
             windowMs: 15 * 60 * 1000, // 15 minutes
-            maxRequests: 50, // Increased from 5 to 50
+            maxRequests: 50, // from 5 to 50
             message: 'Too many authentication attempts, please try again later'
         });
     }
@@ -69,7 +69,7 @@ class RateLimit
         }
         return this._apiLimiter.limit({
             windowMs: 15 * 60 * 1000, // 15 minutes
-            maxRequests: 100, // 100 requests per 15 minutes
+            maxRequests: 500, // 500 requests per 15 minutes
             message: 'Too many API requests, please try again later'
         });
     }

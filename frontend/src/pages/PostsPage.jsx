@@ -75,6 +75,27 @@ export default function PostsPage() {
         }
     };
 
+    const strip_markdown = (text) => {
+        if(!text) return '';
+        
+        let cleaned = text
+            .replace(/```[\s\S]*?```/g, '')
+            .replace(/`[^`]+`/g, '')
+            .replace(/(\*\*|__)(.*?)\1/g, '$2')
+            .replace(/(\*|_)(.*?)\1/g, '$2')
+            .replace(/^#{1,6}\s+/gm, '')
+            .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+            .replace(/!\[([^\]]*)\]\([^\)]+\)/g, '')
+            .replace(/^>\s+/gm, '')
+            .replace(/^(-{3,}|_{3,}|\*{3,})$/gm, '')
+            .replace(/^[\s]*[-*+]\s+/gm, '')
+            .replace(/^[\s]*\d+\.\s+/gm, '')
+            .replace(/\n\s*\n/g, '\n')
+            .trim();
+        
+        return cleaned;
+    };
+
     const fetch_posts = async () => {
         set_loading(true);
         try 
@@ -114,6 +135,7 @@ export default function PostsPage() {
     const handle_search = (e) => {
         e.preventDefault();
         const trimmed_query = search_query.trim();
+
         if(trimmed_query)
             {
             navigate({ pathname: '/posts', search: `?search=${encodeURIComponent(trimmed_query)}` });
@@ -292,7 +314,8 @@ export default function PostsPage() {
 
                                             <h3 className = "post-title">{post.title}</h3>
                                             <p className = "post-excerpt">
-                                                {post.content?.substring(0, 150)}...
+                                                {strip_markdown(post.content || '').substring(0, 150)}
+                                                {post.content && strip_markdown(post.content).length > 150 ? '...' : ''}
                                             </p>
 
                                             <div className = "post-footer">
@@ -344,7 +367,7 @@ export default function PostsPage() {
                 show = {show_create_modal}
                 onClose = {() => set_show_create_modal(false)}
                 onPostCreated = {(new_post) => {
-                    fetch_posts(); // Refresh posts list
+                    fetch_posts();
                 }}
             />
         </>
