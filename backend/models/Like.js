@@ -417,6 +417,40 @@ class Like
     {
         return this.author_id === userId;
     }
+
+    // Get post likes with user's like status
+    static async get_post_likes(post_id, user_id = null) 
+    {
+        try 
+        {
+            // Get total likes count
+            const stats_query = `
+                SELECT COUNT(*) as count
+                FROM likes 
+                WHERE post_id = ? AND type = 'like'
+            `;
+            
+            const stats_result = await DB_connect.make_request(stats_query, [post_id]);
+            const count = stats_result[0][0]?.count || 0;
+
+            // Check if user liked this post
+            let liked = false;
+            if (user_id) {
+                const user_like_query = `
+                    SELECT id FROM likes 
+                    WHERE post_id = ? AND author_id = ? AND type = 'like'
+                `;
+                const user_like_result = await DB_connect.make_request(user_like_query, [post_id, user_id]);
+                liked = user_like_result[0].length > 0;
+            }
+
+            return { liked, count };
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error getting post likes: ${error.message}`);
+        }
+    }
 }
 
 export default Like;

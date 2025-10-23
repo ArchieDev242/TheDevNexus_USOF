@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { logout } from '../redux/slices/authSlice';
 import 
 { 
     FiHome, 
@@ -24,8 +25,58 @@ import logo from '../images/logo.png';
 
 export default function Header() 
 {
+    const dispatch = useDispatch();
     const { isAuthenticated, user } = useSelector(state => state.auth);
     const [is_menu_open, set_is_menu_open] = useState(false);
+    const [search_query, set_search_query] = useState('');
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const current_query = params.get('search') || '';
+        set_search_query(current_query);
+    }, [location.search]);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handle_click_outside = (event) => {
+            if (is_menu_open && !event.target.closest('.user-menu-wrapper')) {
+                set_is_menu_open(false);
+            }
+        };
+
+        if (is_menu_open) {
+            document.addEventListener('mousedown', handle_click_outside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handle_click_outside);
+        };
+    }, [is_menu_open]);
+
+    const handle_search_submit = (event) => {
+        event.preventDefault();
+        const trimmed_query = search_query.trim();
+        if(trimmed_query)
+            {
+            navigate({ pathname: '/posts', search: `?search=${encodeURIComponent(trimmed_query)}` });
+        }
+        else
+            {
+            navigate('/posts');
+        }
+    };
+
+    const handle_logout = async () => {
+        try {
+            await dispatch(logout()).unwrap();
+            set_is_menu_open(false);
+            navigate('/');
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
+    };
     
     return (
         <header className = "site-header">
@@ -74,8 +125,15 @@ export default function Header()
                     </div>
                     
                     <div className = "header-right">
-                        <form className = 'search' action = '/search' method = 'GET'>
-                            <input className = 'search__input' type = 'text' name = 'query' placeholder = 'Search...' />
+                        <form className = 'search' onSubmit = {handle_search_submit} role = 'search'>
+                            <input 
+                                className = 'search__input'
+                                type = 'text'
+                                name = 'search'
+                                placeholder = 'Search...'
+                                value = {search_query}
+                                onChange = {(event) => set_search_query(event.target.value)}
+                            />
                             <button className = 'search__button' type = 'submit' aria-label = 'Search'>
                                 <FiSearch />
                             </button>
@@ -121,12 +179,15 @@ export default function Header()
                                                     <FiUser />
                                                     <span>Profile</span>
                                                 </Link>
-                                                <a href = "/settings" className = "dropdown-item">
+                                                <Link to = "/settings" className = "dropdown-item">
                                                     <FiSettings />
                                                     <span>Settings</span>
-                                                </a>
+                                                </Link>
                                                 <hr className = "dropdown-divider" />
-                                                <button className = "dropdown-item logout-btn">
+                                                <button 
+                                                    className = "dropdown-item logout-btn"
+                                                    onClick = {handle_logout}
+                                                >
                                                     <FiLogOut />
                                                     <span>Logout</span>
                                                 </button>

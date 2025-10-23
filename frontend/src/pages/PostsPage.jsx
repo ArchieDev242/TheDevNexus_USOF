@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
 import 
 { 
     FiMessageSquare, 
@@ -8,25 +9,52 @@ import
     FiUser,
     FiFilter,
     FiSearch,
-    FiTrendingUp
+    FiTrendingUp,
+    FiGrid,
+    FiFolder,
+    FiPlus
 } from 'react-icons/fi';
 
 import Header from '../components/Header';
+import CreatePostModal from '../components/CreatePostModal';
 import '../style/posts.css';
 
 export default function PostsPage() {
     const { user, isAuthenticated } = useSelector(state => state.auth);
+    const location = useLocation();
+    const navigate = useNavigate();
     const [posts, set_posts] = useState([]);
     const [categories, set_categories] = useState([]);
-    const [selected_category, set_selected_category] = useState('all');
+    const [selected_category, set_selected_category] = useState(() => {
+        const params = new URLSearchParams(location.search);
+        return params.get('category') || 'all';
+    });
     const [sort_by, set_sort_by] = useState('latest');
-    const [search_query, set_search_query] = useState('');
+    const [search_query, set_search_query] = useState(() => {
+        const params = new URLSearchParams(location.search);
+        return params.get('search') || '';
+    });
     const [loading, set_loading] = useState(true);
+    const [show_create_modal, set_show_create_modal] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const category_from_url = params.get('category') || 'all';
+        
+        if(category_from_url !== selected_category) set_selected_category(category_from_url);
+
+    }, [location.search]);
 
     useEffect(() => {
         fetch_categories();
         fetch_posts();
     }, [selected_category, sort_by]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const query_from_url = params.get('search') || '';
+        set_search_query(prev_query => prev_query === query_from_url ? prev_query : query_from_url);
+    }, [location.search]);
 
     const fetch_categories = async () => {
         try 
@@ -85,8 +113,26 @@ export default function PostsPage() {
 
     const handle_search = (e) => {
         e.preventDefault();
-        // TODO: Implement search
-        console.log('Searching for:', search_query);
+        const trimmed_query = search_query.trim();
+        if(trimmed_query)
+            {
+            navigate({ pathname: '/posts', search: `?search=${encodeURIComponent(trimmed_query)}` });
+        }
+        else
+            {
+            navigate('/posts');
+        }
+    };
+
+    const handle_category_change = (category_id) => {
+        set_selected_category(category_id);
+        if(category_id === 'all') 
+            {
+            navigate('/posts');
+        } else 
+            {
+            navigate(`/posts?category=${category_id}`);
+        }
     };
 
     const filtered_posts = posts.filter(post => 
@@ -100,10 +146,21 @@ export default function PostsPage() {
             <div className = "posts-page">
                 <div className = "container">
                     <div className = "posts-header">
-                        <h1 className = "gradient-text">Forum Posts</h1>
-                        <p className = "posts-subtitle">
-                            Explore discussions and share your knowledge
-                        </p>
+                        <div>
+                            <h1 className = "gradient-text">Forum Posts</h1>
+                            <p className = "posts-subtitle">
+                                Explore discussions and share your knowledge
+                            </p>
+                        </div>
+                        {isAuthenticated && (
+                            <button 
+                                className = "btn btn-gradient create-post-btn"
+                                onClick = {() => set_show_create_modal(true)}
+                            >
+                                <FiPlus />
+                                <span>Create Post</span>
+                            </button>
+                        )}
                     </div>
 
                     <div className = "posts-controls">
@@ -122,7 +179,7 @@ export default function PostsPage() {
                                 <FiFilter />
                                 <select 
                                     value = {selected_category} 
-                                    onChange = {(e) => set_selected_category(e.target.value)}
+                                    onChange = {(e) => handle_category_change(e.target.value)}
                                     className = "filter-select"
                                 >
                                     <option value = "all">All Categories</option>
@@ -157,9 +214,9 @@ export default function PostsPage() {
                                 <ul className = "categories-list">
                                     <li 
                                         className = {selected_category === 'all' ? 'active' : ''}
-                                        onClick = {() => set_selected_category('all')}
+                                        onClick = {() => handle_category_change('all')}
                                     >
-                                        <span className = "category-icon">🎮</span>
+                                        <span className = "category-icon"><FiGrid /></span>
                                         <span>All Posts</span>
                                         <span className = "category-count">{posts.length}</span>
                                     </li>
@@ -167,9 +224,9 @@ export default function PostsPage() {
                                         <li 
                                             key = {category.id}
                                             className = {selected_category === category.id ? 'active' : ''}
-                                            onClick = {() => set_selected_category(category.id)}
+                                            onClick = {() => handle_category_change(category.id)}
                                         >
-                                            <span className = "category-icon">{category.icon || '📁'}</span>
+                                            <span className = "category-icon"><FiFolder /></span>
                                             <span>{category.title}</span>
                                             <span className = "category-count">
                                                 {posts.filter(p => p.category_id === category.id).length}
@@ -178,15 +235,6 @@ export default function PostsPage() {
                                     ))}
                                 </ul>
                             </div>
-
-                            {isAuthenticated && (
-                                <div className = "sidebar-card">
-                                    <h3 className = "sidebar-title">Quick Actions</h3>
-                                    <button className = "btn btn-gradient full-width">
-                                        + Create Post
-                                    </button>
-                                </div>
-                            )}
                         </aside>
 
                         <main className = "posts-main">
@@ -204,7 +252,12 @@ export default function PostsPage() {
                             ) : (
                                 <div className = "posts-grid">
                                     {filtered_posts.map(post => (
-                                        <div key = {post.id} className = "forum-post-card">
+                                        <div 
+                                            key = {post.id} 
+                                            className = "forum-post-card"
+                                            onClick = {() => navigate(`/posts/${post.id}`)}
+                                            style = {{ cursor: 'pointer' }}
+                                        >
                                             <div className = "post-header">
                                                 <div className = "post-author">
                                                     <div className = "author-avatar">
@@ -257,7 +310,13 @@ export default function PostsPage() {
                                                         {post.views || 0} views
                                                     </span>
                                                 </div>
-                                                <button className = "btn-read-more">
+                                                <button 
+                                                    className = "btn-read-more"
+                                                    onClick = {(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/posts/${post.id}`);
+                                                    }}
+                                                >
                                                     Read More →
                                                 </button>
                                             </div>
@@ -269,6 +328,25 @@ export default function PostsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Floating Create Post Button */}
+            {isAuthenticated && (
+                <button 
+                    className = "floating-create-btn"
+                    onClick = {() => set_show_create_modal(true)}
+                    title = "Створити пост"
+                >
+                    <FiPlus size={28} />
+                </button>
+            )}
+
+            <CreatePostModal 
+                show = {show_create_modal}
+                onClose = {() => set_show_create_modal(false)}
+                onPostCreated = {(new_post) => {
+                    fetch_posts(); // Refresh posts list
+                }}
+            />
         </>
     );
 }

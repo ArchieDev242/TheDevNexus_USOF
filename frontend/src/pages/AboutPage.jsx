@@ -9,8 +9,16 @@ import
     FiBook,
     FiZap,
     FiGlobe,
-    FiStar
+    FiStar,
+    FiMonitor,
+    FiCpu,
+    FiBox,
+    FiFileText,
+    FiTarget,
+    FiTool,
+    FiLayers
 } from 'react-icons/fi';
+import { SiUnrealengine, SiUnity, SiGodotengine } from 'react-icons/si';
 
 import Header from '../components/Header';
 import '../style/about.css';
@@ -18,14 +26,14 @@ import '../style/about.css';
 export default function AboutPage() 
 {
     const engines = [
-        { name: 'Unreal Engine', icon: '🎮' },
-        { name: 'Unity', icon: '🔷' },
-        { name: 'Godot', icon: '🤖' },
-        { name: "Ren'Py", icon: '📖' },
-        { name: 'GameMaker', icon: '🎯' },
-        { name: 'CryEngine', icon: '⚡' },
-        { name: 'Custom Engines', icon: '🛠️' },
-        { name: 'OpenGL / Vulkan', icon: '💎' }
+        { name: 'Unreal Engine', icon: <SiUnrealengine /> },
+        { name: 'Unity', icon: <SiUnity /> },
+        { name: 'Godot', icon: <SiGodotengine /> },
+        { name: "Ren'Py", icon: <FiFileText /> },
+        { name: 'GameMaker', icon: <FiTarget /> },
+        { name: 'CryEngine', icon: <FiZap /> },
+        { name: 'Custom Engines', icon: <FiTool /> },
+        { name: 'OpenGL / Vulkan', icon: <FiLayers /> }
     ];
 
     const features = [
@@ -106,7 +114,7 @@ export default function AboutPage()
                         </h2>
                         <div className = "audience-grid">
                             <div className = "audience-card">
-                                <div className = "audience-icon">🎮</div>
+                                <div className = "audience-icon"><FiMonitor size={48} /></div>
                                 <h3>Game Developers</h3>
                                 <p>
                                     Programmers, designers, artists and other specialists 
@@ -114,7 +122,7 @@ export default function AboutPage()
                                 </p>
                             </div>
                             <div className = "audience-card">
-                                <div className = "audience-icon">🔧</div>
+                                <div className = "audience-icon"><FiCpu size={48} /></div>
                                 <h3>Modders</h3>
                                 <p>
                                     Enthusiasts who create modifications for their favorite games 
@@ -122,7 +130,7 @@ export default function AboutPage()
                                 </p>
                             </div>
                             <div className = "audience-card">
-                                <div className = "audience-icon">🛠️</div>
+                                <div className = "audience-icon"><FiBox size={48} /></div>
                                 <h3>Engine Engineers</h3>
                                 <p>
                                     Geeks who write their own game engines from scratch 
@@ -130,7 +138,7 @@ export default function AboutPage()
                                 </p>
                             </div>
                             <div className = "audience-card">
-                                <div className = "audience-icon">📚</div>
+                                <div className = "audience-icon"><FiBook size={48} /></div>
                                 <h3>Beginners</h3>
                                 <p>
                                     Those who are just starting their journey in gamedev and looking for 

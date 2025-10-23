@@ -15,8 +15,26 @@ export const login = createAsyncThunk(
             const data = await response.json();
             
             if(!response.ok) return rejectWithValue(data.error || 'Login failed');
-            
-            return data;
+
+            let enrichedUser = data.user;
+
+            try 
+            {
+                const me_response = await fetch('/api/users/me', {
+                    credentials: 'include'
+                });
+
+                if(me_response.ok) 
+                {
+                    const me_data = await me_response.json();
+                    enrichedUser = me_data.data || me_data;
+                }
+            } catch(fetch_error) 
+            {
+                console.error('Failed to refresh user after login:', fetch_error);
+            }
+
+            return { ...data, user: enrichedUser };
         } catch(error) 
         {
             return rejectWithValue(error.message);
@@ -72,21 +90,24 @@ export const fetch_current_user = createAsyncThunk(
             const response = await fetch('/api/users/me', {
                 credentials: 'include'
             });
-            
+            const payload = await response.json().catch(() => null);
+
+            if(response.status === 401) 
+            {
+                return { authenticated: false, user: null };
+            }
+
             if(!response.ok) 
             {
-                // Return null instead of rejecting, so it doesn't clear auth state
-                return null;
+                const message = payload?.message || payload?.error || 'Failed to fetch current user';
+                return rejectWithValue(message);
             }
-            
-            const data = await response.json();
-            console.log('fetch_current_user response:', data.data || data);
-            return data.data || data;
+
+            return { authenticated: true, user: payload?.data || payload };
         } catch(error) 
         {
-            // Return null on error instead of rejecting
             console.error('Error fetching current user:', error);
-            return null;
+            return rejectWithValue(error.message);
         }
     }
 );
@@ -97,7 +118,7 @@ const auth_slice = createSlice({
     {
         user: null,
         isAuthenticated: false,
-        loading: true, // Start with true to prevent redirect during initial load
+        loading: true,
         error: null
     },
     reducers: 
@@ -116,7 +137,9 @@ const auth_slice = createSlice({
             .addCase(login.fulfilled, (state, action) => {
                 state.loading = false;
                 state.isAuthenticated = true;
-                state.user = action.payload.user;
+                const user_data = action.payload?.user;
+                state.user = user_data ? { ...user_data, avatar: user_data.avatar || user_data.profile_picture || null } : null;
+                state.error = null;
             })
             .addCase(login.rejected, (state, action) => {
                 state.loading = false;
@@ -143,23 +166,28 @@ const auth_slice = createSlice({
             })
             .addCase(fetch_current_user.pending, (state) => {
                 state.loading = true;
+                state.error = null;
             })
             .addCase(fetch_current_user.fulfilled, (state, action) => {
                 state.loading = false;
-                if(action.payload) 
+                if(action.payload?.authenticated && action.payload.user) 
                 {
-                    state.user = action.payload;
+                    const user_data = action.payload.user;
+                    state.user = { ...user_data, avatar: user_data.avatar || user_data.profile_picture || null };
                     state.isAuthenticated = true;
-                } else {
-                    // User not authenticated
+                } else if(action.payload && action.payload.authenticated === false) 
+                {
                     state.user = null;
                     state.isAuthenticated = false;
                 }
             })
-            .addCase(fetch_current_user.rejected, (state) => {
+            .addCase(fetch_current_user.rejected, (state, action) => {
                 state.loading = false;
-                state.user = null;
-                state.isAuthenticated = false;
+                state.error = action.payload || action.error?.message || null;
+                if(!state.user) 
+                {
+                    state.isAuthenticated = false;
+                }
             });
     }
 });

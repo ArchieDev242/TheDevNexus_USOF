@@ -17,6 +17,13 @@
     --border-radius-small: 8px;
     --container-width: 1240px;
     --transition: all 0.3s ease;
+    
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --hover-bg: rgba(255, 255, 255, 0.08);
+    --input-bg: rgba(255, 255, 255, 0.03);
 }
 
 /* ===== GLOBAL STYLES ===== */

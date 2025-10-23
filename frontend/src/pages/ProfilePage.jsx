@@ -154,6 +154,8 @@ export default function ProfilePage() {
     const handle_save_profile = async () => {
         try 
         {
+            console.log('Saving profile with data:', profile_data);
+            
             const response = await fetch(`/api/users/${user.id}`, {
                 method: 'PATCH',
                 headers: 
@@ -174,6 +176,8 @@ export default function ProfilePage() {
                 })
             });
 
+            console.log('Response status:', response.status);
+            
             if(response.ok) 
                 {
                 const data = await response.json();
@@ -181,11 +185,11 @@ export default function ProfilePage() {
                 console.log('Profile updated successfully:', data);
                 await dispatch(fetch_current_user());
                 set_show_edit_modal(false);
-                alert('Profile updated successfully!');
+                alert('Профіль успішно оновлено!');
             } else 
                 {
                 const error = await response.json();
-
+                console.error('Error response:', error);
                 alert(error.error || 'Failed to update profile');
             }
         } catch(error) 
@@ -439,7 +443,12 @@ export default function ProfilePage() {
                                         ) : (
                                             <div className = "posts-grid">
                                                 {user_posts.map(post => (
-                                                    <div key = {post.id} className = "post-card">
+                                                    <div 
+                                                        key = {post.id} 
+                                                        className = "post-card"
+                                                        onClick = {() => navigate(`/posts/${post.id}`)}
+                                                        style = {{ cursor: 'pointer' }}
+                                                    >
                                                         <div className = "post-header">
                                                             <h4>{post.title}</h4>
                                                             <span className = "post-status">{post.status}</span>

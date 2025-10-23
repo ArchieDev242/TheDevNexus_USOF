@@ -1,5 +1,6 @@
 import DB_connect from '../utils/dbConnect.js';
 import Permission from './Permission.js';
+import { normalize_avatar } from '../utils/avatarUtils.js';
 
 class Post 
 {
@@ -138,7 +139,7 @@ class Post
             const post = new Post(rows[0]);
             post.author_login = rows[0].author_login;
             post.author_name = rows[0].author_name;
-            post.author_avatar = rows[0].author_avatar;
+            post.author_avatar = normalize_avatar(rows[0].author_avatar);
             
             return post;
         } 
@@ -168,7 +169,7 @@ class Post
                 const post = new Post(row);
                 post.author_login = row.author_login;
                 post.author_name = row.author_name;
-                post.author_avatar = row.author_avatar;
+                post.author_avatar = normalize_avatar(row.author_avatar);
                 return post;
             });
         } 
@@ -197,7 +198,7 @@ class Post
                 const post = new Post(row);
                 post.author_login = row.author_login;
                 post.author_name = row.author_name;
-                post.author_avatar = row.author_avatar;
+                post.author_avatar = normalize_avatar(row.author_avatar);
                 return post;
             });
         } 
@@ -427,7 +428,7 @@ class Post
                 const post = new Post(row);
                 post.author_login = row.author_login;
                 post.author_name = row.author_name;
-                post.author_avatar = row.author_avatar;
+                post.author_avatar = normalize_avatar(row.author_avatar);
                 post.like_score = row.like_score;
                 return post;
             });
@@ -558,7 +559,7 @@ class Post
                 const post = new Post(row);
                 post.author_login = row.author_login;
                 post.author_name = row.author_name;
-                post.author_avatar = row.author_avatar;
+                post.author_avatar = normalize_avatar(row.author_avatar);
                 post.like_score = parseInt(row.like_score) || 0;
                 post.comments_count = parseInt(row.comments_count) || 0;
                 return post;
@@ -637,7 +638,7 @@ class Post
                     id: post.author_id,
                     login: post.author_login,
                     full_name: post.author_name,
-                    profile_picture: post.author_avatar
+                    profile_picture: normalize_avatar(post.author_avatar)
                 },
                 likes: 
                 {
@@ -655,6 +656,28 @@ class Post
         catch(error) 
         {
             throw new Error(`Error getting full post data: ${error.message}`);
+        }
+    }
+
+    // Static method for controller compatibility
+    static async get_post_categories(post_id) 
+    {
+        try 
+        {
+            const query = `
+                SELECT c.*
+                FROM categories c
+                JOIN post_categories pc ON c.id = pc.category_id
+                WHERE pc.post_id = ?
+            `;
+            
+            const result = await DB_connect.make_request(query, [post_id]);
+            const rows = result[0];
+            return rows;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error getting post categories: ${error.message}`);
         }
     }
 }

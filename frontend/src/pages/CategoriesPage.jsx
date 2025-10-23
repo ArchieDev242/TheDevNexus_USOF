@@ -1,0 +1,290 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import 
+{ 
+    FiUsers,
+    FiFileText,
+    FiBook,
+    FiImage,
+    FiMessageCircle,
+    FiPackage,
+    FiZap,
+    FiTool,
+    FiLayers,
+    FiTarget
+} from 'react-icons/fi';
+
+import { SiUnrealengine, SiUnity, SiGodotengine } from 'react-icons/si';
+
+import Header from '../components/Header';
+import '../style/categories.css';
+
+export default function CategoriesPage() 
+{
+    const navigate = useNavigate();
+    const [categories, set_categories] = useState([]);
+    const [posts_count, set_posts_count] = useState({});
+    const [loading, set_loading] = useState(true);
+
+    // Game Engines Categories
+    const engine_categories = [
+        { 
+            id: 'unreal-engine',
+            name: 'Unreal Engine', 
+            icon: <SiUnrealengine />,
+            color: '#0E1128',
+            description: 'Discussions about Unreal Engine development, blueprints, and C++'
+        },
+        { 
+            id: 'unity',
+            name: 'Unity', 
+            icon: <SiUnity />,
+            color: '#000000',
+            description: 'Unity game development, C# scripting, and asset store resources'
+        },
+        { 
+            id: 'godot',
+            name: 'Godot', 
+            icon: <SiGodotengine />,
+            color: '#478CBF',
+            description: 'Open-source Godot engine, GDScript, and 2D/3D development'
+        },
+        { 
+            id: 'renpy',
+            name: "Ren'Py", 
+            icon: <FiFileText />,
+            color: '#FF7F7F',
+            description: 'Visual novel creation with Ren\'Py engine and Python scripting'
+        },
+        { 
+            id: 'gamemaker',
+            name: 'GameMaker', 
+            icon: <FiTarget />,
+            color: '#8BC34A',
+            description: '2D game development with GameMaker Studio and GML'
+        },
+        { 
+            id: 'cryengine',
+            name: 'CryEngine', 
+            icon: <FiZap />,
+            color: '#000000',
+            description: 'CryEngine development, advanced graphics, and AAA quality games'
+        },
+        { 
+            id: 'custom-engines',
+            name: 'Custom Engines', 
+            icon: <FiTool />,
+            color: '#FF6584',
+            description: 'Building your own game engines from scratch'
+        },
+        { 
+            id: 'opengl-vulkan',
+            name: 'OpenGL / Vulkan', 
+            icon: <FiLayers />,
+            color: '#6C63FF',
+            description: 'Low-level graphics programming with OpenGL and Vulkan APIs'
+        }
+    ];
+
+    const additional_categories = [
+        {
+            id: 'tutorials',
+            name: 'Tutorials & Learning',
+            icon: <FiBook />,
+            color: '#10B981',
+            description: 'Educational content, guides, and learning resources for game development'
+        },
+        {
+            id: 'showcase',
+            name: 'Showcase',
+            icon: <FiImage />,
+            color: '#F59E0B',
+            description: 'Show off your games, mods, and projects to the community'
+        },
+        {
+            id: 'general',
+            name: 'General Discussion',
+            icon: <FiMessageCircle />,
+            color: '#8B5CF6',
+            description: 'Off-topic discussions, community events, and general gamedev talk'
+        },
+        {
+            id: 'resources',
+            name: 'Resources',
+            icon: <FiPackage />,
+            color: '#EC4899',
+            description: 'Assets, tools, plugins, and other useful gamedev resources'
+        }
+    ];
+
+    useEffect(() => {
+        fetch_categories();
+    }, []);
+
+    const fetch_categories = async () => {
+        try 
+        {
+            set_loading(true);
+            
+            const response = await fetch('/api/posts?limit=1000', {
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if(data.status === 'success') 
+            {
+                const counts = {};
+                data.data.forEach(post => {
+                    const category = post.category_id || post.categories?.[0];
+
+                    if(category) counts[category] = (counts[category] || 0) + 1;
+                });
+                
+                set_posts_count(counts);
+            }
+        } catch(error) 
+        {
+            console.error('Error fetching categories:', error);
+        } finally 
+        {
+            set_loading(false);
+        }
+    };
+
+    const handle_category_click = (category_id) => {
+        navigate(`/posts?category=${category_id}`);
+    };
+
+    return (
+        <>
+            <Header />
+            <div className = "categories-page">
+                <div className = "container">
+                    {/* Hero Section */}
+                    <div className = "categories-hero">
+                        <h1 className = "gradient-text">Categories</h1>
+                        <p className = "hero-subtitle">
+                            Explore different categories of game development discussions
+                        </p>
+                    </div>
+
+                    {/* Game Engines Section */}
+                    <section className = "categories-section">
+                        <div className = "section-header">
+                            <h2 className = "section-title">
+                                <FiZap className = "section-icon" />
+                                <span className = "gradient-text">Game Engines</span>
+                            </h2>
+                            <p className = "section-description">
+                                Choose your preferred game engine and join the discussion
+                            </p>
+                        </div>
+
+                        <div className = "categories-grid">
+                            {engine_categories.map(category => (
+                                <div 
+                                    key = {category.id}
+                                    className = "category-card"
+                                    onClick = {() => handle_category_click(category.id)}
+                                    style = {{ '--category-color': category.color }}
+                                >
+                                    <div className = "category-icon-wrapper">
+                                        {category.icon}
+                                    </div>
+                                    <div className = "category-content">
+                                        <h3 className = "category-name">{category.name}</h3>
+                                        <p className = "category-description">{category.description}</p>
+                                        <div className = "category-stats">
+                                            <div className = "stat-item">
+                                                <FiFileText />
+                                                <span>{posts_count[category.id] || 0} posts</span>
+                                            </div>
+                                            <div className = "stat-item">
+                                                <FiUsers />
+                                                <span>{Math.floor(Math.random() * 200) + 50} members</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* Additional Categories Section */}
+                    <section className = "categories-section">
+                        <div className = "section-header">
+                            <h2 className = "section-title">
+                                <FiPackage className = "section-icon" />
+                                <span className = "gradient-text">Community</span>
+                            </h2>
+                            <p className = "section-description">
+                                Share, learn, and discuss with the gamedev community
+                            </p>
+                        </div>
+
+                        <div className = "categories-grid additional">
+                            {additional_categories.map(category => (
+                                <div
+                                    key = {category.id}
+                                    className = "category-card"
+                                    onClick = {() => handle_category_click(category.id)}
+                                    style = {{ '--category-color': category.color }}
+                                >
+                                    <div className = "category-icon-wrapper">
+                                        {category.icon}
+                                    </div>
+                                    <div className = "category-content">
+                                        <h3 className = "category-name">{category.name}</h3>
+                                        <p className = "category-description">{category.description}</p>
+                                        <div className = "category-stats">
+                                            <div className = "stat-item">
+                                                <FiFileText />
+                                                <span>{posts_count[category.id] || 0} posts</span>
+                                            </div>
+                                            <div className = "stat-item">
+                                                <FiUsers />
+                                                <span>{Math.floor(Math.random() * 300) + 100} members</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* Stats Section */}
+                    <section className = "categories-stats">
+                        <div className = "stats-card">
+                            <div className = "stat-icon">
+                                <FiFileText />
+                            </div>
+                            <div className = "stat-info">
+                                <h3>{Object.values(posts_count).reduce((a, b) => a + b, 0)}</h3>
+                                <p>Total Posts</p>
+                            </div>
+                        </div>
+                        <div className = "stats-card">
+                            <div className = "stat-icon">
+                                <FiUsers />
+                            </div>
+                            <div className = "stat-info">
+                                <h3>{engine_categories.length + additional_categories.length}</h3>
+                                <p>Categories</p>
+                            </div>
+                        </div>
+                        <div className = "stats-card">
+                            <div className = "stat-icon">
+                                <FiMessageCircle />
+                            </div>
+                            <div className = "stat-info">
+                                <h3>500+</h3>
+                                <p>Active Users</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </>
+    );
+}

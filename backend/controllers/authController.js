@@ -86,26 +86,37 @@ export const login = async (req, res) => {
         const token = jwt.sign(
             { id: user.id, role: user.role },
             config.jwt.secret,
-            { expiresIn: config.jwt.expiresIn }
+            { expiresIn: '7d' } // 7 days
         );
-        const isProd = process.env.NODE_ENV === 'production';
+        const is_prod = process.env.NODE_ENV === 'production';
         res.cookie('auth', token, {
             httpOnly: true,
-            secure: isProd,
+            secure: is_prod,
             sameSite: 'lax',
             path: '/',
-            maxAge: 2 * 60 * 60 * 1000 // sync with expiresIn 2h
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
 
+        const user_payload = {
+            id: user.id,
+            login: user.login,
+            email: user.email,
+            full_name: user.full_name,
+            role: user.role,
+            avatar: user.profile_picture || null,
+            profile_picture: user.profile_picture || null,
+            bio: user.bio,
+            website: user.website,
+            twitter: user.twitter,
+            github: user.github,
+            linkedin: user.linkedin,
+            rating: user.rating,
+            reputation_score: user.reputation_score
+        };
+
         res.json({
-            message: 'Вход выполнен успешно',
-            user: {
-                id: user.id,
-                login: user.login,
-                email: user.email,
-                full_name: user.full_name,
-                role: user.role
-            }
+            message: 'Login successful',
+            user: user_payload
         });
     } catch (err) 
     {
@@ -118,7 +129,7 @@ export const verifyEmail = async (req, res) => {
     try {
         const { token, email } = req.query;
 
-        if(!token || !email) return res.status(400).send('Отсутствует токен или email');
+        if(!token || !email) return res.status(400).send('Missing token or email');
 
         const [rows] = await DB_connect.make_request(
             'SELECT verification_token, email_verified FROM users WHERE email = ?',
@@ -130,13 +141,13 @@ export const verifyEmail = async (req, res) => {
         const user = rows[0];
 
         if (user.email_verified) {
-            return res.send('Email уже подтверждён');
+            return res.send('Email successfully verified!');
         }
 
         const isMatch = await bcrypt.compare(token, user.verification_token);
 
         if (!isMatch) {
-            return res.status(400).send('Неверный или устаревший токен');
+            return res.status(400).send('Invalid or expired token');
         }
 
         await DB_connect.make_request(
@@ -144,9 +155,9 @@ export const verifyEmail = async (req, res) => {
             [email]
         );
 
-        res.send('Email успешно подтверждён!');
+        res.send('Email successfully verified!');
     } catch (err) {
-        res.status(500).send('Внутренняя ошибка сервера');
+        res.status(500).send('Internal server error');
     }
 };
 

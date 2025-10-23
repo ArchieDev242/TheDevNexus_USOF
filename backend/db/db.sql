@@ -250,7 +250,7 @@ INSERT IGNORE INTO role_permissions (role_type, permission) VALUES
 ('admin', 'change_user_roles'),
 ('admin', 'view_analytics');
 
--- Achievements system tables
+-- achievements system tables
 CREATE TABLE IF NOT EXISTS achievements(
     id INT PRIMARY KEY AUTO_INCREMENT,
     key_name VARCHAR(50) NOT NULL UNIQUE, -- unique identifier for code

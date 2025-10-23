@@ -1,6 +1,7 @@
 #!/bin/bash
 
-cleanup() {
+cleanup() 
+{
     echo ""
     echo "Stopping servers..."
     kill $BACKEND_PID 2>/dev/null

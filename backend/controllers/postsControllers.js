@@ -152,11 +152,12 @@ class posts_controller
         try 
         {
             const { post_id } = req.params;
+            const user_id = req.user?.id;
             
             const post = await Post.find_by_id(post_id);
             if(!post) throw error_handler.not_found_error('Post');
             
-            const likes = await Like.get_post_likes(post_id);
+            const likes = await Like.get_post_likes(post_id, user_id);
             
             res.json({
                 status: 'success',

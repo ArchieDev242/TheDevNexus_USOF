@@ -1,5 +1,6 @@
 /* ===== GAME LOADER - ARCADE STYLE ===== */
-.game-loader {
+.game-loader 
+{
     position: fixed;
     top: 0;
     left: 0;
@@ -14,7 +15,8 @@
 }
 
 /* ===== ANIMATED STARS BACKGROUND ===== */
-.loader-stars {
+.loader-stars 
+{
     position: absolute;
     width: 100%;
     height: 100%;
@@ -31,19 +33,22 @@
     opacity: 0.6;
 }
 
-@keyframes starsFloat {
+@keyframes starsFloat 
+{
     0% { background-position: 0% 0%; }
     100% { background-position: 100% 100%; }
 }
 
 /* ===== LOADER CONTAINER ===== */
-.loader-container {
+.loader-container 
+{
     position: relative;
     z-index: 10;
 }
 
 /* ===== ARCADE MACHINE ===== */
-.arcade-machine {
+.arcade-machine 
+{
     position: relative;
     background: linear-gradient(180deg, #2a2a3e 0%, #1a1a2e 100%);
     padding: 30px;
@@ -56,14 +61,18 @@
     animation: arcadePulse 2s ease-in-out infinite;
 }
 
-@keyframes arcadePulse {
-    0%, 100% {
+@keyframes arcadePulse 
+{
+    0%, 100% 
+    {
         box-shadow: 
             0 0 60px rgba(108, 99, 255, 0.6),
             inset 0 0 30px rgba(0, 0, 0, 0.5),
             0 20px 40px rgba(0, 0, 0, 0.8);
     }
-    50% {
+
+    50% 
+    {
         box-shadow: 
             0 0 80px rgba(108, 99, 255, 0.9),
             inset 0 0 30px rgba(0, 0, 0, 0.5),
@@ -72,7 +81,8 @@
 }
 
 /* ===== SCREEN ===== */
-.screen {
+.screen 
+{
     background: radial-gradient(circle at center, #0f0f23 0%, #000000 100%);
     padding: 40px;
     border-radius: 10px;
@@ -84,7 +94,8 @@
     overflow: hidden;
 }
 
-.screen::before {
+.screen::before 
+{
     content: '';
     position: absolute;
     top: 0;
@@ -102,12 +113,14 @@
     animation: scanlines 8s linear infinite;
 }
 
-@keyframes scanlines {
+@keyframes scanlines 
+{
     0% { transform: translateY(0); }
     100% { transform: translateY(10px); }
 }
 
-.screen::after {
+.screen::after 
+{
     content: '';
     position: absolute;
     top: 0;
@@ -123,19 +136,22 @@
     animation: screenGlare 3s ease-in-out infinite;
 }
 
-@keyframes screenGlare {
+@keyframes screenGlare 
+{
     0%, 100% { left: -100%; }
     50% { left: 100%; }
 }
 
 /* ===== SCREEN CONTENT ===== */
-.screen-content {
+.screen-content 
+{
     position: relative;
     z-index: 2;
     text-align: center;
 }
 
-.pixel-text {
+.pixel-text 
+{
     font-family: var(--font-accent);
     font-size: 2.5rem;
     background: linear-gradient(135deg, #6C63FF 0%, #FF6584 50%, #6C63FF 100%);
@@ -149,17 +165,17 @@
     filter: drop-shadow(0 0 20px rgba(108, 99, 255, 0.8));
 }
 
-@keyframes gradientShift {
+@keyframes gradientShift 
+{
     0%, 100% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
 }
 
 /* ===== PROGRESS CONTAINER ===== */
-.progress-container {
-    min-width: 400px;
-}
+.progress-container { min-width: 400px; }
 
-.progress-bar {
+.progress-bar 
+{
     width: 100%;
     height: 30px;
     background: rgba(0, 0, 0, 0.5);
@@ -173,7 +189,8 @@
         inset 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
-.progress-fill {
+.progress-fill 
+{
     height: 100%;
     background: linear-gradient(
         90deg,
@@ -191,7 +208,8 @@
     position: relative;
 }
 
-.progress-fill::after {
+.progress-fill::after 
+{
     content: '';
     position: absolute;
     top: 0;
@@ -205,23 +223,30 @@
     );
 }
 
-@keyframes progressAnimation {
-    0% {
+@keyframes progressAnimation 
+{
+    0% 
+    {
         width: 0%;
         background-position: 0% 50%;
     }
-    50% {
+
+    50% 
+    {
         width: 70%;
         background-position: 100% 50%;
     }
-    100% {
+
+    100% 
+    {
         width: 100%;
         background-position: 200% 50%;
     }
 }
 
 /* ===== LOADING STATUS ===== */
-.loading-status {
+.loading-status 
+{
     font-family: var(--font-accent);
     font-size: 1.2rem;
     color: #6C63FF;
@@ -230,23 +255,29 @@
     animation: textGlow 1.5s ease-in-out infinite;
 }
 
-@keyframes textGlow {
-    0%, 100% {
+@keyframes textGlow 
+{
+    0%, 100% 
+    {
         text-shadow: 0 0 10px rgba(108, 99, 255, 0.8);
         color: #6C63FF;
     }
-    50% {
+
+    50% 
+    {
         text-shadow: 0 0 20px rgba(255, 101, 132, 0.8);
         color: #FF6584;
     }
 }
 
-.dots::after {
+.dots::after 
+{
     content: '';
     animation: dotsAnimation 1.5s steps(4) infinite;
 }
 
-@keyframes dotsAnimation {
+@keyframes dotsAnimation 
+{
     0%, 20% { content: ''; }
     40% { content: '.'; }
     60% { content: '..'; }
@@ -254,7 +285,8 @@
 }
 
 /* ===== ARCADE CONTROLS ===== */
-.controls {
+.controls 
+{
     display: flex;
     justify-content: center;
     gap: 20px;
@@ -262,7 +294,8 @@
     padding-top: 20px;
 }
 
-.led {
+.led 
+{
     width: 12px;
     height: 12px;
     border-radius: 50%;
@@ -274,27 +307,25 @@
     animation: ledBlink 1.5s ease-in-out infinite;
 }
 
-.led:nth-child(1) {
-    animation-delay: 0s;
-}
+.led:nth-child(1) { animation-delay: 0s; }
 
-.led:nth-child(2) {
-    animation-delay: 0.5s;
-}
+.led:nth-child(2) { animation-delay: 0.5s; }
 
-.led:nth-child(3) {
-    animation-delay: 1s;
-}
+.led:nth-child(3) { animation-delay: 1s; }
 
-@keyframes ledBlink {
-    0%, 100% {
+@keyframes ledBlink 
+{
+    0%, 100% 
+    {
         background: #FF6584;
         box-shadow: 
             0 0 10px #FF6584,
             0 0 20px #FF6584,
             inset 0 0 5px rgba(0, 0, 0, 0.5);
     }
-    50% {
+
+    50% 
+    {
         background: #6C63FF;
         box-shadow: 
             0 0 10px #6C63FF,
@@ -304,36 +335,30 @@
 }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-    .arcade-machine {
-        padding: 20px;
-    }
+@media (max-width: 768px) 
+{
+    .arcade-machine { padding: 20px; }
     
-    .screen {
-        padding: 30px 20px;
-    }
+    .screen { padding: 30px 20px; }
     
-    .pixel-text {
+    .pixel-text 
+    { 
         font-size: 1.5rem;
         letter-spacing: 3px;
     }
     
-    .progress-container {
-        min-width: 280px;
-    }
+    .progress-container { min-width: 280px; }
     
-    .loading-status {
-        font-size: 0.9rem;
-    }
+    .loading-status { font-size: 0.9rem; }
 }
 
 /* ===== FADE OUT ANIMATION ===== */
-.game-loader.fade-out {
-    animation: fadeOut 0.5s ease-out forwards;
-}
+.game-loader.fade-out { animation: fadeOut 0.5s ease-out forwards; }
 
-@keyframes fadeOut {
-    to {
+@keyframes fadeOut 
+{
+    to 
+    {
         opacity: 0;
         visibility: hidden;
     }

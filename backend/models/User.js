@@ -12,7 +12,9 @@ class User
         this.password = userData?.password;
         this.full_name = userData?.full_name;
         this.email = userData?.email;
-        this.profile_picture = userData?.profile_picture || null;
+        const raw_avatar = userData?.profile_picture;
+        const default_avatar = '/user/avatar.jpg';
+        this.profile_picture = raw_avatar && raw_avatar !== 'default_avatar.png' ? raw_avatar : default_avatar;
         this.bio = userData?.bio || null;
         this.website = userData?.website || null;
         this.twitter = userData?.twitter || null;
@@ -56,7 +58,7 @@ class User
                 hashed_pass,
                 this.full_name,
                 this.email,
-                this.profile_picture ?? 'default_avatar.png',
+                this.profile_picture ?? '/user/avatar.jpg',
                 this.role ?? 'user',
                 this.verification_token
             ]);
@@ -129,7 +131,7 @@ class User
             const rows = result[0];
             
             if(rows.length === 0) return null;
-            
+
             return new User(rows[0]);
         } 
         catch(error) 
@@ -257,7 +259,8 @@ class User
         try 
         {
             await this.update({ profile_picture: base64String });
-            this.profile_picture = base64String;
+            const default_avatar = '/user/avatar.jpg';
+            this.profile_picture = base64String && base64String !== 'default_avatar.png' ? base64String : default_avatar;
             return true;
         } 
         catch(error) 

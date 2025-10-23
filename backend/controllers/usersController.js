@@ -3,6 +3,41 @@ import SavedPost from '../models/SavedPost.js';
 import UserReputation from '../models/UserReputation.js';
 import error_handler from '../middleware/errorHandler.js';
 import file_upload from '../middleware/fileUpload.js';
+import { normalize_avatar, DEFAULT_AVATAR } from '../utils/avatarUtils.js';
+
+const build_user_response = (user, includeSensitive = false) => {
+    if(!user) return null;
+
+    const base_response = {
+        id: user.id,
+        login: user.login,
+        full_name: user.full_name,
+        avatar: normalize_avatar(user.profile_picture),
+        profile_picture: normalize_avatar(user.profile_picture),
+        rating: user.rating,
+        reputation_score: user.reputation_score,
+        is_toxic: user.is_toxic,
+        role: user.role,
+        email_verified: user.email_verified,
+        created_at: user.created_at
+    };
+
+    if(includeSensitive)
+        {
+        return {
+            ...base_response,
+            email: user.email,
+            bio: user.bio,
+            website: user.website,
+            twitter: user.twitter,
+            github: user.github,
+            linkedin: user.linkedin,
+            updated_at: user.updated_at
+        };
+    }
+
+    return base_response;
+};
 
 class users_controller 
 {
@@ -21,32 +56,10 @@ class users_controller
             const public_users = users.map(user => {
                 if(req.user && req.user.role === 'admin') 
                     {
-                    return {
-                        id: user.id,
-                        login: user.login,
-                        full_name: user.full_name,
-                        email: user.email,
-                        profile_picture: user.profile_picture,
-                        rating: user.rating,
-                        reputation_score: user.reputation_score,
-                        is_toxic: user.is_toxic,
-                        role: user.role,
-                        email_verified: user.email_verified,
-                        created_at: user.created_at
-                    };
-                } else 
-                    {
-                    return {
-                        id: user.id,
-                        login: user.login,
-                        full_name: user.full_name,
-                        profile_picture: user.profile_picture,
-                        rating: user.rating,
-                        reputation_score: user.reputation_score,
-                        is_toxic: user.is_toxic,
-                        created_at: user.created_at
-                    };
+                    return build_user_response(user, true);
                 }
+
+                return build_user_response(user);
             });
 
             if(sort === 'rating') 
@@ -88,41 +101,15 @@ class users_controller
             
             if(req.user && req.user.role === 'admin') 
                 {
-                const admin_data = {
-                    id: user.id,
-                    login: user.login,
-                    full_name: user.full_name,
-                    email: user.email,
-                    profile_picture: user.profile_picture,
-                    rating: user.rating,
-                    reputation_score: user.reputation_score,
-                    is_toxic: user.is_toxic,
-                    role: user.role,
-                    email_verified: user.email_verified,
-                    created_at: user.created_at,
-                    updated_at: user.updated_at
-                };
-                
                 return res.json({
                     status: 'success',
-                    data: admin_data
+                    data: build_user_response(user, true)
                 });
             }
-            
-            const public_data = {
-                id: user.id,
-                login: user.login,
-                full_name: user.full_name,
-                profile_picture: user.profile_picture,
-                rating: user.rating,
-                reputation_score: user.reputation_score,
-                is_toxic: user.is_toxic,
-                created_at: user.created_at
-            };
-            
+
             res.json({
                 status: 'success',
-                data: public_data
+                data: build_user_response(user)
             });
         } catch(error) 
         {
@@ -244,24 +231,9 @@ class users_controller
             
             if(!user) throw error_handler.not_found_error('User');
             
-            const profile_data = {
-                id: user.id,
-                login: user.login,
-                full_name: user.full_name,
-                email: user.email,
-                profile_picture: user.profile_picture,
-                rating: user.rating,
-                reputation_score: user.reputation_score,
-                is_toxic: user.is_toxic,
-                role: user.role,
-                email_verified: user.email_verified,
-                created_at: user.created_at,
-                updated_at: user.updated_at
-            };
-            
             res.json({
                 status: 'success',
-                data: profile_data
+                data: build_user_response(user, true)
             });
         } catch(error) 
         {
@@ -379,30 +351,10 @@ class users_controller
 
             const updated_user = await user.update(update_data);
 
-            const response_data = {
-                id: updated_user.id,
-                login: updated_user.login,
-                full_name: updated_user.full_name,
-                email: updated_user.email,
-                profile_picture: updated_user.profile_picture,
-                bio: updated_user.bio,
-                website: updated_user.website,
-                twitter: updated_user.twitter,
-                github: updated_user.github,
-                linkedin: updated_user.linkedin,
-                rating: updated_user.rating,
-                reputation_score: updated_user.reputation_score,
-                is_toxic: updated_user.is_toxic,
-                role: updated_user.role,
-                email_verified: updated_user.email_verified,
-                created_at: updated_user.created_at,
-                updated_at: updated_user.updated_at
-            };
-
             res.json({
                 status: 'success',
                 message: 'User updated successfully',
-                data: response_data
+                data: build_user_response(updated_user, true)
             });
         } catch(error) 
         {
@@ -493,10 +445,11 @@ class users_controller
 
             const start_index = (page - 1) * limit;
             const paginated_users = filtered_users.slice(start_index, start_index + parseInt(limit));
+            const formatted_users = paginated_users.map(user => build_user_response(user, true));
 
             res.json({
                 status: 'success',
-                data: paginated_users,
+                data: formatted_users,
                 pagination: 
                 {
                     page: parseInt(page),
@@ -521,7 +474,7 @@ class users_controller
 
             res.json({
                 status: 'success',
-                data: user
+                data: build_user_response(user, true)
             });
         } catch(error) 
         {
@@ -632,29 +585,9 @@ class users_controller
                 });
             }
 
-            // Avatar: Base64 string or null for default
-            const avatar = req.user.profile_picture || null;
-
             res.json({
                 status: 'success',
-                data: {
-                    id: req.user.id,
-                    login: req.user.login,
-                    full_name: req.user.full_name,
-                    email: req.user.email,
-                    avatar: avatar,
-                    profile_picture: req.user.profile_picture,
-                    bio: req.user.bio,
-                    website: req.user.website,
-                    twitter: req.user.twitter,
-                    github: req.user.github,
-                    linkedin: req.user.linkedin,
-                    rating: req.user.rating,
-                    reputation_score: req.user.reputation_score,
-                    role: req.user.role,
-                    email_verified: req.user.email_verified,
-                    created_at: req.user.created_at
-                }
+                data: build_user_response(req.user, true)
             });
         } catch(error) 
         {

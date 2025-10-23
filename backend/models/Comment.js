@@ -1,5 +1,6 @@
 import DB_connect from '../utils/dbConnect.js';
 import Permission from './Permission.js';
+import { normalize_avatar } from '../utils/avatarUtils.js';
 
 class Comment 
 {
@@ -162,7 +163,7 @@ class Comment
                 const comment = new Comment(row);
                 comment.author_login = row.author_login;
                 comment.author_name = row.author_name;
-                comment.author_avatar = row.author_avatar;
+                comment.author_avatar = normalize_avatar(row.author_avatar);
                 return comment;
             });
         } 
@@ -503,6 +504,12 @@ class Comment
         {
             throw new Error(`Error getting full comment data: ${error.message}`);
         }
+    }
+
+    // Alias method for controller compatibility
+    static async get_by_post(post_id, page = 1, limit = 20) 
+    {
+        return await Comment.find_by_post_id(post_id);
     }
 }
 
