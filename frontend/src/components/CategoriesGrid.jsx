@@ -13,7 +13,10 @@ import
 
 import 
 { 
-    SiUnrealengine
+    SiUnrealengine,
+    SiGodotengine,
+    SiPython,
+    SiVulkan
 } from 'react-icons/si';
 
 import { FiFolder } from 'react-icons/fi';
@@ -27,6 +30,11 @@ export default function CategoriesGrid()
         'Programming': FaCode,
         'Unity': FaUnity,
         'Unreal Engine': SiUnrealengine,
+        'Godot': SiGodotengine,
+        'Godot Engine': SiGodotengine,
+        "Ren'Py": SiPython,
+        'Custom Engines': SiVulkan,
+        'Custom Engine': SiVulkan,
         'Art & Design': FaPaintBrush,
         'VR/AR': FaVrCardboard,
         'Career': FaBriefcase,

@@ -254,7 +254,7 @@ class posts_controller
         try 
         {
             const { post_id } = req.params;
-            const { content } = req.body;
+            const { content, parent_id } = req.body;
             const author_id = req.user.id;
             
             const post = await Post.find_by_id(post_id);
@@ -262,11 +262,20 @@ class posts_controller
             
             if(post.status !== 'active') throw error_handler.forbidden_error('Cannot comment on inactive post');
             
+            if(parent_id) 
+            {
+                const parent_comment = await Comment.find_by_id(parent_id);
+                if(!parent_comment) throw error_handler.not_found_error('Parent comment');
+            }
+            
             const comment_data = {
                 author_id,
                 post_id,
-                content
+                content,
+                parent_comment_id: parent_id || null
             };
+            
+            console.log('Creating comment with data:', comment_data);
             
             const comment = new Comment(comment_data);
             const result = await comment.create();
@@ -585,7 +594,7 @@ class posts_controller
         try 
         {
             const { post_id } = req.params;
-            const { notes } = req.body;
+            const notes = req.body?.notes || null;
             const user_id = req.user.id;
             
             const post = await Post.find_by_id(post_id);
@@ -593,12 +602,24 @@ class posts_controller
             
             const save_existing = await SavedPost.find_by_user_and_post(user_id, post_id);
             
-            if(save_existing) throw error_handler.validation_error(['Post is already saved']);
+            if(save_existing) 
+            {
+                return res.json({
+                    status: 'success',
+                    message: 'Post already saved',
+                    data: 
+                    {
+                        id: save_existing.id,
+                        post_id: post_id,
+                        notes: save_existing.notes
+                    }
+                });
+            }
             
             const saved_post = new SavedPost({
                 user_id: user_id,
                 post_id: post_id,
-                notes: notes || null
+                notes: notes
             });
             
             await saved_post.save();
@@ -614,6 +635,7 @@ class posts_controller
             });
         } catch (error) 
         {
+            console.error('Error in save_post:', error);
             throw error;
         }
     }

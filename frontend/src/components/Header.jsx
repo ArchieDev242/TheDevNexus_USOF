@@ -142,9 +142,9 @@ export default function Header()
                         <div className = "header-actions">
                             {isAuthenticated ? (
                                 <>
-                                    <a href="/saved" className = "icon-btn" aria-label = "Saved Posts">
+                                    <Link to="/saved-posts" className = "icon-btn" aria-label = "Saved Posts" title="Збережені пости">
                                         <FiBookmark />
-                                    </a>
+                                    </Link>
                                     <button className = "icon-btn" aria-label = "Notifications">
                                         <FiBell />
                                         <span className = "notification-badge">3</span>

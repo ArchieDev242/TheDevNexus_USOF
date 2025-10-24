@@ -249,6 +249,122 @@
     height: 18px;
 }
 
+/* ===== USER ENGINES ===== */
+.user-engines 
+{
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(108, 99, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(108, 99, 255, 0.2);
+}
+
+.engines-label 
+{
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.engines-icons 
+{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.engine-icon 
+{
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid currentColor;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.engine-icon:hover 
+{
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.engine-icon svg 
+{
+    width: 24px;
+    height: 24px;
+}
+
+/* ===== ENGINE INFO POPUP ===== */
+.engine-popup 
+{
+    max-width: 500px;
+    width: 90%;
+}
+
+.engine-popup-title 
+{
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.engine-popup-icon 
+{
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.engine-popup-icon svg 
+{
+    width: 40px;
+    height: 40px;
+}
+
+.engine-info-section 
+{
+    margin-bottom: 20px;
+}
+
+.engine-info-section:last-child 
+{
+    margin-bottom: 0;
+}
+
+.engine-info-section h4 
+{
+    font-family: var(--font-accent);
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    color: var(--primary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.engine-info-section p 
+{
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text);
+}
+
+.engine-languages 
+{
+    font-family: var(--font-mono);
+    color: var(--secondary);
+    font-weight: 500;
+}
+
 /* ===== PROFILE STATS ===== */
 .profile-stats 
 {
@@ -473,6 +589,54 @@
 {
     resize: vertical;
     min-height: 100px;
+}
+
+/* ===== ENGINES SELECTOR ===== */
+.engines-selector 
+{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.engine-selector-btn 
+{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    color: var(--text);
+    font-family: var(--font-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.engine-selector-btn:hover 
+{
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+.engine-selector-btn.selected 
+{
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.engine-selector-icon 
+{
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.engine-selector-name 
+{
+    font-weight: 500;
 }
 
 .form-actions 

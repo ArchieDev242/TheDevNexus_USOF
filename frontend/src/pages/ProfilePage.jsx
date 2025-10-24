@@ -11,7 +11,6 @@ import
     FiTrash2, 
     FiSave,
     FiGlobe,
-    FiTwitter,
     FiGithub,
     FiLinkedin,
     FiAward,
@@ -20,11 +19,81 @@ import
     FiEdit2,
     FiX,
     FiFileText,
-    FiSettings
+    FiSettings,
+    FiZap
 } from 'react-icons/fi';
+
+import { FaXTwitter } from 'react-icons/fa6';
+import { SiUnrealengine, SiUnity, SiGodotengine, SiPython, SiVulkan, SiCryengine, SiGamemaker } from 'react-icons/si';
 
 import Header from '../components/Header';
 import '../style/profile.css';
+
+const AVAILABLE_ENGINES = [
+    { 
+        id: 'unreal-engine', 
+        name: 'Unreal Engine', 
+        icon: <SiUnrealengine />, 
+        color: '#0E1128',
+        description: 'Потужний AAA движок від Epic Games',
+        audience: 'Для розробки високоякісних 3D ігор, VR/AR проектів',
+        languages: 'C++, Blueprints'
+    },
+    { 
+        id: 'unity', 
+        name: 'Unity', 
+        icon: <SiUnity />, 
+        color: '#000000',
+        description: 'Найпопулярніший кросплатформенний движок',
+        audience: 'Для мобільних, інді та AA ігор',
+        languages: 'C#'
+    },
+    { 
+        id: 'godot', 
+        name: 'Godot', 
+        icon: <SiGodotengine />, 
+        color: '#478CBF',
+        description: 'Безкоштовний open-source движок',
+        audience: 'Для інді-розробників, 2D/3D ігор',
+        languages: 'GDScript, C#, C++'
+    },
+    { 
+        id: 'renpy', 
+        name: "Ren'Py", 
+        icon: <SiPython />, 
+        color: '#FF7F7F',
+        description: 'Спеціалізований движок для візуальних новел',
+        audience: 'Для інтерактивних історій та візуальних новел',
+        languages: 'Python, Ren\'Py Script'
+    },
+    { 
+        id: 'gamemaker', 
+        name: 'GameMaker', 
+        icon: <SiGamemaker />, 
+        color: '#8BC34A',
+        description: 'Зручний движок для 2D ігор',
+        audience: 'Для початківців та 2D інді-ігор',
+        languages: 'GML (GameMaker Language)'
+    },
+    { 
+        id: 'cryengine', 
+        name: 'CryEngine', 
+        icon: <SiCryengine />, 
+        color: '#000000',
+        description: 'Високоякісний движок з реалістичною графікою',
+        audience: 'Для AAA проектів з акцентом на графіку',
+        languages: 'C++, Lua'
+    },
+    { 
+        id: 'custom-engines', 
+        name: 'Custom Engines', 
+        icon: <SiVulkan />, 
+        color: '#FF6584',
+        description: 'Власні движки на базі OpenGL/Vulkan',
+        audience: 'Для досвідчених програмістів, які хочуть повний контроль',
+        languages: 'C++, OpenGL, Vulkan'
+    }
+];
 
 export default function ProfilePage() {
     const { user, loading } = useSelector(state => state.auth);
@@ -36,6 +105,7 @@ export default function ProfilePage() {
     const [show_delete_modal, set_show_delete_modal] = useState(false);
     const [delete_password, set_delete_password] = useState('');
     const [user_posts, set_user_posts] = useState([]);
+    const [engine_popup, set_engine_popup] = useState(null);
 
     const [profile_data, set_profile_data] = useState({
         login: '',
@@ -45,7 +115,8 @@ export default function ProfilePage() {
         website: '',
         twitter: '',
         github: '',
-        linkedin: ''
+        linkedin: '',
+        engines: []
     });
 
     const [password_data, set_password_data] = useState({
@@ -89,7 +160,8 @@ export default function ProfilePage() {
                 website: user.website || '',
                 twitter: user.twitter || '',
                 github: user.github || '',
-                linkedin: user.linkedin || ''
+                linkedin: user.linkedin || '',
+                engines: user.engines || []
             });
 
             fetch_user_posts();
@@ -206,7 +278,8 @@ export default function ProfilePage() {
                     website: profile_data.website,
                     twitter: profile_data.twitter,
                     github: profile_data.github,
-                    linkedin: profile_data.linkedin
+                    linkedin: profile_data.linkedin,
+                    engines: profile_data.engines
                 })
             });
 
@@ -387,7 +460,7 @@ export default function ProfilePage() {
                                             )}
                                             {user?.twitter && (
                                                 <a href = {`https://twitter.com/${user.twitter}`} target = "_blank" rel = "noopener noreferrer" className = "social-link">
-                                                    <FiTwitter />
+                                                    <FaXTwitter />
                                                 </a>
                                             )}
                                             {user?.github && (
@@ -400,6 +473,29 @@ export default function ProfilePage() {
                                                     <FiLinkedin />
                                                 </a>
                                             )}
+                                        </div>
+                                    )}
+
+                                    {/* Game Engines */}
+                                    {user?.engines && user.engines.length > 0 && (
+                                        <div className = "user-engines">
+                                            <p className = "engines-label">Game Engines:</p>
+                                            <div className = "engines-icons">
+                                                {user.engines.map(engine_id => {
+                                                    const engine = AVAILABLE_ENGINES.find(e => e.id === engine_id);
+                                                    if (!engine) return null;
+                                                    return (
+                                                        <div 
+                                                            key = {engine_id} 
+                                                            className = "engine-icon" 
+                                                            style = {{ color: engine.color }}
+                                                            onClick = {() => set_engine_popup(engine)}
+                                                        >
+                                                            {engine.icon}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     )}
 
@@ -725,7 +821,7 @@ export default function ProfilePage() {
 
                                 <div className = "form-group">
                                     <label className = "form-label">
-                                        <FiTwitter /> Twitter
+                                        <FaXTwitter /> Twitter
                                     </label>
                                     <input
                                         type = "text"
@@ -764,6 +860,39 @@ export default function ProfilePage() {
                                         placeholder = "username"
                                     />
                                 </div>
+
+                                <div className = "form-group full-width">
+                                    <label className = "form-label">
+                                        <FiZap /> Game Engines
+                                    </label>
+                                    <div className = "engines-selector">
+                                        {AVAILABLE_ENGINES.map(engine => {
+                                            const is_selected = profile_data.engines.includes(engine.id);
+                                            return (
+                                                <button
+                                                    key = {engine.id}
+                                                    type = "button"
+                                                    className = {`engine-selector-btn ${is_selected ? 'selected' : ''}`}
+                                                    onClick = {() => {
+                                                        const new_engines = is_selected
+                                                            ? profile_data.engines.filter(id => id !== engine.id)
+                                                            : [...profile_data.engines, engine.id];
+                                                        set_profile_data(prev => ({ ...prev, engines: new_engines }));
+                                                    }}
+                                                    style = {{ 
+                                                        borderColor: is_selected ? engine.color : 'transparent',
+                                                        backgroundColor: is_selected ? `${engine.color}20` : 'transparent'
+                                                    }}
+                                                >
+                                                    <span className = "engine-selector-icon" style = {{ color: engine.color }}>
+                                                        {engine.icon}
+                                                    </span>
+                                                    <span className = "engine-selector-name">{engine.name}</span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div className = "modal-footer">
@@ -773,6 +902,39 @@ export default function ProfilePage() {
                             <button onClick = {handle_save_profile} className = "btn btn-gradient">
                                 <FiSave /> Save Changes
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Engine Info Popup */}
+            {engine_popup && (
+                <div className = "modal-overlay" onClick = {() => set_engine_popup(null)}>
+                    <div className = "modal-content engine-popup" onClick = {(e) => e.stopPropagation()}>
+                        <div className = "modal-header" style = {{ borderBottomColor: engine_popup.color }}>
+                            <div className = "engine-popup-title">
+                                <span className = "engine-popup-icon" style = {{ color: engine_popup.color }}>
+                                    {engine_popup.icon}
+                                </span>
+                                <h2>{engine_popup.name}</h2>
+                            </div>
+                            <button className = "btn-icon" onClick = {() => set_engine_popup(null)}>
+                                <FiX />
+                            </button>
+                        </div>
+                        <div className = "modal-body">
+                            <div className = "engine-info-section">
+                                <h4>Опис</h4>
+                                <p>{engine_popup.description}</p>
+                            </div>
+                            <div className = "engine-info-section">
+                                <h4>Для кого</h4>
+                                <p>{engine_popup.audience}</p>
+                            </div>
+                            <div className = "engine-info-section">
+                                <h4>Мови програмування</h4>
+                                <p className = "engine-languages">{engine_popup.languages}</p>
+                            </div>
                         </div>
                     </div>
                 </div>

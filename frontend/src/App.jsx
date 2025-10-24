@@ -10,6 +10,7 @@ import UserProfilePage from './pages/UserProfilePage';
 import AboutPage from './pages/AboutPage';
 import SettingsPage from './pages/SettingsPage';
 import CategoriesPage from './pages/CategoriesPage';
+import SavedPostsPage from './pages/SavedPostsPage';
 import PublicRoute from './components/PublicRoute';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -42,6 +43,11 @@ export default function App()
                 <Route path = "/settings" element = {
                     <ProtectedRoute>
                         <SettingsPage />
+                    </ProtectedRoute>
+                } />
+                <Route path = "/saved-posts" element = {
+                    <ProtectedRoute>
+                        <SavedPostsPage />
                     </ProtectedRoute>
                 } />
             </Routes>

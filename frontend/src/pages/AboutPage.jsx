@@ -13,12 +13,10 @@ import
     FiMonitor,
     FiCpu,
     FiBox,
-    FiFileText,
     FiTarget,
-    FiTool,
     FiLayers
 } from 'react-icons/fi';
-import { SiUnrealengine, SiUnity, SiGodotengine } from 'react-icons/si';
+import { SiUnrealengine, SiUnity, SiGodotengine, SiPython, SiVulkan } from 'react-icons/si';
 
 import Header from '../components/Header';
 import '../style/about.css';
@@ -29,10 +27,10 @@ export default function AboutPage()
         { name: 'Unreal Engine', icon: <SiUnrealengine /> },
         { name: 'Unity', icon: <SiUnity /> },
         { name: 'Godot', icon: <SiGodotengine /> },
-        { name: "Ren'Py", icon: <FiFileText /> },
+        { name: "Ren'Py", icon: <SiPython /> },
         { name: 'GameMaker', icon: <FiTarget /> },
         { name: 'CryEngine', icon: <FiZap /> },
-        { name: 'Custom Engines', icon: <FiTool /> },
+        { name: 'Custom Engines', icon: <SiVulkan /> },
         { name: 'OpenGL / Vulkan', icon: <FiLayers /> }
     ];
 

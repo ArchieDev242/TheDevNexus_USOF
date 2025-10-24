@@ -28,8 +28,8 @@ class Like
             
             const result = await DB_connect.make_request(query, [
                 this.author_id,
-                this.post_id,
-                this.comment_id,
+                this.post_id || null,
+                this.comment_id || null,
                 this.type
             ]);
             

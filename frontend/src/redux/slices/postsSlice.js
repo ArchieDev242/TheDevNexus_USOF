@@ -167,7 +167,7 @@ const posts_slice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // fetch posts
+            // posts
             .addCase(fetch_posts.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -185,7 +185,7 @@ const posts_slice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            // fetch post by ID
+            // post by ID
             .addCase(fetch_post_by_id.pending, (state) => {
                 state.loading = true;
                 state.error = null;

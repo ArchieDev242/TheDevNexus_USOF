@@ -3,18 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import 
 { 
     FiUsers,
-    FiFileText,
     FiBook,
     FiImage,
     FiMessageCircle,
     FiPackage,
     FiZap,
-    FiTool,
-    FiLayers,
-    FiTarget
+    FiFileText
 } from 'react-icons/fi';
 
-import { SiUnrealengine, SiUnity, SiGodotengine } from 'react-icons/si';
+import { SiUnrealengine, SiUnity, SiGodotengine, SiPython, SiVulkan, SiCryengine, SiGamemaker } from 'react-icons/si';
 
 import Header from '../components/Header';
 import '../style/categories.css';
@@ -52,37 +49,30 @@ export default function CategoriesPage()
         { 
             id: 'renpy',
             name: "Ren'Py", 
-            icon: <FiFileText />,
+            icon: <SiPython />,
             color: '#FF7F7F',
             description: 'Visual novel creation with Ren\'Py engine and Python scripting'
         },
         { 
             id: 'gamemaker',
             name: 'GameMaker', 
-            icon: <FiTarget />,
+            icon: <SiGamemaker />,
             color: '#8BC34A',
             description: '2D game development with GameMaker Studio and GML'
         },
         { 
             id: 'cryengine',
             name: 'CryEngine', 
-            icon: <FiZap />,
+            icon: <SiCryengine />,
             color: '#000000',
             description: 'CryEngine development, advanced graphics, and AAA quality games'
         },
         { 
             id: 'custom-engines',
             name: 'Custom Engines', 
-            icon: <FiTool />,
+            icon: <SiVulkan />,
             color: '#FF6584',
-            description: 'Building your own game engines from scratch'
-        },
-        { 
-            id: 'opengl-vulkan',
-            name: 'OpenGL / Vulkan', 
-            icon: <FiLayers />,
-            color: '#6C63FF',
-            description: 'Low-level graphics programming with OpenGL and Vulkan APIs'
+            description: 'Building your own game engines from scratch, often based on OpenGL/Vulkan'
         }
     ];
 

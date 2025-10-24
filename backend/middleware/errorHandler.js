@@ -13,12 +13,14 @@ class error_handler
         
         // log error for debugging
         console.error(`Error ${status_code}: ${error.message}`);
+        if(error.details) console.error('Validation details:', error.details);
         
         if(process.env.NODE_ENV === 'development') console.error(error.stack);
 
         res.status(status_code).json({
             status: 'error',
             message: error.message || 'Internal Server Error',
+            ...(error.details && { errors: error.details }),
             ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
         });
     }

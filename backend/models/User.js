@@ -20,6 +20,23 @@ class User
         this.twitter = userData?.twitter || null;
         this.github = userData?.github || null;
         this.linkedin = userData?.linkedin || null;
+        
+        if(userData?.engines) 
+            {
+            try 
+            {
+                this.engines = typeof userData.engines === 'string' 
+                    ? JSON.parse(userData.engines) 
+                    : userData.engines;
+            } catch 
+            {
+                this.engines = [];
+            }
+        } else 
+            {
+            this.engines = [];
+        }
+        
         this.rating = userData?.rating || 0;
         this.reputation_score = userData?.reputation_score ?? 0;
         this.is_toxic = userData?.is_toxic ?? false;

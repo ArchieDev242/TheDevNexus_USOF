@@ -49,29 +49,67 @@ class Validator
 
     static validate_post(req, res, next) 
     {
-        const { title, content, categories } = req.body;
+        const title = typeof req.body.title === 'string' ? req.body.title.trim() : '';
+        const content = typeof req.body.content === 'string' ? req.body.content.trim() : '';
+        const raw_categories = req.body.categories;
         const errors = [];
 
-        if(!title || title.length < 5) errors.push('Post title must be at least 5 characters long');
+        let categories = Array.isArray(raw_categories) ? raw_categories : [];
 
-        if(!content || content.length < 10) errors.push('Post content must be at least 10 characters long');
-
-        if(req.user && req.user.role !== 'admin') 
+        if(!Array.isArray(raw_categories) && typeof raw_categories === 'string')
+        {
+            try
             {
-            if(!categories || !Array.isArray(categories) || categories.length === 0) 
-                {
-                errors.push('At least one category is required');
-            }
-        } else 
+                const parsed = JSON.parse(raw_categories);
+                if(Array.isArray(parsed)) categories = parsed;
+            } catch
             {
-            if(categories !== undefined && !Array.isArray(categories)) 
-                {
-                errors.push('Categories must be an array');
+                categories = raw_categories.split(',').map(item => item.trim()).filter(Boolean);
             }
         }
 
-        if(errors.length > 0) return next(error_handler.validation_error(errors));
+        categories = categories
+            .map(category => {
+                if(typeof category === 'number') return category;
 
+                if(typeof category === 'string' && category.trim() !== '')
+                {
+                    const parsed = parseInt(category, 10);
+                    return isNaN(parsed) ? null : parsed;
+                }
+                return null;
+            })
+            
+            .filter(category => category !== null);
+
+        req.body.title = title;
+        req.body.content = content;
+        req.body.categories = categories;
+
+        console.log('=== POST VALIDATION ===');
+        console.log('Title:', title, '(length:', title.length, ')');
+        console.log('Content:', content, '(length:', content.length, ')');
+        console.log('Categories:', categories);
+        console.log('User:', req.user?.id, 'Role:', req.user?.role);
+
+        if(!title || title.length < 3) errors.push('Post title must be at least 3 characters long');
+
+        if(!content || content.length < 5) errors.push('Post content must be at least 5 characters long');
+
+        if(!categories || categories.length === 0) 
+        {
+            errors.push('At least one category is required');
+        }
+
+        if(errors.length > 0) 
+        {
+            console.log('Validation errors:', errors);
+            console.log('======================');
+            return next(error_handler.validation_error(errors));
+        }
+
+        console.log('Validation passed!');
+        console.log('======================');
         next();
     }
 

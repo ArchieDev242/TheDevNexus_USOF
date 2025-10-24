@@ -232,6 +232,8 @@ class Comment
             const result = await DB_connect.make_request(query, [userParam, userParam, postId]);
             const rows = result[0];
             
+            console.log('🔍 First comment from DB:', rows[0]);
+            
             return rows.map(row => {
                 const comment = new Comment(row);
                 comment.author_login = row.author_login;
@@ -242,6 +244,9 @@ class Comment
                 const liked_by_user = typeof row.liked_by_user === 'boolean' ? row.liked_by_user : Boolean(row.liked_by_user);
                 const disliked_by_user = typeof row.disliked_by_user === 'boolean' ? row.disliked_by_user : Boolean(row.disliked_by_user);
                 comment.user_reaction = liked_by_user ? 'like' : (disliked_by_user ? 'dislike' : null);
+                
+                console.log(`📝 Comment ${comment.id}: parent_comment_id = ${comment.parent_comment_id}`);
+                
                 return comment;
             });
         } 

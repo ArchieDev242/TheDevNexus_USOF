@@ -11,8 +11,10 @@ class likes_controller
         try 
         {
             const { id } = req.params;
+            const user_id = req.user?.id;
             
-            const query = `
+            // Get total likes/dislikes count
+            const count_query = `
                 SELECT 
                     COUNT(CASE WHEN type = 'like' THEN 1 END) as likes_count,
                     COUNT(CASE WHEN type = 'dislike' THEN 1 END) as dislikes_count
@@ -20,12 +22,46 @@ class likes_controller
                 WHERE post_id = ?
             `;
             
-            const result = await DB_connect.make_request(query, [id]);
-            res.json(result[0][0]);
+            const count_result = await DB_connect.make_request(count_query, [id]);
+            const counts = count_result[0][0];
+            
+            // Check if user liked/disliked this post
+            let user_reaction = { liked: false, disliked: false };
+            
+            if(user_id) 
+            {
+                const user_query = `
+                    SELECT type 
+                    FROM likes 
+                    WHERE post_id = ? AND author_id = ?
+                `;
+                
+                const user_result = await DB_connect.make_request(user_query, [id, user_id]);
+                
+                if(user_result[0].length > 0) 
+                {
+                    const reaction_type = user_result[0][0].type;
+                    user_reaction.liked = reaction_type === 'like';
+                    user_reaction.disliked = reaction_type === 'dislike';
+                }
+            }
+            
+            res.json({
+                status: 'success',
+                data: {
+                    likes_count: counts.likes_count,
+                    dislikes_count: counts.dislikes_count,
+                    liked: user_reaction.liked,
+                    disliked: user_reaction.disliked
+                }
+            });
         } catch(error) 
         {
             console.error('Error fetching post likes:', error);
-            res.status(500).json({ error: 'Failed to fetch likes' });
+            res.status(500).json({ 
+                status: 'error',
+                message: 'Failed to fetch likes' 
+            });
         }
     }
 
@@ -34,8 +70,10 @@ class likes_controller
         try 
         {
             const { id } = req.params;
+            const user_id = req.user?.id;
             
-            const query = `
+            // Get total likes/dislikes count
+            const count_query = `
                 SELECT 
                     COUNT(CASE WHEN type = 'like' THEN 1 END) as likes_count,
                     COUNT(CASE WHEN type = 'dislike' THEN 1 END) as dislikes_count
@@ -43,12 +81,46 @@ class likes_controller
                 WHERE comment_id = ?
             `;
             
-            const result = await DB_connect.make_request(query, [id]);
-            res.json(result[0][0]);
+            const count_result = await DB_connect.make_request(count_query, [id]);
+            const counts = count_result[0][0];
+            
+            // Check if user liked/disliked this comment
+            let user_reaction = { liked: false, disliked: false };
+            
+            if(user_id) 
+            {
+                const user_query = `
+                    SELECT type 
+                    FROM likes 
+                    WHERE comment_id = ? AND author_id = ?
+                `;
+                
+                const user_result = await DB_connect.make_request(user_query, [id, user_id]);
+                
+                if(user_result[0].length > 0) 
+                {
+                    const reaction_type = user_result[0][0].type;
+                    user_reaction.liked = reaction_type === 'like';
+                    user_reaction.disliked = reaction_type === 'dislike';
+                }
+            }
+            
+            res.json({
+                status: 'success',
+                data: {
+                    likes_count: counts.likes_count,
+                    dislikes_count: counts.dislikes_count,
+                    liked: user_reaction.liked,
+                    disliked: user_reaction.disliked
+                }
+            });
         } catch(error) 
         {
             console.error('Error fetching comment likes:', error);
-            res.status(500).json({ error: 'Failed to fetch likes' });
+            res.status(500).json({ 
+                status: 'error',
+                message: 'Failed to fetch likes' 
+            });
         }
     }
 
@@ -60,7 +132,22 @@ class likes_controller
     {
         try 
         {
-            const author_id = req.user?.id || 1; // for testing
+            console.log('=== LIKE POST DEBUG ===');
+            console.log('req.user:', req.user);
+            console.log('req.cookies:', req.cookies);
+            console.log('auth header:', req.headers.authorization);
+            
+            const author_id = req.user?.id;
+            
+            if(!author_id) 
+            {
+                console.log('Authentication failed - no user ID');
+                return res.status(401).json({ 
+                    status: 'error',
+                    message: 'Authentication required' 
+                });
+            }
+            
             const { id } = req.params;
 
             // post exists?
@@ -69,7 +156,13 @@ class likes_controller
                 [id]
             );
             
-            if(post_check[0].length === 0) return res.status(404).json({ error: 'Post not found' });
+            if(post_check[0].length === 0) 
+            {
+                return res.status(404).json({ 
+                    status: 'error',
+                    message: 'Post not found' 
+                });
+            }
 
             const like_exists = await DB_connect.make_request(
                 'SELECT id, type FROM likes WHERE author_id = ? AND post_id = ?',
@@ -77,43 +170,93 @@ class likes_controller
             );
 
             if(like_exists[0].length > 0) 
-                {
+            {
                 const current_type = like_exists[0][0].type;
                 
                 if(current_type === 'like') 
-                    {
+                {
+                    // Remove like
                     await DB_connect.make_request(
                         'DELETE FROM likes WHERE author_id = ? AND post_id = ?',
                         [author_id, id]
                     );
-                    res.json({ success: true, message: 'Like removed', action: 'unliked' });
                 } else 
-                    {
+                {
+                    // Change dislike to like
                     await DB_connect.make_request(
                         'UPDATE likes SET type = "like" WHERE author_id = ? AND post_id = ?',
                         [author_id, id]
                     );
-                    res.json({ success: true, message: 'Changed to like', action: 'liked' });
                 }
             } else 
-                {
+            {
+                // Add new like
                 await DB_connect.make_request(
                     'INSERT INTO likes (author_id, post_id, type) VALUES (?, ?, "like")',
                     [author_id, id]
                 );
-                res.json({ success: true, message: 'Post liked', action: 'liked' });
             }
+            
+            // Get updated counts and user reaction
+            const count_query = `
+                SELECT 
+                    COUNT(CASE WHEN type = 'like' THEN 1 END) as likes_count,
+                    COUNT(CASE WHEN type = 'dislike' THEN 1 END) as dislikes_count
+                FROM likes 
+                WHERE post_id = ?
+            `;
+            
+            const count_result = await DB_connect.make_request(count_query, [id]);
+            const counts = count_result[0][0];
+            
+            const user_query = `
+                SELECT type 
+                FROM likes 
+                WHERE post_id = ? AND author_id = ?
+            `;
+            
+            const user_result = await DB_connect.make_request(user_query, [id, author_id]);
+            
+            let user_reaction = { liked: false, disliked: false };
+            if(user_result[0].length > 0) 
+            {
+                const reaction_type = user_result[0][0].type;
+                user_reaction.liked = reaction_type === 'like';
+                user_reaction.disliked = reaction_type === 'dislike';
+            }
+            
+            res.json({
+                status: 'success',
+                data: {
+                    likes_count: counts.likes_count,
+                    dislikes_count: counts.dislikes_count,
+                    liked: user_reaction.liked,
+                    disliked: user_reaction.disliked
+                }
+            });
         } catch (error) 
         {
             console.error('Error liking post:', error);
-            res.status(500).json({ error: 'Failed to like post' });
+            res.status(500).json({ 
+                status: 'error',
+                message: 'Failed to like post' 
+            });
         }
     }
 
     static async dislike_post(req, res) 
     {
         try {
-            const author_id = req.user?.id || 1;
+            const author_id = req.user?.id;
+            
+            if(!author_id) 
+            {
+                return res.status(401).json({ 
+                    status: 'error',
+                    message: 'Authentication required' 
+                });
+            }
+            
             const { id } = req.params;
             
             const post_check = await DB_connect.make_request(
@@ -121,7 +264,13 @@ class likes_controller
                 [id]
             );
             
-            if(post_check[0].length === 0) return res.status(404).json({ error: 'Post not found' });
+            if(post_check[0].length === 0) 
+            {
+                return res.status(404).json({ 
+                    status: 'error',
+                    message: 'Post not found' 
+                });
+            }
 
             const like_exists = await DB_connect.make_request(
                 'SELECT id, type FROM likes WHERE author_id = ? AND post_id = ?',
@@ -129,36 +278,77 @@ class likes_controller
             );
 
             if(like_exists[0].length > 0) 
-                {
+            {
                 const current_type = like_exists[0][0].type;
                 
                 if(current_type === 'dislike') 
-                    {
+                {
+                    // Remove dislike
                     await DB_connect.make_request(
                         'DELETE FROM likes WHERE author_id = ? AND post_id = ?',
                         [author_id, id]
                     );
-                    res.json({ success: true, message: 'Dislike removed', action: 'undisliked' });
                 } else 
-                    {
+                {
+                    // Change like to dislike
                     await DB_connect.make_request(
                         'UPDATE likes SET type = "dislike" WHERE author_id = ? AND post_id = ?',
                         [author_id, id]
                     );
-                    res.json({ success: true, message: 'Changed to dislike', action: 'disliked' });
                 }
             } else 
-                {
+            {
+                // Add new dislike
                 await DB_connect.make_request(
                     'INSERT INTO likes (author_id, post_id, type) VALUES (?, ?, "dislike")',
                     [author_id, id]
                 );
-                res.json({ success: true, message: 'Post disliked', action: 'disliked' });
             }
+            
+            // Get updated counts and user reaction
+            const count_query = `
+                SELECT 
+                    COUNT(CASE WHEN type = 'like' THEN 1 END) as likes_count,
+                    COUNT(CASE WHEN type = 'dislike' THEN 1 END) as dislikes_count
+                FROM likes 
+                WHERE post_id = ?
+            `;
+            
+            const count_result = await DB_connect.make_request(count_query, [id]);
+            const counts = count_result[0][0];
+            
+            const user_query = `
+                SELECT type 
+                FROM likes 
+                WHERE post_id = ? AND author_id = ?
+            `;
+            
+            const user_result = await DB_connect.make_request(user_query, [id, author_id]);
+            
+            let user_reaction = { liked: false, disliked: false };
+            if(user_result[0].length > 0) 
+            {
+                const reaction_type = user_result[0][0].type;
+                user_reaction.liked = reaction_type === 'like';
+                user_reaction.disliked = reaction_type === 'dislike';
+            }
+            
+            res.json({
+                status: 'success',
+                data: {
+                    likes_count: counts.likes_count,
+                    dislikes_count: counts.dislikes_count,
+                    liked: user_reaction.liked,
+                    disliked: user_reaction.disliked
+                }
+            });
         } catch(error) 
         {
             console.error('Error disliking post:', error);
-            res.status(500).json({ error: 'Failed to dislike post' });
+            res.status(500).json({ 
+                status: 'error',
+                message: 'Failed to dislike post' 
+            });
         }
     }
 
@@ -166,7 +356,16 @@ class likes_controller
     {
         try 
         {
-            const author_id = req.user?.id || 1;
+            const author_id = req.user?.id;
+            
+            if(!author_id) 
+            {
+                return res.status(401).json({ 
+                    status: 'error',
+                    message: 'Authentication required' 
+                });
+            }
+            
             const { id } = req.params;
             
             const comment_check = await DB_connect.make_request(
@@ -174,7 +373,13 @@ class likes_controller
                 [id]
             );
             
-            if(comment_check[0].length === 0) return res.status(404).json({ error: 'Comment not found' });
+            if(comment_check[0].length === 0) 
+            {
+                return res.status(404).json({ 
+                    status: 'error',
+                    message: 'Comment not found' 
+                });
+            }
 
             const like_exists = await DB_connect.make_request(
                 'SELECT id, type FROM likes WHERE author_id = ? AND comment_id = ?',
@@ -182,36 +387,77 @@ class likes_controller
             );
 
             if(like_exists[0].length > 0) 
-                {
+            {
                 const current_type = like_exists[0][0].type;
                 
                 if(current_type === 'like') 
-                    {
+                {
+                    // Remove like
                     await DB_connect.make_request(
                         'DELETE FROM likes WHERE author_id = ? AND comment_id = ?',
                         [author_id, id]
                     );
-                    res.json({ success: true, message: 'Like removed', action: 'unliked' });
                 } else 
-                    {
+                {
+                    // Change dislike to like
                     await DB_connect.make_request(
                         'UPDATE likes SET type = "like" WHERE author_id = ? AND comment_id = ?',
                         [author_id, id]
                     );
-                    res.json({ success: true, message: 'Changed to like', action: 'liked' });
                 }
             } else 
-                {
+            {
+                // Add new like (post_id is NULL for comments)
                 await DB_connect.make_request(
-                    'INSERT INTO likes (author_id, comment_id, type) VALUES (?, ?, "like")',
+                    'INSERT INTO likes (author_id, post_id, comment_id, type) VALUES (?, NULL, ?, "like")',
                     [author_id, id]
                 );
-                res.json({ success: true, message: 'Comment liked', action: 'liked' });
             }
+            
+            // Get updated counts and user reaction
+            const count_query = `
+                SELECT 
+                    COUNT(CASE WHEN type = 'like' THEN 1 END) as likes_count,
+                    COUNT(CASE WHEN type = 'dislike' THEN 1 END) as dislikes_count
+                FROM likes 
+                WHERE comment_id = ?
+            `;
+            
+            const count_result = await DB_connect.make_request(count_query, [id]);
+            const counts = count_result[0][0];
+            
+            const user_query = `
+                SELECT type 
+                FROM likes 
+                WHERE comment_id = ? AND author_id = ?
+            `;
+            
+            const user_result = await DB_connect.make_request(user_query, [id, author_id]);
+            
+            let user_reaction = { liked: false, disliked: false };
+            if(user_result[0].length > 0) 
+            {
+                const reaction_type = user_result[0][0].type;
+                user_reaction.liked = reaction_type === 'like';
+                user_reaction.disliked = reaction_type === 'dislike';
+            }
+            
+            res.json({
+                status: 'success',
+                data: {
+                    likes_count: counts.likes_count,
+                    dislikes_count: counts.dislikes_count,
+                    liked: user_reaction.liked,
+                    disliked: user_reaction.disliked
+                }
+            });
         } catch(error) 
         {
             console.error('Error liking comment:', error);
-            res.status(500).json({ error: 'Failed to like comment' });
+            res.status(500).json({ 
+                status: 'error',
+                message: 'Failed to like comment' 
+            });
         }
     }
 
@@ -219,7 +465,16 @@ class likes_controller
     {
         try 
         {
-            const author_id = req.user?.id || 1;
+            const author_id = req.user?.id;
+            
+            if(!author_id) 
+            {
+                return res.status(401).json({ 
+                    status: 'error',
+                    message: 'Authentication required' 
+                });
+            }
+            
             const { id } = req.params;
             
             const comment_check = await DB_connect.make_request(
@@ -227,7 +482,13 @@ class likes_controller
                 [id]
             );
             
-            if(comment_check[0].length === 0) return res.status(404).json({ error: 'Comment not found' });
+            if(comment_check[0].length === 0) 
+            {
+                return res.status(404).json({ 
+                    status: 'error',
+                    message: 'Comment not found' 
+                });
+            }
 
             const like_exists = await DB_connect.make_request(
                 'SELECT id, type FROM likes WHERE author_id = ? AND comment_id = ?',
@@ -235,36 +496,77 @@ class likes_controller
             );
 
             if(like_exists[0].length > 0) 
-                {
+            {
                 const current_type = like_exists[0][0].type;
                 
                 if(current_type === 'dislike') 
-                    {
+                {
+                    // Remove dislike
                     await DB_connect.make_request(
                         'DELETE FROM likes WHERE author_id = ? AND comment_id = ?',
                         [author_id, id]
                     );
-                    res.json({ success: true, message: 'Dislike removed', action: 'undisliked' });
                 } else 
-                    {
+                {
+                    // Change like to dislike
                     await DB_connect.make_request(
                         'UPDATE likes SET type = "dislike" WHERE author_id = ? AND comment_id = ?',
                         [author_id, id]
                     );
-                    res.json({ success: true, message: 'Changed to dislike', action: 'disliked' });
                 }
             } else 
-                {
+            {
+                // Add new dislike (post_id is NULL for comments)
                 await DB_connect.make_request(
-                    'INSERT INTO likes (author_id, comment_id, type) VALUES (?, ?, "dislike")',
+                    'INSERT INTO likes (author_id, post_id, comment_id, type) VALUES (?, NULL, ?, "dislike")',
                     [author_id, id]
                 );
-                res.json({ success: true, message: 'Comment disliked', action: 'disliked' });
             }
+            
+            // Get updated counts and user reaction
+            const count_query = `
+                SELECT 
+                    COUNT(CASE WHEN type = 'like' THEN 1 END) as likes_count,
+                    COUNT(CASE WHEN type = 'dislike' THEN 1 END) as dislikes_count
+                FROM likes 
+                WHERE comment_id = ?
+            `;
+            
+            const count_result = await DB_connect.make_request(count_query, [id]);
+            const counts = count_result[0][0];
+            
+            const user_query = `
+                SELECT type 
+                FROM likes 
+                WHERE comment_id = ? AND author_id = ?
+            `;
+            
+            const user_result = await DB_connect.make_request(user_query, [id, author_id]);
+            
+            let user_reaction = { liked: false, disliked: false };
+            if(user_result[0].length > 0) 
+            {
+                const reaction_type = user_result[0][0].type;
+                user_reaction.liked = reaction_type === 'like';
+                user_reaction.disliked = reaction_type === 'dislike';
+            }
+            
+            res.json({
+                status: 'success',
+                data: {
+                    likes_count: counts.likes_count,
+                    dislikes_count: counts.dislikes_count,
+                    liked: user_reaction.liked,
+                    disliked: user_reaction.disliked
+                }
+            });
         } catch(error) 
         {
             console.error('Error disliking comment:', error);
-            res.status(500).json({ error: 'Failed to dislike comment' });
+            res.status(500).json({ 
+                status: 'error',
+                message: 'Failed to dislike comment' 
+            });
         }
     }
 

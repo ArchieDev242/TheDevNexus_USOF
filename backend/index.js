@@ -29,7 +29,11 @@ const app = express();
 //middleware
 app.use(cookieParser());
 app.use(express.json());
-app.use(cors());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors({
+    origin: config.frontend?.url || 'http://localhost:5173',
+    credentials: true
+}));
 
 app.use('/api/users/me', (req, res, next) => {
     next();
@@ -41,10 +45,9 @@ app.use(session({ secret: 'key', resave: false, saveUninitialized: true }));
 
 app.use((req, res, next) => {
   const url = new URL(req.protocol + '://' + req.get('host') + req.originalUrl);
-  if(url.searchParams.has('token')) 
-    {
-    url.searchParams.set('token', '***');
-  }
+
+  if(url.searchParams.has('token')) url.searchParams.set('token', '***');
+
   console.log('Запрос:', req.method, url.pathname + (url.search ? url.search : ''));
   next();
 });
