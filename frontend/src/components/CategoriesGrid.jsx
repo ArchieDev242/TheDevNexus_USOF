@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import 
 { 
     FaUnity,
@@ -24,6 +25,7 @@ import { FiFolder } from 'react-icons/fi';
 export default function CategoriesGrid() 
 {
     const { categories, loading } = useSelector(state => state.categories);
+    const navigate = useNavigate();
     
     const category_icons = {
         'Game Development': FaGamepad,
@@ -55,7 +57,12 @@ export default function CategoriesGrid()
                         categories.map((category) => {
                             const IconComponent = category_icons[category.title] || FiFolder;
                             return (
-                                <div key = {category.id} className = "category-card">
+                                <div 
+                                    key = {category.id} 
+                                    className = "category-card"
+                                    onClick = {() => navigate(`/posts?category=${encodeURIComponent(String(category.id))}`)}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <div className = "category-icon">
                                         <IconComponent />
                                     </div>
@@ -65,7 +72,7 @@ export default function CategoriesGrid()
                                     </p>
                                     <div className = "category-stats">
                                         <FaBook />
-                                        <span>{category.posts_count || 0} posts</span>
+                                        <span>{category.posts_count ?? 0} posts</span>
                                     </div>
                                 </div>
                             );

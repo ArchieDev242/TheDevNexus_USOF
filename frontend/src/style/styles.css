@@ -4,7 +4,7 @@
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
     --border-radius: 14px;
     --border-radius-small: 7px;
-    --container-width: 1240px;
+    --container-width: 1480px;
     --container-padding-x: 20px;
 }
 
@@ -55,6 +55,7 @@ code
     backdrop-filter: blur(20px);
     border-bottom: 1px solid rgba(108, 99, 255, 0.2);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
 }
 
 .header-wrapper 
@@ -180,8 +181,9 @@ code
     background: transparent;
     border: none;
     color: var(--white);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     transition: all 0.3s ease;
+    font-family: var(--font-accent);
 }
 
 .search__input:focus 

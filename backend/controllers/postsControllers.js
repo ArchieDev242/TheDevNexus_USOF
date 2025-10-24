@@ -18,19 +18,22 @@ class posts_controller
     {
         try 
         {
-            const { 
-                page = 1, 
-                limit = 10, 
+            const {
+                page = 1,
+                limit = 10,
                 sort = 'likes', // likes, date
-                categories = '', 
-                date_from = '', 
+                categories: categoriesParam = '',
+                category: categoryParam = '', // support legacy singular param
+                date_from = '',
                 date_to = '',
                 status = 'active',
                 author = ''
             } = req.query;
             
+            // Normalize categories from either 'categories' (csv) or 'category' (single)
+            const normalizedCategoriesCsv = String(categoriesParam || categoryParam || '').trim();
             const filters = {
-                categories: categories ? categories.split(',') : [],
+                categories: normalizedCategoriesCsv ? normalizedCategoriesCsv.split(',').filter(Boolean) : [],
                 date_from,
                 date_to
             };

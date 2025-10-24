@@ -8,8 +8,23 @@ export const fetch_categories = createAsyncThunk(
             const data = await response.json();
             
             if(!response.ok) return rejectWithValue(data.message || 'Failed to fetch categories');
-            
-            return data.data || data;
+            // Support both legacy and new API shapes
+            // legacy: { status, data: Category[] }
+            // new: { status, data: { categories: Category[], total_active_posts: number } }
+            if (Array.isArray(data?.data)) {
+                return { categories: data.data, total_active_posts: undefined };
+            }
+            if (data?.data && typeof data.data === 'object') {
+                return { 
+                    categories: data.data.categories || [], 
+                    total_active_posts: data.data.total_active_posts
+                };
+            }
+            // Fallback if server returned raw array
+            if (Array.isArray(data)) {
+                return { categories: data, total_active_posts: undefined };
+            }
+            return { categories: [], total_active_posts: undefined };
         } catch(error) 
         {
             return rejectWithValue(error.message);
@@ -41,6 +56,7 @@ const categories_slice = createSlice({
     initialState: 
     {
         categories: [],
+        totalActivePosts: 0,
         currentCategory: null,
         loading: false,
         error: null
@@ -60,7 +76,11 @@ const categories_slice = createSlice({
             })
             .addCase(fetch_categories.fulfilled, (state, action) => {
                 state.loading = false;
-                state.categories = action.payload;
+                const payload = action.payload || {};
+                state.categories = payload.categories || [];
+                if (typeof payload.total_active_posts === 'number') {
+                    state.totalActivePosts = payload.total_active_posts;
+                }
             })
             .addCase(fetch_categories.rejected, (state, action) => {
                 state.loading = false;

@@ -103,21 +103,9 @@ export default function Header()
                                     </a>
                                 </li>
                                 <li className = 'nav-list__item'>
-                                    <a href = "/categories">
-                                        <FiGrid />
-                                        <span>Categories</span>
-                                    </a>
-                                </li>
-                                <li className = 'nav-list__item'>
                                     <a href = "/about">
                                         <FiInfo />
                                         <span>About</span>
-                                    </a>
-                                </li>
-                                <li className = 'nav-list__item'>
-                                    <a href = "/posts">
-                                        <FiFileText />
-                                        <span>Posts</span>
                                     </a>
                                 </li>
                             </ul>

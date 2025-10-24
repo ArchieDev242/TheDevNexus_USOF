@@ -366,6 +366,7 @@ class Post
                 FROM categories c
                 JOIN post_categories pc ON c.id = pc.category_id
                 WHERE pc.post_id = ?
+                ORDER BY c.title ASC
             `;
             
             const result = await DB_connect.make_request(query, [this.id]);
@@ -474,6 +475,7 @@ class Post
         try 
         {
             const offset = (page - 1) * limit;
+            // Base SELECT
             let query = `
                 SELECT p.*, u.login as author_login, u.full_name as author_name, u.profile_picture as author_avatar,
                        COALESCE(SUM(CASE WHEN l.type = 'like' THEN 1 ELSE 0 END), 0) - 
@@ -487,6 +489,7 @@ class Post
             
             const queryParams = [];
             const whereConditions = [];
+            const joins = [];
             
             // status filter
             if(filters.status && filters.status !== null) 
@@ -502,11 +505,11 @@ class Post
                 queryParams.push(filters.author);
             }
             
-            // categories filter
-            if(filters.categories && filters.categories.length > 0) 
-                {
+            // categories filter (JOIN + WHERE clause)
+            if(filters.categories && filters.categories.length > 0) {
+                joins.push('JOIN post_categories pc ON p.id = pc.post_id');
                 const categoryPlaceholders = filters.categories.map(() => '?').join(',');
-                query += ` JOIN post_categories pc ON p.id = pc.post_id WHERE pc.category_id IN (${categoryPlaceholders})`;
+                whereConditions.push(`pc.category_id IN (${categoryPlaceholders})`);
                 queryParams.push(...filters.categories);
             }
             
@@ -523,17 +526,14 @@ class Post
                 queryParams.push(filters.date_to);
             }
             
-            if(whereConditions.length > 0) 
-                {
-                if(!query.includes('WHERE')) 
-                    {
-                    query += ' WHERE ';
-                } else 
-                    {
-                    query += ' AND ';
-                }
+            // Append dynamic joins before WHERE block
+            if(joins.length > 0) {
+                query += ' ' + joins.join(' ') + ' ';
+            }
 
-                query += whereConditions.join(' AND ');
+            // WHERE block
+            if(whereConditions.length > 0) {
+                query += ' WHERE ' + whereConditions.join(' AND ');
             }
             
             query += ' GROUP BY p.id';

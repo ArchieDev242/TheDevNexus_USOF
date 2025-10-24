@@ -13,11 +13,17 @@ class categories_controller
     {
         try 
         {
-            const categories = await Category.get_all_with_stats();
+            const [categories, total_active_posts] = await Promise.all([
+                Category.get_all_with_stats(),
+                Category.get_total_active_posts()
+            ]);
             
             res.json({
                 status: 'success',
-                data: categories
+                data: {
+                    categories,
+                    total_active_posts
+                }
             });
         } catch(error) 
         {
@@ -58,7 +64,12 @@ class categories_controller
             const category = await Category.find_by_id(category_id);
             if(!category) throw error_handler.not_found_error('Category');
             
-            const posts = await Post.get_by_category(category_id, page, limit, sort);
+            // Reuse unified filtering/sorting pipeline
+            const filters = {
+                categories: [category_id],
+                status: 'active'
+            };
+            const posts = await Post.get_all_with_filters(parseInt(page), parseInt(limit), sort, filters);
             
             res.json({
                 status: 'success',

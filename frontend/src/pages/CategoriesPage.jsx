@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import 
 { 
@@ -20,7 +20,6 @@ export default function CategoriesPage()
 {
     const navigate = useNavigate();
     const [categories, set_categories] = useState([]);
-    const [posts_count, set_posts_count] = useState({});
     const [loading, set_loading] = useState(true);
 
     // Game Engines Categories
@@ -108,42 +107,40 @@ export default function CategoriesPage()
     ];
 
     useEffect(() => {
+        const fetch_categories = async () => {
+            try {
+                set_loading(true);
+                const response = await fetch('/api/categories', { credentials: 'include' });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    if (Array.isArray(data.data)) {
+                        set_categories(data.data);
+                    } else if (data.data && typeof data.data === 'object') {
+                        set_categories(data.data.categories || []);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            } finally {
+                set_loading(false);
+            }
+        };
         fetch_categories();
     }, []);
 
-    const fetch_categories = async () => {
-        try 
-        {
-            set_loading(true);
-            
-            const response = await fetch('/api/posts?limit=1000', {
-                credentials: 'include'
-            });
-
-            const data = await response.json();
-
-            if(data.status === 'success') 
-            {
-                const counts = {};
-                data.data.forEach(post => {
-                    const category = post.category_id || post.categories?.[0];
-
-                    if(category) counts[category] = (counts[category] || 0) + 1;
-                });
-                
-                set_posts_count(counts);
-            }
-        } catch(error) 
-        {
-            console.error('Error fetching categories:', error);
-        } finally 
-        {
-            set_loading(false);
+    const categoriesByName = useMemo(() => {
+        const map = new Map();
+        for (const c of categories) {
+            if (c?.title) map.set(c.title.toLowerCase(), c);
         }
-    };
+        return map;
+    }, [categories]);
 
-    const handle_category_click = (category_id) => {
-        navigate(`/posts?category=${category_id}`);
+    const handle_category_click = (displayName) => {
+        const backend = categoriesByName.get(String(displayName).toLowerCase());
+        if (backend?.id) {
+            navigate(`/posts?category=${encodeURIComponent(String(backend.id))}`);
+        }
     };
 
     return (
@@ -172,11 +169,14 @@ export default function CategoriesPage()
                         </div>
 
                         <div className = "categories-grid">
-                            {engine_categories.map(category => (
+                            {engine_categories.map(category => {
+                                const backend = categoriesByName.get(category.name.toLowerCase());
+                                const count = backend?.posts_count ?? 0;
+                                return (
                                 <div 
                                     key = {category.id}
                                     className = "category-card"
-                                    onClick = {() => handle_category_click(category.id)}
+                                    onClick = {() => handle_category_click(category.name)}
                                     style = {{ '--category-color': category.color }}
                                 >
                                     <div className = "category-icon-wrapper">
@@ -188,7 +188,7 @@ export default function CategoriesPage()
                                         <div className = "category-stats">
                                             <div className = "stat-item">
                                                 <FiFileText />
-                                                <span>{posts_count[category.id] || 0} posts</span>
+                                                <span>{count} posts</span>
                                             </div>
                                             <div className = "stat-item">
                                                 <FiUsers />
@@ -197,7 +197,7 @@ export default function CategoriesPage()
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                            );})}
                         </div>
                     </section>
 
@@ -214,11 +214,14 @@ export default function CategoriesPage()
                         </div>
 
                         <div className = "categories-grid additional">
-                            {additional_categories.map(category => (
+                            {additional_categories.map(category => {
+                                const backend = categoriesByName.get(category.name.toLowerCase());
+                                const count = backend?.posts_count ?? 0;
+                                return (
                                 <div
                                     key = {category.id}
                                     className = "category-card"
-                                    onClick = {() => handle_category_click(category.id)}
+                                    onClick = {() => handle_category_click(category.name)}
                                     style = {{ '--category-color': category.color }}
                                 >
                                     <div className = "category-icon-wrapper">
@@ -230,7 +233,7 @@ export default function CategoriesPage()
                                         <div className = "category-stats">
                                             <div className = "stat-item">
                                                 <FiFileText />
-                                                <span>{posts_count[category.id] || 0} posts</span>
+                                                <span>{count} posts</span>
                                             </div>
                                             <div className = "stat-item">
                                                 <FiUsers />
@@ -239,7 +242,7 @@ export default function CategoriesPage()
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                            );})}
                         </div>
                     </section>
 
@@ -250,7 +253,7 @@ export default function CategoriesPage()
                                 <FiFileText />
                             </div>
                             <div className = "stat-info">
-                                <h3>{Object.values(posts_count).reduce((a, b) => a + b, 0)}</h3>
+                                <h3>{categories.reduce((sum, c) => sum + (Number(c.posts_count) || 0), 0)}</h3>
                                 <p>Total Posts</p>
                             </div>
                         </div>

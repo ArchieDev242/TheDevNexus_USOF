@@ -25,6 +25,7 @@ export default function PostsPage() {
     const navigate = useNavigate();
     const [posts, set_posts] = useState([]);
     const [categories, set_categories] = useState([]);
+    const [total_active_posts, set_total_active_posts] = useState(0);
     const [selected_category, set_selected_category] = useState(() => {
         const params = new URLSearchParams(location.search);
         return params.get('category') || 'all';
@@ -65,9 +66,15 @@ export default function PostsPage() {
 
             const data = await response.json();
 
-            if(data.status === 'success') 
-                {
-                set_categories(data.data || []);
+            if(data.status === 'success') {
+                // Support both legacy and new response shapes
+                if (Array.isArray(data.data)) {
+                    set_categories(data.data);
+                    // total unknown from legacy response; keep previous value
+                } else if (data.data && typeof data.data === 'object') {
+                    set_categories(data.data.categories || []);
+                    set_total_active_posts(Number(data.data.total_active_posts) || 0);
+                }
             }
         } catch(error) 
         {
@@ -102,9 +109,9 @@ export default function PostsPage() {
         {
             let url = '/api/posts?';
 
-            if(selected_category !== 'all') 
-                {
-                url += `category=${selected_category}&`;
+            if(selected_category !== 'all') {
+                // Backend expects plural 'categories' query param
+                url += `categories=${encodeURIComponent(String(selected_category))}&`;
             }
             if(sort_by === 'popular') 
                 {
@@ -147,13 +154,12 @@ export default function PostsPage() {
     };
 
     const handle_category_change = (category_id) => {
-        set_selected_category(category_id);
-        if(category_id === 'all') 
-            {
+        const value = String(category_id);
+        set_selected_category(value);
+        if(value === 'all') {
             navigate('/posts');
-        } else 
-            {
-            navigate(`/posts?category=${category_id}`);
+        } else {
+            navigate(`/posts?category=${encodeURIComponent(value)}`);
         }
     };
 
@@ -240,18 +246,18 @@ export default function PostsPage() {
                                     >
                                         <span className = "category-icon"><FiGrid /></span>
                                         <span>All Posts</span>
-                                        <span className = "category-count">{posts.length}</span>
+                                        <span className = "category-count">{total_active_posts}</span>
                                     </li>
                                     {categories.map(category => (
                                         <li 
                                             key = {category.id}
-                                            className = {selected_category === category.id ? 'active' : ''}
-                                            onClick = {() => handle_category_change(category.id)}
+                                            className = {selected_category === String(category.id) ? 'active' : ''}
+                                            onClick = {() => handle_category_change(String(category.id))}
                                         >
                                             <span className = "category-icon"><FiFolder /></span>
                                             <span>{category.title}</span>
                                             <span className = "category-count">
-                                                {posts.filter(p => p.category_id === category.id).length}
+                                                {category.posts_count ?? 0}
                                             </span>
                                         </li>
                                     ))}

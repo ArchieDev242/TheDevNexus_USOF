@@ -188,7 +188,7 @@ class Category
         {
             const query = `
                 SELECT c.*, 
-                       COUNT(DISTINCT pc.post_id) as posts_count,
+                       COUNT(DISTINCT p.id) as posts_count,
                        COUNT(DISTINCT com.id) as comments_count,
                        COALESCE(SUM(DISTINCT likes.likes_count), 0) as total_likes
                 FROM categories c
@@ -228,7 +228,7 @@ class Category
         {
             const query = `
                 SELECT c.*, 
-                       COUNT(DISTINCT pc.post_id) as posts_count,
+                       COUNT(DISTINCT p.id) as posts_count,
                        COUNT(DISTINCT com.id) as comments_count,
                        COALESCE(SUM(DISTINCT likes.likes_count), 0) as total_likes
                 FROM categories c
@@ -261,6 +261,17 @@ class Category
         catch(error) 
         {
             throw new Error(`Error getting category with stats: ${error.message}`);
+        }
+    }
+
+    static async get_total_active_posts() {
+        try {
+            const query = `SELECT COUNT(*) as total FROM posts WHERE status = 'active'`;
+            const result = await DB_connect.make_request(query);
+            const rows = result[0];
+            return rows[0]?.total || 0;
+        } catch(error) {
+            throw new Error(`Error getting total active posts: ${error.message}`);
         }
     }
 
