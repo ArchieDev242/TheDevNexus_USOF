@@ -19,6 +19,7 @@ import
 import { SiUnrealengine, SiUnity, SiGodotengine, SiPython, SiVulkan } from 'react-icons/si';
 
 import Header from '../components/Header';
+import Footer from '../components/Footer';
 import '../style/about.css';
 
 export default function AboutPage() 
@@ -226,8 +227,10 @@ export default function AboutPage()
                             </div>
                         </div>
                     </section>
+                    
                 </div>
             </div>
+            <Footer />
         </>
     );
 }

@@ -35,7 +35,7 @@
 }
 
 /* ===== SECTION ===== */
-.categories-section { margin-bottom: 80px; }
+.categories-section { margin-bottom: 80px; border-radius: 8px; }
 
 .section-header 
 {
@@ -188,9 +188,10 @@
 .category-stats 
 {
     display: flex;
-    gap: 20px;
+    gap: 10px;
     padding-top: 15px;
     border-top: 1px solid rgba(108, 99, 255, 0.2);
+    align-items: center;
 }
 
 .stat-item 
@@ -311,6 +312,6 @@
     .category-stats 
     {
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
 }

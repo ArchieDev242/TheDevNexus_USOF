@@ -17,7 +17,6 @@ import
     FiLogOut, 
     FiLogIn, 
     FiUserPlus, 
-    FiMenu,
     FiBookmark
 } from 'react-icons/fi';
 
@@ -29,6 +28,7 @@ export default function Header()
     const dispatch = useDispatch();
     const { isAuthenticated, user } = useSelector(state => state.auth);
     const [is_menu_open, set_is_menu_open] = useState(false);
+    const [is_mobile_nav_open, set_is_mobile_nav_open] = useState(false);
     const [search_query, set_search_query] = useState('');
     const [is_notifications_open, set_is_notifications_open] = useState(false);
     const [unread_count, set_unread_count] = useState(0);
@@ -82,6 +82,12 @@ export default function Header()
             document.removeEventListener('mousedown', handle_click_outside);
         };
     }, [is_menu_open]);
+
+    // Close mobile nav on route change
+    useEffect(() => {
+        if (is_mobile_nav_open) set_is_mobile_nav_open(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.pathname, location.search]);
 
     const handle_search_submit = (event) => {
         event.preventDefault();
@@ -143,7 +149,7 @@ export default function Header()
                     </div>
                     
                     <div className = "header-right">
-                        <form className = 'search' onSubmit = {handle_search_submit} role = 'search'>
+                        <form className = 'search search--hide' onSubmit = {handle_search_submit} role = 'search'>
                             <input 
                                 className = 'search__input'
                                 type = 'text'
@@ -226,11 +232,11 @@ export default function Header()
                                 </>
                             ) : (
                                 <div className = "auth-buttons">
-                                    <Link to = "/login" className = "btn btn-outline">
+                                    <Link to = "/login" className = "btn btn-outline btn--hide">
                                         <FiLogIn />
                                         <span>Login</span>
                                     </Link>
-                                    <Link to = "/register" className = "btn btn-gradient">
+                                    <Link to = "/register" className = "btn btn-gradient btn--hide">
                                         <FiUserPlus />
                                         <span>Sign Up</span>
                                     </Link>
@@ -238,12 +244,105 @@ export default function Header()
                             )}
                         </div>
                         
-                        <button className = "mobile-menu-btn" aria-label = "Toggle menu">
-                            <FiMenu />
+                        <button 
+                            className = "mobile-menu-btn" 
+                            aria-label = {is_mobile_nav_open ? 'Close menu' : 'Open menu'}
+                            onClick = {() => set_is_mobile_nav_open(prev => !prev)}
+                            aria-expanded = {is_mobile_nav_open ? 'true' : 'false'}
+                            aria-controls = "mobile-drawer"
+                        >
+                            <span className = {`burger ${is_mobile_nav_open ? 'open' : ''}`} aria-hidden = "true">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </span>
+                            <span className = "sr-only">{is_mobile_nav_open ? 'Close' : 'Open'}</span>
                         </button>
                     </div>
                 </div>
             </div>
+
+            {/* Mobile / Narrow header drawer (<=1400px) */}
+            {is_mobile_nav_open && (
+                <div id="mobile-drawer" className="mobile-drawer" role="dialog" aria-modal="true">
+                    <div className="mobile-drawer__backdrop" onClick={() => set_is_mobile_nav_open(false)} />
+                    <div className="mobile-drawer__panel">
+                        <form className = 'search search-mobile search--hide' onSubmit = {handle_search_submit} role = 'search'>
+                            <input 
+                                className = 'search__input'
+                                type = 'text'
+                                name = 'search'
+                                placeholder = 'Search...'
+                                value = {search_query}
+                                onChange = {(event) => set_search_query(event.target.value)}
+                            />
+                            <button className = 'search__button' type = 'submit' aria-label = 'Search'>
+                                <FiSearch />
+                            </button>
+                        </form>
+                        <nav className="mobile-drawer__nav" aria-label="Collapsed navigation">
+                            <ul>
+                                <li>
+                                    <Link to="/" onClick={() => set_is_mobile_nav_open(false)}>
+                                        <FiHome />
+                                        <span>Home</span>
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link to="/posts" onClick={() => set_is_mobile_nav_open(false)}>
+                                        <FiMessageSquare />
+                                        <span>Forums</span>
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link to="/about" onClick={() => set_is_mobile_nav_open(false)}>
+                                        <FiInfo />
+                                        <span>About</span>
+                                    </Link>
+                                </li>
+                                {isAuthenticated && (
+                                    <li>
+                                        <Link to="/saved-posts" onClick={() => set_is_mobile_nav_open(false)}>
+                                            <FiBookmark />
+                                            <span>Saved Posts</span>
+                                        </Link>
+                                    </li>
+                                )}
+                            </ul>
+                        </nav>
+
+                        <div className="mobile-drawer__auth">
+                            {isAuthenticated ? (
+                                <>
+                                    <Link to="/profile" className="btn btn-outline" onClick={() => set_is_mobile_nav_open(false)}>
+                                        <FiUser />
+                                        <span>Profile</span>
+                                    </Link>
+                                    <Link to="/settings" className="btn btn-outline" onClick={() => set_is_mobile_nav_open(false)}>
+                                        <FiSettings />
+                                        <span>Settings</span>
+                                    </Link>
+                                    <button className="btn btn-gradient" onClick={handle_logout}>
+                                        <FiLogOut />
+                                        <span>Logout</span>
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link to="/login" className="btn btn-outline" onClick={() => set_is_mobile_nav_open(false)}>
+                                        <FiLogIn />
+                                        <span>Login</span>
+                                    </Link>
+                                    <Link to="/register" className="btn btn-gradient" onClick={() => set_is_mobile_nav_open(false)}>
+                                        <FiUserPlus />
+                                        <span>Sign Up</span>
+                                    </Link>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </header>
     );
 }

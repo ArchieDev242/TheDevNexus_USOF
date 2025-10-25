@@ -55,7 +55,6 @@ export default function CommunityHighlights()
                                     <div key = {user.id} className = "contributor-item">
                                         <div className = "contributor-avatar">
                                             {user.name[0]}
-                                            {user.rank === 1 && <FiAward className = "badge-star" />}
                                         </div>
                                         <div className = "contributor-info">
                                             <h4>{user.name}</h4>
