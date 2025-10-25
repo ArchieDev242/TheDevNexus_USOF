@@ -338,13 +338,11 @@ export default function PostsPage() {
                                                             <img 
                                                                 src = {post.author_avatar} 
                                                                 alt = {post.author_login}
-                                                                style = {{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                                                             />
                                                         ) : (
                                                             <img 
                                                                 src = "/user/avatar.jpg" 
                                                                 alt = {post.author_login}
-                                                                style = {{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                                                             />
                                                         )}
                                                     </div>
