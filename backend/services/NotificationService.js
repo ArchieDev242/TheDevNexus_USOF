@@ -21,20 +21,20 @@ class notification_service
                 type,
                 title,
                 message,
-                relatedEntityType = null, // 'post', 'comment', 'user'
+                relatedEntityType = null, // 'post', 'comment', 'user', 'achievement'
                 relatedEntityId = null,
                 actionUserId = null
             } = data;
 
             const query = `
                 INSERT INTO notifications 
-                (user_id, type, title, message, related_entity_type, related_entity_id, action_user_id, created_at) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+                (user_id, type, title, message, related_type, related_id, created_at) 
+                VALUES (?, ?, ?, ?, ?, ?, NOW())
             `;
 
             const result = await DB_connect.make_request(query, [
                 userId, type, title, message, 
-                relatedEntityType, relatedEntityId, actionUserId
+                relatedEntityType, relatedEntityId
             ]);
 
             return {

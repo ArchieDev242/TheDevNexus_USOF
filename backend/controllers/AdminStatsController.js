@@ -12,15 +12,19 @@ class admin_stats_controller
             const categories_result = await DB_connect.make_request('SELECT COUNT(*) as count FROM categories');
 
             res.json({
-                users: users_result[0][0].count,
-                posts: posts_result[0][0].count,
-                comments: comments_result[0][0].count,
-                categories: categories_result[0][0].count
+                status: 'success',
+                data: 
+                {
+                    totalUsers: users_result[0][0].count,
+                    totalPosts: posts_result[0][0].count,
+                    totalComments: comments_result[0][0].count,
+                    totalCategories: categories_result[0][0].count
+                }
             });
         } catch(error) 
         {
             console.error('Error fetching stats:', error);
-            res.status(500).json({ error: 'Failed to fetch stats' });
+            res.status(500).json({ status: 'error', message: 'Failed to fetch stats' });
         }
     }
 
@@ -46,14 +50,17 @@ class admin_stats_controller
             `);
 
             res.json({
-                usersByRole: users_by_role_result[0],
-                postsByStatus: posts_by_status_result[0],
-                topCategories: top_categories_result[0]
+                status: 'success',
+                data: {
+                    usersByRole: users_by_role_result[0],
+                    postsByStatus: posts_by_status_result[0],
+                    topCategories: top_categories_result[0]
+                }
             });
         } catch(error) 
         {
             console.error('Error fetching detailed stats:', error);
-            res.status(500).json({ error: 'Failed to fetch detailed stats' });
+            res.status(500).json({ status: 'error', message: 'Failed to fetch detailed stats' });
         }
     }
 }

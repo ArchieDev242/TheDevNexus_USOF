@@ -46,13 +46,13 @@ class achievement_service
                 {
                 console.log('Achievement earned:', achievement_key, 'by user', user_id);
                 
-                await notification_service.create({
-                    user_id: user_id,
+                await notification_service.create_notification({
+                    userId: user_id,
                     type: 'system',
                     title: `Нова ачівка: ${result.achievement.title}!`,
                     message: `Вітаємо! Ви отримали ачівку "${result.achievement.title}" (+${result.points_earned} балів)`,
-                    related_type: 'achievement',
-                    related_id: result.achievement.id
+                    relatedEntityType: 'achievement',
+                    relatedEntityId: result.achievement.id
                 });
 
                 return result;

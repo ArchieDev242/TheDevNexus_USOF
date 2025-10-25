@@ -13,8 +13,6 @@ import
     FiGlobe,
     FiGithub,
     FiLinkedin,
-    FiAward,
-    FiTrendingUp,
     FiAlertTriangle,
     FiEdit2,
     FiX,
@@ -22,8 +20,10 @@ import
     FiSettings,
     FiZap
 } from 'react-icons/fi';
-
 import { FaXTwitter } from 'react-icons/fa6';
+import { FaBrain } from 'react-icons/fa';
+import { GiAchievement } from 'react-icons/gi';
+import { GoBlocked } from 'react-icons/go';
 import { SiUnrealengine, SiUnity, SiGodotengine, SiPython, SiVulkan, SiCryengine, SiGamemaker } from 'react-icons/si';
 
 import Header from '../components/Header';
@@ -105,6 +105,8 @@ export default function ProfilePage() {
     const [show_delete_modal, set_show_delete_modal] = useState(false);
     const [delete_password, set_delete_password] = useState('');
     const [user_posts, set_user_posts] = useState([]);
+    const [loaded_achievements, set_loaded_achievements] = useState([]);
+    const [all_achievements, set_all_achievements] = useState([]);
     const [engine_popup, set_engine_popup] = useState(null);
 
     const [profile_data, set_profile_data] = useState({
@@ -165,8 +167,40 @@ export default function ProfilePage() {
             });
 
             fetch_user_posts();
+            fetch_user_achievements();
+            fetch_all_achievements();
         }
     }, [user]);
+
+    const fetch_user_achievements = async () => {
+        try 
+        {
+            const response = await fetch(`/api/users/me/achievements`, {
+                credentials: 'include'
+            });
+            const data = await response.json();
+
+            if(data.status === 'success') set_loaded_achievements(data.data || []);
+        } catch(error) 
+        {
+            console.error('Error fetching achievements:', error);
+        }
+    };
+
+    const fetch_all_achievements = async () => {
+        try 
+        {
+            const response = await fetch(`/api/achievements`, {
+                credentials: 'include'
+            });
+            const data = await response.json();
+
+            if(data.status === 'success') set_all_achievements(data.data || []);
+        } catch(error) 
+        {
+            console.error('Error fetching all achievements:', error);
+        }
+    };
 
     const fetch_user_posts = async () => {
         try 
@@ -356,50 +390,7 @@ export default function ProfilePage() {
         set_show_delete_modal(false);
     };
 
-    const user_achievements = [
-        { 
-            id: 1, 
-            name: 'Hello World', 
-            icon: '/user/achievements/HelloWorld.jpg', 
-            description: 'Created your first post', 
-            unlocked: user?.achievements?.includes('HelloWorld') || false 
-        },
-        { 
-            id: 2, 
-            name: 'Chatterbox', 
-            icon: '/user/achievements/Chatterbox.jpg', 
-            description: 'Posted 10 or more comments', 
-            unlocked: user?.achievements?.includes('Chatterbox') || false 
-        },
-        { 
-            id: 3, 
-            name: 'Wise One', 
-            icon: '/user/achievements/WiseOne.jpg', 
-            description: 'Received 50+ likes on posts', 
-            unlocked: user?.achievements?.includes('WiseOne') || false 
-        },
-        { 
-            id: 4, 
-            name: 'Hero Of The Day', 
-            icon: '/user/achievements/HeroOfTheDay.jpg', 
-            description: 'Top contributor of the day', 
-            unlocked: user?.achievements?.includes('HeroOfTheDay') || false 
-        },
-        { 
-            id: 5, 
-            name: 'Architect', 
-            icon: '/user/achievements/Architect.jpg', 
-            description: 'Created 20+ posts', 
-            unlocked: user?.achievements?.includes('Architect') || false 
-        },
-        { 
-            id: 6, 
-            name: 'Legend', 
-            icon: '/user/achievements/Legend.jpg', 
-            description: 'Community legend status', 
-            unlocked: user?.achievements?.includes('Legend') || false 
-        }
-    ];
+
 
     if(loading) return null;
 
@@ -506,21 +497,30 @@ export default function ProfilePage() {
                                     >
                                         <FiEdit2 /> Edit Profile
                                     </button>
+
+                                    {user?.role === 'admin' && (
+                                        <button 
+                                            className = "btn-admin"
+                                            onClick = {() => navigate('/admin-dashboard')}
+                                        >
+                                            <FiSettings /> Admin Panel
+                                        </button>
+                                    )}
                                 </div>
 
                                 <div className = "profile-stats">
                                     <div className = "stat-item">
-                                        <FiTrendingUp className = "stat-icon positive" />
+                                        <FaBrain className = "profile-stat-icon positive" />
                                         <div className = "stat-info">
                                             <span className = "stat-label">Rating</span>
                                             <span className = "stat-value positive">+{user?.rating || 0}</span>
                                         </div>
                                     </div>
                                     <div className = "stat-item">
-                                        <FiAward className = "stat-icon" />
+                                        <GiAchievement className = "profile-stat-icon" />
                                         <div className = "stat-info">
                                             <span className = "stat-label">Achievements</span>
-                                            <span className = "stat-value">{user_achievements.filter(a => a.unlocked).length}/{user_achievements.length}</span>
+                                            <span className = "stat-value">{loaded_achievements?.length || 0} earned</span>
                                         </div>
                                     </div>
                                 </div>
@@ -536,8 +536,16 @@ export default function ProfilePage() {
                                         className = {`nav-item ${active_tab === 'achievements' ? 'active' : ''}`}
                                         onClick = {() => set_active_tab('achievements')}
                                     >
-                                        <FiAward /> Achievements
+                                        <GiAchievement /> Achievements
                                     </button>
+                                    {user?.role === 'admin' && (
+                                        <button 
+                                            className = {`nav-item ${active_tab === 'admin' ? 'active' : ''}`}
+                                            onClick = {() => navigate('/admin-dashboard')}
+                                        >
+                                            <FiSettings /> Admin
+                                        </button>
+                                    )}
                                     <button 
                                         className = {`nav-item ${active_tab === 'settings' ? 'active' : ''}`}
                                         onClick = {() => set_active_tab('settings')}
@@ -575,27 +583,50 @@ export default function ProfilePage() {
                                             </div>
                                         ) : (
                                             <div className = "posts-grid">
-                                                {user_posts.map(post => (
-                                                    <div 
-                                                        key = {post.id} 
-                                                        className = "post-card"
-                                                        onClick = {() => navigate(`/posts/${post.id}`)}
-                                                        style = {{ cursor: 'pointer' }}
-                                                    >
-                                                        <div className = "post-header">
-                                                            <h4>{post.title}</h4>
-                                                            <span className = "post-status">{post.status}</span>
+                                                {user_posts.map(post => {
+                                                    const normalized_status = (post.status || '').toLowerCase();
+                                                    const is_inactive = normalized_status === 'inactive';
+                                                    let status_label = is_inactive ? 'inactive' : (post.status || 'active');
+                                                    if (post.is_closed) status_label = 'closed';
+
+                                                    return (
+                                                        <div 
+                                                            key = {post.id} 
+                                                            className = "post-card"
+                                                            onClick = {() => navigate(`/posts/${post.id}`)}
+                                                            style = {{ cursor: 'pointer' }}
+                                                        >
+                                                            <div className = "post-header">
+                                                                <h4>{post.title}</h4>
+                                                                <div className = "post-status-badges">
+                                                                    {post.is_closed && (
+                                                                        <span className = "post-status closed" title="Цей пост закритий">
+                                                                            <GoBlocked size={16} />
+                                                                        </span>
+                                                                    )}
+                                                                    <span className = {`post-status${is_inactive || post.is_closed ? ' inactive' : ''}`}>
+                                                                        {status_label}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <p className = "post-content">
+                                                                {strip_markdown(post.content || '').substring(0, 150)}
+                                                                {post.content && strip_markdown(post.content).length > 150 ? '...' : ''}
+                                                            </p>
+                                                            <div className = "post-footer">
+                                                                <div className = "post-stats">
+                                                                    <span className = "stat">👍 {post.likes || 0}</span>
+                                                                    <span className = "stat">💬 {post.comments_count || 0}</span>
+                                                                    <span className = "stat">👁️ {post.views || 0}</span>
+                                                                </div>
+                                                                <div className = "post-meta">
+                                                                    <span className = "post-category">{post.categories?.[0]}</span>
+                                                                    <span className = "post-date">{new Date(post.publish_date).toLocaleDateString()}</span>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <p className = "post-content">
-                                                            {strip_markdown(post.content || '').substring(0, 150)}
-                                                            {post.content && strip_markdown(post.content).length > 150 ? '...' : ''}
-                                                        </p>
-                                                        <div className = "post-footer">
-                                                            <span className = "post-category">{post.categories?.[0]}</span>
-                                                            <span className = "post-date">{new Date(post.publish_date).toLocaleDateString()}</span>
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>
@@ -610,23 +641,44 @@ export default function ProfilePage() {
                                     </div>
 
                                     <div className = "achievements-grid">
-                                        {user_achievements.map(achievement => (
-                                            <div 
-                                                key = {achievement.id} 
-                                                className = {`achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}`}
-                                            >
-                                                <div className = "achievement-icon">
-                                                    <img src = {achievement.icon} alt={achievement.name} />
-                                                </div>
-                                                <div className = "achievement-info">
-                                                    <h4>{achievement.name}</h4>
-                                                    <p>{achievement.description}</p>
-                                                </div>
-                                                {achievement.unlocked && (
-                                                    <div className = "achievement-badge">✓</div>
-                                                )}
-                                            </div>
-                                        ))}
+                                        {all_achievements && all_achievements.length > 0 ? (
+                                            all_achievements.map(achievement => {
+                                                const is_earned = loaded_achievements.some(a => a.id === achievement.id);
+                                                return (
+                                                    <div 
+                                                        key = {achievement.id} 
+                                                        className = {`achievement-card ${is_earned ? 'unlocked' : 'locked'}`}
+                                                    >
+                                                        <div className = "achievement-icon">
+                                                            <img 
+                                                                src = {achievement.icon} 
+                                                                alt = {achievement.title}
+                                                                style = {{
+                                                                    filter: is_earned ? 'none' : 'grayscale(100%)',
+                                                                    opacity: is_earned ? 1 : 0.5
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <div className = "achievement-info">
+                                                            <h4>{achievement.title}</h4>
+                                                            <p>{achievement.description}</p>
+                                                            {achievement.points && (
+                                                                <small className = "achievement-points">
+                                                                    +{achievement.points} pts
+                                                                </small>
+                                                            )}
+                                                        </div>
+                                                        {is_earned && (
+                                                            <div className = "achievement-badge">✓</div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <p className = "no-achievements">
+                                                No achievements available.
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             )}

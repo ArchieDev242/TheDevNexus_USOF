@@ -6,6 +6,15 @@
     --border-radius-small: 7px;
     --container-width: 1480px;
     --container-padding-x: 20px;
+    --primary-color: var(--primary, #6C63FF);
+    --secondary-color: var(--secondary, #FF6584);
+    --primary-color-rgb: 108, 99, 255;
+    --secondary-color-rgb: 255, 101, 132;
+    --bg-primary: var(--card-bg, rgba(255, 255, 255, 0.05));
+    --bg-secondary: rgba(12, 12, 20, 0.94);
+    --primary-dark: #4F46E5;
+    --border: var(--border-color, rgba(255, 255, 255, 0.1));
+    --danger-color: #EF4444;
 }
 
 .container 

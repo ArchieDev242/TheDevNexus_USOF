@@ -6,16 +6,15 @@ export const get_all_achievements = async (req, res) => {
     {
         const achievements = await Achievement.get_all();
         res.json({
-            success: true,
-            achievements: achievements,
-            count: achievements.length
+            status: 'success',
+            data: achievements
         });
     } catch(error) 
     {
         console.error('Error fetching achievements:', error);
         res.status(500).json({
-            success: false,
-            error: 'Failed to fetch achievements'
+            status: 'error',
+            message: 'Failed to fetch achievements'
         });
     }
 };

@@ -325,10 +325,7 @@ class users_controller
             if(github !== undefined) update_data.github = github;
             if(linkedin !== undefined) update_data.linkedin = linkedin;
             
-            // Handle engines array - convert to JSON string for MySQL
-            if(engines !== undefined) {
-                update_data.engines = JSON.stringify(Array.isArray(engines) ? engines : []);
-            }
+            if(engines !== undefined) update_data.engines = JSON.stringify(Array.isArray(engines) ? engines : []);
             
             if(password && password.trim() !== '') 
                 {
@@ -609,33 +606,59 @@ class users_controller
         {
             const { user_id } = req.params;
             const { page = 1, limit = 20 } = req.query;
-            const offset = (page - 1) * limit;
+            const limit_int = parseInt(limit);
+            const offset = (parseInt(page) - 1) * limit_int;
 
             const user = await User.find_by_id(user_id);
             if(!user) throw error_handler.not_found_error('User');
 
             const query = `
                 SELECT 
-                    p.*,
+                    p.id,
+                    p.author_id,
+                    p.title,
+                    p.content,
+                    p.status,
+                    p.created_at,
+                    p.updated_at,
                     u.login as author_login,
                     u.full_name as author_name,
                     u.profile_picture as author_avatar,
-                    COUNT(DISTINCT l.id) as likes_count,
-                    COUNT(DISTINCT c.id) as comments_count,
-                    GROUP_CONCAT(DISTINCT cat.title) as categories
+                    COALESCE(l.likes_count, 0) as likes_count,
+                    COALESCE(d.dislikes_count, 0) as dislikes_count,
+                    COALESCE(c.comments_count, 0) as comments_count,
+                    COALESCE(cat.categories, '') as categories
                 FROM posts p
                 LEFT JOIN users u ON p.author_id = u.id
-                LEFT JOIN likes l ON p.id = l.post_id AND l.type = 'like'
-                LEFT JOIN comments c ON p.id = c.id
-                LEFT JOIN post_categories pc ON p.id = pc.post_id
-                LEFT JOIN categories cat ON pc.category_id = cat.id
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as likes_count
+                    FROM likes
+                    WHERE type = 'like'
+                    GROUP BY post_id
+                ) l ON p.id = l.post_id
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as dislikes_count
+                    FROM likes
+                    WHERE type = 'dislike'
+                    GROUP BY post_id
+                ) d ON p.id = d.post_id
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as comments_count
+                    FROM comments
+                    GROUP BY post_id
+                ) c ON p.id = c.post_id
+                LEFT JOIN (
+                    SELECT post_id, GROUP_CONCAT(DISTINCT cat.title) as categories
+                    FROM post_categories pc
+                    LEFT JOIN categories cat ON pc.category_id = cat.id
+                    GROUP BY post_id
+                ) cat ON p.id = cat.post_id
                 WHERE p.author_id = ? AND p.status = 'active'
-                GROUP BY p.id
                 ORDER BY p.created_at DESC
-                LIMIT ? OFFSET ?
+                LIMIT ${limit_int} OFFSET ${offset}
             `;
 
-            const result = await DB_connect.make_request(query, [user_id, parseInt(limit), offset]);
+            const result = await DB_connect.make_request(query, [user_id]);
             const posts = result[0].map(post => ({
                 ...post,
                 author_avatar: normalize_avatar(post.author_avatar),
@@ -652,9 +675,9 @@ class users_controller
                 pagination: 
                 {
                     page: parseInt(page),
-                    limit: parseInt(limit),
+                    limit: limit_int,
                     total: total,
-                    total_pages: Math.ceil(total / limit)
+                    total_pages: Math.ceil(total / limit_int)
                 }
             });
         } catch(error) 
@@ -668,7 +691,8 @@ class users_controller
     {
         try 
         {
-            const { user_id } = req.params;
+            // Get user_id from params (/:user_id/achievements) or from authenticated user (/me/achievements)
+            const user_id = req.params.user_id || req.user.id;
 
             const user = await User.find_by_id(user_id);
             if(!user) throw error_handler.not_found_error('User');

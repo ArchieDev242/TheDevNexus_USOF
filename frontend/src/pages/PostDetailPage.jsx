@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { FiMessageCircle, FiBookmark, FiArrowLeft, FiMoreVertical, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiMessageCircle, FiBookmark, FiArrowLeft, FiMoreVertical, FiEdit2, FiTrash2, FiLock, FiUnlock, FiFlag } from 'react-icons/fi';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { IoHeartDislike, IoHeartDislikeOutline } from 'react-icons/io5';
+import { GoBlocked } from 'react-icons/go';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import EditPostModal from '../components/EditPostModal';
+import ReportModal from '../components/ReportModal';
 import '../style/post-detail.css';
 
 export default function PostDetailPage() {
@@ -32,6 +34,42 @@ export default function PostDetailPage() {
     });
     const [save_status, set_save_status] = useState(false);
     const post_menu_ref = React.useRef(null);
+
+    const comment_tree = useMemo(() => {
+        if (!Array.isArray(comments) || comments.length === 0) return [];
+
+        const nodes = comments.map(comment => ({
+            ...comment,
+            parent_comment_id: comment.parent_comment_id ? Number(comment.parent_comment_id) : null,
+            replies: []
+        }));
+
+        const lookup = new Map(nodes.map(node => [node.id, node]));
+        const roots = [];
+
+        nodes.forEach(node => {
+            if (node.parent_comment_id) {
+                const parent = lookup.get(node.parent_comment_id);
+                if (parent) {
+                    parent.replies.push(node);
+                } else {
+                    roots.push(node);
+                }
+            } else {
+                roots.push(node);
+            }
+        });
+
+        const sort_nodes = (list) => list
+            .slice()
+            .sort((a, b) => new Date(a.publish_date) - new Date(b.publish_date))
+            .map(node => ({
+                ...node,
+                replies: sort_nodes(node.replies)
+            }));
+
+        return sort_nodes(roots);
+    }, [comments]);
 
     useEffect(() => {
         fetch_post_data();
@@ -62,13 +100,28 @@ export default function PostDetailPage() {
             
             if(post_data.status === 'success') set_post(post_data.data);
 
+            // Record view if user is authenticated
+            if(isAuthenticated) 
+                {
+                try 
+                {
+                    await fetch(`/api/posts/${post_id}/view`, {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+                } 
+                catch(view_error) 
+                {
+                    console.warn('Could not record view:', view_error);
+                }
+            }
+
             // Fetch comments
             const comments_response = await fetch(`/api/posts/${post_id}/comments`, {
                 credentials: 'include'
             });
             const comments_data = await comments_response.json();
             
-            console.log('📝 Comments data:', comments_data.data);
             if(comments_data.status === 'success') set_comments(comments_data.data || []);
 
             const categories_response = await fetch(`/api/posts/${post_id}/categories`, {
@@ -274,6 +327,64 @@ export default function PostDetailPage() {
         }
     };
 
+    const handle_close_post = async () => {
+        if (!window.confirm('🔒 Ви впевнені що хочете ЗАЧИНИТИ цей пост?\n\nПісля цього ніхто не зможе написати коментар або відредагувати пост. Видалення залишиться доступним.')) {
+            return;
+        }
+
+        set_show_post_menu(false);
+
+        try {
+            const response = await fetch(`/api/posts/${post_id}/close`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ reason: 'answered' })
+            });
+
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                set_post(prev => ({ ...prev, is_closed: true }));
+                alert('✅ Пост успішно зачинено');
+            } else {
+                alert('❌ ' + (data.message || 'Помилка зачинення поста'));
+            }
+        } catch (error) {
+            console.error('Error closing post:', error);
+            alert('❌ Помилка зачинення поста');
+        }
+    };
+
+    const handle_reopen_post = async () => {
+        if (!window.confirm('🔓 Ви впевнені що хочете ВІДКРИТИ цей пост?\n\nПісля цього люди зможуть знову писати коментарі та редагувати пост.')) {
+            return;
+        }
+
+        set_show_post_menu(false);
+
+        try {
+            const response = await fetch(`/api/posts/${post_id}/reopen`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                set_post(prev => ({ ...prev, is_closed: false }));
+                alert('✅ Пост успішно відкрено');
+            } else {
+                alert('❌ ' + (data.message || 'Помилка відкриття поста'));
+            }
+        } catch (error) {
+            console.error('Error reopening post:', error);
+            alert('❌ Помилка відкриття поста');
+        }
+    };
+
     const toggle_save_post = async () => {
         if(!isAuthenticated) 
             {
@@ -334,6 +445,32 @@ export default function PostDetailPage() {
         if(years === 1) return '1 рік тому';
         if(years < 5) return `${years} роки тому`;
         return `${years} років тому`;
+    };
+
+    const render_comments = (nodes, depth = 0, parent = null) => {
+        if(!nodes || nodes.length === 0) return null;
+
+        return nodes.map(node => (
+            <div key = {node.id} className = {`comment-thread depth-${depth}`}>
+                <Comment 
+                    comment = {node}
+                    on_reply = {() => set_reply_to(node.id)}
+                    current_user = {user}
+                    is_authenticated = {isAuthenticated}
+                    on_comment_updated = {fetch_comments}
+                    on_comment_deleted = {(comment_id) => {
+                        set_comments(prev => prev.filter(c => c.id !== comment_id));
+                    }}
+                    parent_comment = {parent}
+                    depth = {depth}
+                />
+                {node.replies && node.replies.length > 0 && (
+                    <div className = "replies-container">
+                        {render_comments(node.replies, depth + 1, node)}
+                    </div>
+                )}
+            </div>
+        ));
     };
 
     if(loading) 
@@ -415,6 +552,21 @@ export default function PostDetailPage() {
                                             >
                                                 <FiEdit2 /> Редагувати
                                             </button>
+                                            {!post.is_closed ? (
+                                                <button 
+                                                    className = "menu-item"
+                                                    onClick = {() => handle_close_post()}
+                                                >
+                                                    <GoBlocked size={18} /> Зачинити пост
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    className = "menu-item"
+                                                    onClick = {() => handle_reopen_post()}
+                                                >
+                                                    <FiUnlock /> Відкрити пост
+                                                </button>
+                                            )}
                                             <button 
                                                 className = "menu-item delete"
                                                 onClick = {handle_delete_post}
@@ -505,7 +657,7 @@ export default function PostDetailPage() {
                             Коментарі ({comments.length})
                         </h2>
 
-                        {isAuthenticated && (
+                        {isAuthenticated && !post?.is_closed && (
                             <form className = "comment-form" onSubmit = {handle_submit_comment}>
                                 {reply_to && (
                                     <div className = "reply-indicator">
@@ -531,54 +683,18 @@ export default function PostDetailPage() {
                             </form>
                         )}
 
+                        {post?.is_closed && (
+                            <div className = "post-closed-message">
+                                <GoBlocked size={20} style={{marginRight: '10px'}} /> 
+                                <strong>Цей пост закритий.</strong> Нові коментарі більше не приймаються.
+                            </div>
+                        )}
+
                         <div className = "comments-list">
                             {comments.length === 0 ? (
                                 <p className = "no-comments">Коментарів поки немає. Будьте першим!</p>
                             ) : (
-                                (() => {
-                                    const topLevel = comments.filter(comment => !comment.parent_comment_id);
-                                    console.log('🔝 Top level comments:', topLevel.length);
-                                    console.log('📊 All comments:', comments.map(c => ({ id: c.id, parent_id: c.parent_comment_id, author: c.author_login })));
-                                    
-                                    return topLevel.map(comment => {
-                                        const replies = comments.filter(c => c.parent_comment_id === comment.id);
-                                        console.log(`💬 Comment ${comment.id} has ${replies.length} replies`);
-                                        
-                                        return (
-                                            <div key={comment.id}>
-                                                <Comment 
-                                                    comment = {comment}
-                                                    on_reply = {() => set_reply_to(comment.id)}
-                                                    current_user = {user}
-                                                    is_authenticated = {isAuthenticated}
-                                                    on_comment_updated = {fetch_comments}
-                                                    on_comment_deleted = {(comment_id) => {
-                                                        set_comments(prev => prev.filter(c => c.id !== comment_id));
-                                                    }}
-                                                    parent_author = {null}
-                                                />
-                                                {replies.length > 0 && (
-                                                    <div className="replies-container">
-                                                        {replies.map(reply => (
-                                                            <Comment 
-                                                                key={reply.id}
-                                                                comment = {reply}
-                                                                on_reply = {() => set_reply_to(comment.id)}
-                                                                current_user = {user}
-                                                                is_authenticated = {isAuthenticated}
-                                                                on_comment_updated = {fetch_comments}
-                                                                on_comment_deleted = {(comment_id) => {
-                                                                    set_comments(prev => prev.filter(c => c.id !== comment_id));
-                                                                }}
-                                                                parent_author = {comment.author_login}
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    });
-                                })()
+                                render_comments(comment_tree)
                             )}
                         </div>
                     </div>
@@ -605,10 +721,11 @@ export default function PostDetailPage() {
     );
 }
 
-function Comment({ comment, on_reply, current_user, is_authenticated, on_comment_updated, on_comment_deleted, parent_author }) {
+function Comment({ comment, on_reply, current_user, is_authenticated, on_comment_updated, on_comment_deleted, parent_comment, depth = 0 }) {
     const [show_menu, set_show_menu] = useState(false);
     const [is_editing, set_is_editing] = useState(false);
     const [edit_content, set_edit_content] = useState(comment.content);
+    const [show_report_modal, set_show_report_modal] = useState(false);
     const [reaction, set_reaction] = useState({
         liked: comment.user_reaction === 'like',
         disliked: comment.user_reaction === 'dislike',
@@ -644,7 +761,8 @@ function Comment({ comment, on_reply, current_user, is_authenticated, on_comment
 
     const is_author = is_authenticated && current_user && current_user.id === comment.author_id;
     const is_admin = is_authenticated && current_user && current_user.role === 'admin';
-    const is_reply = parent_author !== null;
+    const parent_author = parent_comment?.author_login ?? null;
+    const is_reply = depth > 0;
 
     const apply_reaction = (payload) => {
         if(!payload) return;
@@ -785,11 +903,6 @@ function Comment({ comment, on_reply, current_user, is_authenticated, on_comment
             <div className = "comment-content-wrapper">
                 <div className = "comment-header">
                     <span className = "comment-author">{comment.author_login}</span>
-                    {is_reply && (
-                        <span className = "reply-to-badge">
-                            <span className = "reply-arrow">↳</span> Reply to <strong>@{parent_author}</strong>
-                        </span>
-                    )}
                     <span className = "comment-date">{format_date(comment.publish_date)}</span>
 
                     {(is_author || is_admin) && (
@@ -811,6 +924,17 @@ function Comment({ comment, on_reply, current_user, is_authenticated, on_comment
                                             }}
                                         >
                                             <FiEdit2 /> Редагувати
+                                        </button>
+                                    )}
+                                    {!is_author && is_authenticated && (
+                                        <button 
+                                            className = "menu-item report"
+                                            onClick = {() => {
+                                                set_show_report_modal(true);
+                                                set_show_menu(false);
+                                            }}
+                                        >
+                                            <FiFlag /> Поскаржитися
                                         </button>
                                     )}
                                     <button 
@@ -850,6 +974,13 @@ function Comment({ comment, on_reply, current_user, is_authenticated, on_comment
                     </div>
                 ) : (
                     <div className = "comment-text">
+                        {is_reply && parent_author && (
+                            <div className = "reply-context">
+                                <span className = "reply-arrow">↳</span>
+                                <span className = "reply-label">Відповідь для</span>
+                                <span className = "reply-context-user">@{parent_author}</span>
+                            </div>
+                        )}
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {comment.content}
                         </ReactMarkdown>
@@ -869,13 +1000,26 @@ function Comment({ comment, on_reply, current_user, is_authenticated, on_comment
                     >
                         {reaction.disliked ? <IoHeartDislike /> : <IoHeartDislikeOutline />} {reaction.dislikes_count}
                     </button>
-                    {is_authenticated && !is_reply && (
+                    {is_authenticated && (
                         <button className = "comment-action reply-action" onClick={on_reply}>
                             Відповісти
                         </button>
                     )}
                 </div>
             </div>
+            {show_report_modal && (
+                <ReportModal 
+                    isOpen={true}
+                    targetType="comment"
+                    targetId={comment.id}
+                    targetTitle={comment.content?.substring(0, 50)}
+                    onClose={() => set_show_report_modal(false)}
+                    onSubmit={() => {
+                        alert('✅ Спасибо! Ваш звіт была успішно подана.');
+                        set_show_report_modal(false);
+                    }}
+                />
+            )}
         </div>
     );
 }

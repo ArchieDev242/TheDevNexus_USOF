@@ -10,6 +10,7 @@ const router = express.Router();
 
 router.use(auth_middleware.identify_user);
 
+// ======= GET ROUTES (no params) =======
 // GET /api/posts
 router.get('/', error_handler.async_handler(posts_controller.get_all_public));
 
@@ -19,6 +20,35 @@ router.get('/all/comments',
     error_handler.async_handler(posts_controller.get_all_comments)
 );
 
+// ======= POST ROUTES (no params) =======
+// POST /api/posts/
+router.post('/', 
+    auth_middleware.require_auth,
+    file_upload.handle_upload_error(file_upload.upload_post_images),
+    Validator.validate_post,
+    error_handler.async_handler(posts_controller.create)
+);
+
+// POST /api/posts/execute-code
+router.post('/execute-code',
+    auth_middleware.require_auth,
+    RateLimit.execute_code_limit(),
+    error_handler.async_handler(posts_controller.execute_code)
+);
+
+// POST /api/posts/highlight-code
+router.post('/highlight-code',
+    auth_middleware.require_auth,
+    error_handler.async_handler(posts_controller.highlight_code)
+);
+
+// POST /api/posts/validate-code
+router.post('/validate-code',
+    auth_middleware.require_auth,
+    error_handler.async_handler(posts_controller.validate_code)
+);
+
+// ======= ROUTES WITH :post_id PARAM =======
 // GET /api/posts/:post_id
 router.get('/:post_id', 
     Validator.validate_id('post_id'),
@@ -29,14 +59,6 @@ router.get('/:post_id',
 router.get('/:post_id/comments', 
     Validator.validate_id('post_id'),
     error_handler.async_handler(posts_controller.get_post_comments)
-);
-
-// POST /api/posts/:post_id/comments
-router.post('/:post_id/comments', 
-    auth_middleware.require_auth,
-    Validator.validate_id('post_id'),
-    Validator.validate_comment,
-    error_handler.async_handler(posts_controller.create_comment)
 );
 
 // GET /api/posts/:post_id/categories
@@ -51,12 +73,19 @@ router.get('/:post_id/like',
     error_handler.async_handler(posts_controller.get_post_likes)
 );
 
-// POST /api/posts/
-router.post('/', 
+// GET /api/posts/:post_id/save-status
+router.get('/:post_id/save-status', 
+    auth_middleware.identify_user,
+    Validator.validate_id('post_id'),
+    error_handler.async_handler(posts_controller.get_save_status)
+);
+
+// POST /api/posts/:post_id/comments
+router.post('/:post_id/comments', 
     auth_middleware.require_auth,
-    file_upload.handle_upload_error(file_upload.upload_post_images),
-    Validator.validate_post,
-    error_handler.async_handler(posts_controller.create)
+    Validator.validate_id('post_id'),
+    Validator.validate_comment,
+    error_handler.async_handler(posts_controller.create_comment)
 );
 
 // POST /api/posts/:post_id/like
@@ -64,6 +93,34 @@ router.post('/:post_id/like',
     auth_middleware.require_auth,
     Validator.validate_id('post_id'),
     error_handler.async_handler(posts_controller.like_post)
+);
+
+// POST /api/posts/:post_id/save
+router.post('/:post_id/save', 
+    auth_middleware.require_auth,
+    Validator.validate_id('post_id'),
+    error_handler.async_handler(posts_controller.save_post)
+);
+
+// POST /api/posts/:post_id/close - Close post
+router.post('/:post_id/close',
+    auth_middleware.require_auth,
+    Validator.validate_id('post_id'),
+    error_handler.async_handler(posts_controller.close_post)
+);
+
+// POST /api/posts/:post_id/reopen - Reopen closed post
+router.post('/:post_id/reopen',
+    auth_middleware.require_auth,
+    Validator.validate_id('post_id'),
+    error_handler.async_handler(posts_controller.reopen_post)
+);
+
+// POST /api/posts/:post_id/view - Record post view (authenticated users only)
+router.post('/:post_id/view',
+    auth_middleware.require_auth,
+    Validator.validate_id('post_id'),
+    error_handler.async_handler(posts_controller.record_view)
 );
 
 // PATCH /api/posts/:post_id
@@ -88,44 +145,11 @@ router.delete('/:post_id/like',
     error_handler.async_handler(posts_controller.unlike_post)
 );
 
-// POST /api/posts/:post_id/save
-router.post('/:post_id/save', 
-    auth_middleware.require_auth,
-    Validator.validate_id('post_id'),
-    error_handler.async_handler(posts_controller.save_post)
-);
-
 // DELETE /api/posts/:post_id/save
 router.delete('/:post_id/save', 
     auth_middleware.require_auth,
     Validator.validate_id('post_id'),
     error_handler.async_handler(posts_controller.unsave_post)
-);
-
-// GET /api/posts/:post_id/save-status
-router.get('/:post_id/save-status', 
-    auth_middleware.identify_user,
-    Validator.validate_id('post_id'),
-    error_handler.async_handler(posts_controller.get_save_status)
-);
-
-// POST /api/posts/execute-code
-router.post('/execute-code',
-    auth_middleware.require_auth,
-    RateLimit.execute_code_limit(),
-    error_handler.async_handler(posts_controller.execute_code)
-);
-
-// POST /api/posts/highlight-code
-router.post('/highlight-code',
-    auth_middleware.require_auth,
-    error_handler.async_handler(posts_controller.highlight_code)
-);
-
-// POST /api/posts/validate-code
-router.post('/validate-code',
-    auth_middleware.require_auth,
-    error_handler.async_handler(posts_controller.validate_code)
 );
 
 export default router;

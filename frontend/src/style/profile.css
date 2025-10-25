@@ -384,20 +384,24 @@
     gap: 15px;
 }
 
-.stat-icon 
+.profile-stat-icon 
 {
-    width: 35px;
-    height: 35px;
-    padding: 8px;
-    border-radius: 10px;
-    background: rgba(108, 99, 255, 0.1);
+    font-size: 1.6rem;
     color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: auto;
+    padding: 0;
+    border-radius: 0;
+    background: none;
 }
 
-.stat-icon.positive 
+.profile-stat-icon.positive 
 {
-    background: rgba(16, 185, 129, 0.1);
     color: #10B981;
+    background: none;
 }
 
 .stat-info 
@@ -665,6 +669,11 @@
     color: var(--white);
 }
 
+.security-section .form-label
+{
+    color: var(--white);
+}
+
 .danger-zone 
 {
     padding: 30px;
@@ -684,7 +693,7 @@
 
 .danger-zone p 
 {
-    color: var(--gray);
+    color: var(--text);
     margin-bottom: 20px;
 }
 
@@ -1009,6 +1018,27 @@
     flex-shrink: 0;
 }
 
+.post-status-badges
+{
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.post-status.closed
+{
+    background: rgba(255, 100, 100, 0.2);
+    color: #ff6464;
+    padding: 6px 10px;
+    font-size: 0.65rem;
+    border: 1px solid #ff6464;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
 .post-status.inactive 
 {
     background: rgba(255, 101, 132, 0.2);
@@ -1050,6 +1080,36 @@
 }
 
 .full-width { width: 100%; }
+
+/* ===== ADMIN BUTTON ===== */
+.btn-admin 
+{
+    width: 100%;
+    padding: 12px 20px;
+    margin-top: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-admin:hover 
+{
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.btn-admin:active { transform: translateY(0); }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) 

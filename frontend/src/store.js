@@ -2,7 +2,7 @@ import { configureStore, createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 export const fetchUsers = createAsyncThunk('users/fetch', async () => {
     const res = await fetch('/api/users?limit=1');
-    if (!res.ok) throw new Error('API error ' + res.status);
+    if(!res.ok) throw new Error('API error ' + res.status);
     return res.json();
 });
 

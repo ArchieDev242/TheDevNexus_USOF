@@ -12,6 +12,12 @@ router.use(auth_middleware.identify_user);
 // GET /api/users/me - get current authenticated user (must be before /:user_id)
 router.get('/me', error_handler.async_handler(users_controller.get_current_user));
 
+// GET /api/users/me/achievements - get current user's achievements (must be before /:user_id)
+router.get('/me/achievements',
+    auth_middleware.require_auth,
+    error_handler.async_handler(users_controller.get_user_achievements)
+);
+
 // GET /api/users/saved-posts - get user's saved posts (must be before /:user_id)
 router.get('/saved-posts', 
     auth_middleware.require_auth,

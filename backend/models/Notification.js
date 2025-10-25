@@ -17,6 +17,35 @@ class Notification
         this.updated_at = data.updated_at || null;
     }
 
+    get_icon_path() 
+    {
+        const icon_map = {
+            'like': '/user/achievements/HeroOfTheDay.jpg',
+            'comment': '/user/achievements/Chatterbox.jpg',
+            'reply': '/user/achievements/Chatterbox.jpg',
+            'system': '/user/achievements/HelloWorld.jpg',
+            'achievement': '/user/achievements/HelloWorld.jpg'
+        };
+        return icon_map[this.type] || '/user/achievements/HelloWorld.jpg';
+    }
+
+    to_json_with_icon()
+    {
+        return {
+            id: this.id,
+            user_id: this.user_id,
+            type: this.type,
+            title: this.title,
+            message: this.message,
+            is_read: this.is_read,
+            related_id: this.related_id,
+            related_type: this.related_type,
+            created_at: this.created_at,
+            updated_at: this.updated_at,
+            notification_icon: this.get_icon_path()
+        };
+    }
+
     async save() 
     {
         try 
@@ -173,6 +202,9 @@ class Notification
     {
         try 
         {
+            const limit_int = parseInt(limit);
+            const offset_int = parseInt(offset);
+            
             const query = `
                 SELECT 
                     n.*,
@@ -180,22 +212,33 @@ class Notification
                         WHEN n.related_type = 'post' THEN p.title 
                         WHEN n.related_type = 'comment' THEN CONCAT('Comment on: ', pc.title)
                         WHEN n.related_type = 'user' THEN u.login
+                        WHEN n.related_type = 'achievement' THEN a.title
                         ELSE NULL 
                     END as related_title,
                     CASE 
                         WHEN n.related_type = 'user' THEN u.profile_picture
                         ELSE NULL 
-                    END as related_avatar
+                    END as related_avatar,
+                    CASE 
+                        WHEN n.related_type = 'achievement' THEN a.icon
+                        WHEN n.type = 'like' THEN '/user/achievements/HeroOfTheDay.jpg'
+                        WHEN n.type = 'comment' THEN '/user/achievements/Chatterbox.jpg'
+                        WHEN n.type = 'reply' THEN '/user/achievements/Chatterbox.jpg'
+                        WHEN n.type = 'system' THEN '/user/achievements/HelloWorld.jpg'
+                        WHEN n.related_type = 'user' THEN u.profile_picture
+                        ELSE '/user/achievements/HelloWorld.jpg'
+                    END as notification_icon
                 FROM notifications n
                 LEFT JOIN posts p ON n.related_type = 'post' AND n.related_id = p.id
                 LEFT JOIN comments c ON n.related_type = 'comment' AND n.related_id = c.id
                 LEFT JOIN posts pc ON c.post_id = pc.id
                 LEFT JOIN users u ON n.related_type = 'user' AND n.related_id = u.id
+                LEFT JOIN achievements a ON n.related_type = 'achievement' AND n.related_id = a.id
                 WHERE n.user_id = ?
                 ORDER BY n.created_at DESC
-                LIMIT ? OFFSET ?
+                LIMIT ${limit_int} OFFSET ${offset_int}
             `;
-            const [rows] = await DB_connect.make_request(query, [user_id, limit, offset]);
+            const [rows] = await DB_connect.make_request(query, [user_id]);
             return rows;
         } catch(error) 
         {

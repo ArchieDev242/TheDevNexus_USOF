@@ -30,10 +30,9 @@ class posts_controller
                 author = ''
             } = req.query;
             
-            // Normalize categories from either 'categories' (csv) or 'category' (single)
-            const normalizedCategoriesCsv = String(categoriesParam || categoryParam || '').trim();
+            const normalized_categories_csv = String(categoriesParam || categoryParam || '').trim();
             const filters = {
-                categories: normalizedCategoriesCsv ? normalizedCategoriesCsv.split(',').filter(Boolean) : [],
+                categories: normalized_categories_csv ? normalized_categories_csv.split(',').filter(Boolean) : [],
                 date_from,
                 date_to
             };
@@ -264,6 +263,9 @@ class posts_controller
             if(!post) throw error_handler.not_found_error('Post');
             
             if(post.status !== 'active') throw error_handler.forbidden_error('Cannot comment on inactive post');
+
+            //  post is closed?
+            if(post.is_closed) throw error_handler.forbidden_error('This post is closed and no longer accepts comments');
             
             if(parent_id) 
             {
@@ -383,6 +385,9 @@ class posts_controller
                 {
                 throw error_handler.forbidden_error('You can only edit your own posts');
             }
+
+            // Check if post is closed
+            if(post.is_closed) throw error_handler.forbidden_error('This post is closed and cannot be edited');
             
             const update_data = { title, content };
             
@@ -630,7 +635,8 @@ class posts_controller
             res.status(201).json({
                 status: 'success',
                 message: 'Post saved successfully',
-                data: {
+                data: 
+                {
                     id: saved_post.id,
                     post_id: post_id,
                     notes: notes
@@ -710,6 +716,92 @@ class posts_controller
             status: 'error',
             message: 'Code highlighting service not yet implemented - services need ES6 conversion'
         });
+    }
+
+    // POST /api/posts/:post_id/close
+    static async close_post(req, res) 
+    {
+        try 
+        {
+            const { post_id } = req.params;
+            const { reason = 'closed' } = req.body;
+
+            const post = await Post.find_by_id(post_id);
+            if(!post) throw error_handler.not_found_error('Post');
+
+            // only author or admin can close post
+            if(req.user.id !== post.author_id && req.user.role !== 'admin') 
+                {
+                throw error_handler.forbidden_error('You can only close your own posts');
+            }
+
+            await Post.close_post(post_id, reason);
+
+            res.json({
+                status: 'success',
+                message: 'Post closed successfully',
+                data: { id: post_id, is_closed: true }
+            });
+        } catch(error) 
+        {
+            throw error;
+        }
+    }
+
+    // POST /api/posts/:post_id/reopen
+    static async reopen_post(req, res) 
+    {
+        try 
+        {
+            const { post_id } = req.params;
+
+            const post = await Post.find_by_id(post_id);
+            if(!post) throw error_handler.not_found_error('Post');
+
+            // only author or admin can reopen post
+            if(req.user.id !== post.author_id && req.user.role !== 'admin') 
+                {
+                throw error_handler.forbidden_error('You can only reopen your own posts');
+            }
+
+            await Post.reopen_post(post_id);
+
+            res.json({
+                status: 'success',
+                message: 'Post reopened successfully',
+                data: { id: post_id, is_closed: false }
+            });
+        } catch(error) 
+        {
+            throw error;
+        }
+    }
+
+    // POST /api/posts/:post_id/view - Record post view
+    static async record_view(req, res)
+    {
+        try
+        {
+            const { post_id } = req.params;
+            const user_id = req.user.id;
+
+            const post = await Post.find_by_id(post_id);
+            if(!post) throw error_handler.not_found_error('Post');
+
+            await Post.record_view(user_id, post_id);
+
+            const view_count = await Post.get_view_count(post_id);
+
+            res.json({
+                status: 'success',
+                message: 'View recorded',
+                data: { view_count }
+            });
+        }
+        catch(error)
+        {
+            throw error;
+        }
     }
 
     // POST /api/posts/validate-code

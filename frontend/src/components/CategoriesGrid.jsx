@@ -17,7 +17,9 @@ import
     SiUnrealengine,
     SiGodotengine,
     SiPython,
-    SiVulkan
+    SiVulkan,
+    SiCryengine,
+    SiGamemaker
 } from 'react-icons/si';
 
 import { FiFolder } from 'react-icons/fi';
@@ -35,6 +37,8 @@ export default function CategoriesGrid()
         'Godot': SiGodotengine,
         'Godot Engine': SiGodotengine,
         "Ren'Py": SiPython,
+        'GameMaker': SiGamemaker,
+        'CryEngine': SiCryengine,
         'Custom Engines': SiVulkan,
         'Custom Engine': SiVulkan,
         'Art & Design': FaPaintBrush,

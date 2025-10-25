@@ -12,11 +12,24 @@ import
     FiTrendingUp,
     FiGrid,
     FiFolder,
-    FiPlus
+    FiPlus,
+    FiLock,
+    FiFlag
 } from 'react-icons/fi';
+import { GoBlocked } from 'react-icons/go';
+import 
+{
+    SiUnrealengine,
+    SiUnity,
+    SiGodotengine,
+    SiPython,
+    SiCryengine,
+    SiGamemaker
+} from 'react-icons/si';
 
 import Header from '../components/Header';
 import CreatePostModal from '../components/CreatePostModal';
+import ReportModal from '../components/ReportModal';
 import '../style/posts.css';
 
 export default function PostsPage() {
@@ -37,6 +50,8 @@ export default function PostsPage() {
     });
     const [loading, set_loading] = useState(true);
     const [show_create_modal, set_show_create_modal] = useState(false);
+    const [show_report_modal, set_show_report_modal] = useState(false);
+    const [report_target, set_report_target] = useState(null);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -107,21 +122,24 @@ export default function PostsPage() {
         set_loading(true);
         try 
         {
-            let url = '/api/posts?';
+            const params = new URLSearchParams();
+            params.append('page', '1');
+            params.append('limit', '10');
 
             if(selected_category !== 'all') {
                 // Backend expects plural 'categories' query param
-                url += `categories=${encodeURIComponent(String(selected_category))}&`;
+                params.append('categories', String(selected_category));
             }
+            
             if(sort_by === 'popular') 
                 {
-                url += 'sort=likes';
+                params.append('sort', 'likes');
             } else 
                 {
-                url += 'sort=date';
+                params.append('sort', 'date');
             }
 
-            const response = await fetch(url, {
+            const response = await fetch(`/api/posts?${params.toString()}`, {
                 credentials: 'include'
             });
             const data = await response.json();
@@ -167,6 +185,33 @@ export default function PostsPage() {
         post.title?.toLowerCase().includes(search_query.toLowerCase()) ||
         post.content?.toLowerCase().includes(search_query.toLowerCase())
     );
+
+    const get_category_icon = (category_title) => {
+        const icon_map = {
+            'Unreal Engine': <SiUnrealengine />,
+            'Unity': <SiUnity />,
+            'Godot': <SiGodotengine />,
+            'Godot Engine': <SiGodotengine />,
+            "Ren'Py": <SiPython />,
+            'GameMaker': <SiGamemaker />,
+            'CryEngine': <SiCryengine />,
+        };
+        return icon_map[category_title] || <FiFolder />;
+    };
+
+    const handle_report_click = (e, post) => {
+        e.stopPropagation();
+        if (!isAuthenticated) {
+            alert('Please log in to report content');
+            return;
+        }
+        set_report_target({
+            type: 'post',
+            id: post.id,
+            title: post.title
+        });
+        set_show_report_modal(true);
+    };
 
     return (
         <>
@@ -254,7 +299,7 @@ export default function PostsPage() {
                                             className = {selected_category === String(category.id) ? 'active' : ''}
                                             onClick = {() => handle_category_change(String(category.id))}
                                         >
-                                            <span className = "category-icon"><FiFolder /></span>
+                                            <span className = "category-icon">{get_category_icon(category.title)}</span>
                                             <span>{category.title}</span>
                                             <span className = "category-count">
                                                 {category.posts_count ?? 0}
@@ -292,30 +337,37 @@ export default function PostsPage() {
                                                         {post.author_avatar ? (
                                                             <img 
                                                                 src = {post.author_avatar} 
-                                                                alt = {post.author_name}
+                                                                alt = {post.author_login}
                                                                 style = {{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                                                             />
                                                         ) : (
                                                             <img 
                                                                 src = "/user/avatar.jpg" 
-                                                                alt = {post.author_name}
+                                                                alt = {post.author_login}
                                                                 style = {{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                                                             />
                                                         )}
                                                     </div>
                                                     <div className = "author-info">
-                                                        <span className = "author-name">{post.author_name || 'Anonymous'}</span>
+                                                        <span className = "author-name">{post.author_login || 'Anonymous'}</span>
                                                         <span className = "post-time">
                                                             <FiClock size = {12} />
                                                             {new Date(post.publish_date).toLocaleDateString()}
                                                         </span>
                                                     </div>
                                                 </div>
-                                                {post.category_title && (
-                                                    <span className = "post-category-badge">
-                                                        {post.category_title}
-                                                    </span>
-                                                )}
+                                                <div className = "post-badges">
+                                                    {post.is_closed && (
+                                                        <span className = "closed-badge" title="Цей пост закритий">
+                                                            <GoBlocked size={18} />
+                                                        </span>
+                                                    )}
+                                                    {post.category_title && (
+                                                        <span className = "post-category-badge">
+                                                            {post.category_title}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             <h3 className = "post-title">{post.title}</h3>
@@ -328,7 +380,7 @@ export default function PostsPage() {
                                                 <div className = "post-stats">
                                                     <span className = "stat">
                                                         <FiThumbsUp />
-                                                        {post.likes || 0}
+                                                        {post.likes_count || 0}
                                                     </span>
                                                     <span className = "stat">
                                                         <FiMessageSquare />
@@ -336,18 +388,27 @@ export default function PostsPage() {
                                                     </span>
                                                     <span className = "stat">
                                                         <FiUser />
-                                                        {post.views || 0} views
+                                                        {post.view_count || 0} views
                                                     </span>
                                                 </div>
-                                                <button 
-                                                    className = "btn-read-more"
-                                                    onClick = {(e) => {
-                                                        e.stopPropagation();
-                                                        navigate(`/posts/${post.id}`);
-                                                    }}
-                                                >
-                                                    Read More →
-                                                </button>
+                                                <div className = "post-actions">
+                                                    <button 
+                                                        className = "btn-read-more"
+                                                        onClick = {(e) => {
+                                                            e.stopPropagation();
+                                                            navigate(`/posts/${post.id}`);
+                                                        }}
+                                                    >
+                                                        Read More →
+                                                    </button>
+                                                    <button 
+                                                        className = "btn-report"
+                                                        onClick = {(e) => handle_report_click(e, post)}
+                                                        title = "Подати звіт про цей пост"
+                                                    >
+                                                        <FiFlag size={16} />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -373,6 +434,18 @@ export default function PostsPage() {
                 show = {show_create_modal}
                 onClose = {() => set_show_create_modal(false)}
                 onPostCreated = {(new_post) => {
+                    fetch_posts();
+                }}
+            />
+
+            <ReportModal 
+                isOpen = {show_report_modal}
+                onClose = {() => set_show_report_modal(false)}
+                targetType = {report_target?.type}
+                targetId = {report_target?.id}
+                targetTitle = {report_target?.title}
+                onSubmit = {() => {
+                    alert('Спасибо! Ваш звіт була успішно подана.');
                     fetch_posts();
                 }}
             />

@@ -220,6 +220,24 @@ class User
         }
     }
 
+    static async ban(user_id) 
+    {
+        try 
+        {
+            const query = `
+                UPDATE users
+                SET is_toxic = TRUE
+                WHERE id = ?
+            `;
+            await DB_connect.make_request(query, [user_id]);
+            return true;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error banning user: ${error.message}`);
+        }
+    }
+
     async check_password(password) 
     {
         try 

@@ -9,8 +9,11 @@ import likesRouter from './routes/likes.js';
 import commentsAdditionalRouter from './routes/comments-additional.js';
 import notificationsRouter from './routes/notifications.js';
 import achievementsRouter from './routes/achievements.js';
+import reportsRouter from './routes/reports.js';
+import adminStatsRouter from './routes/adminStats.js';
 import codeExecutionRouter from './routes/codeExecution.js';
 import error_handler from './middleware/errorHandler.js';
+import auth_middleware from './middleware/auth.js';
 import RateLimit from './middleware/rateLimit.js';
 import { adminJs, adminRouter } from './admin/admin.js';
 import customAdminRouter from './admin/routes/customAdmin.js';
@@ -21,6 +24,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const port = config.server.port; //get port from config.js
@@ -42,6 +46,8 @@ app.use('/api/users/me', (req, res, next) => {
 app.use('/api', RateLimit.api());
 
 app.use(session({ secret: 'key', resave: false, saveUninitialized: true }));
+
+app.use(auth_middleware.identify_user);
 
 app.use((req, res, next) => {
   const url = new URL(req.protocol + '://' + req.get('host') + req.originalUrl);
@@ -77,6 +83,13 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+const frontend_dist = path.join(__dirname, '../frontend/dist');
+const has_frontend_build = fs.existsSync(path.join(frontend_dist, 'index.html'));
+
+if (has_frontend_build) {
+  app.use(express.static(frontend_dist));
+}
+
 // API routes
 app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
@@ -87,6 +100,8 @@ app.use("/api/categories", categoriesRouter);
 app.use("/api/likes", likesRouter);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/achievements", achievementsRouter);
+app.use("/api/reports", reportsRouter);
+app.use("/api/admin/stats", adminStatsRouter);
 app.use("/api/code", codeExecutionRouter);
 
 // AdminJS routes
@@ -99,6 +114,17 @@ app.use('/admin-panel', customAdminRouter);
 app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin/views/dashboard.html'));
 });
+
+if (has_frontend_build) {
+  app.use((req, res, next) => {
+    if (req.method !== 'GET') return next();
+    if (req.path.startsWith('/api') || req.path.startsWith('/admin') || req.path.startsWith('/admin-panel')) {
+      return next();
+    }
+
+    res.sendFile(path.join(frontend_dist, 'index.html'));
+  });
+}
 
 app.use(error_handler.not_found);
 app.use(error_handler.handler);

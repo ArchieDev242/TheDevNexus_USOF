@@ -55,11 +55,25 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
             });
             
             const data = await response.json();
+            console.log('Categories fetched:', data);
             
-            if(data.status === 'success') set_categories_list(data.data || []);
+            if(data.status === 'success') 
+                {
+                // API returns { categories, total_active_posts }
+                const categories = Array.isArray(data.data?.categories) 
+                    ? data.data.categories 
+                    : (Array.isArray(data.data) ? data.data : []);
+                console.log('Setting categories:', categories);
+                set_categories_list(categories);
+            } else 
+                {
+                console.log('API returned non-success status:', data);
+                set_categories_list([]);
+            }
         } catch(error) 
         {
             console.error('Error fetching categories:', error);
+            set_categories_list([]);
         }
     };
 
@@ -384,7 +398,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                 <span>Категорії</span>
                             </label>
                             <div className = "categories-grid">
-                                {categories_list.map(category => (
+                                {Array.isArray(categories_list) && categories_list.map(category => (
                                     <label key = {category.id} className = "category-checkbox">
                                         <input
                                             type = "checkbox"

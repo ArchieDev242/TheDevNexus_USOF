@@ -350,6 +350,30 @@
     letter-spacing: 1px;
 }
 
+.post-badges
+{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.closed-badge
+{
+    background: linear-gradient(135deg, rgba(255, 100, 100, 0.2), rgba(255, 150, 150, 0.2));
+    border: 1px solid #ff6464;
+    color: #ff6464;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: var(--font-accent);
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .post-title 
 {
     font-family: var(--font-accent);
@@ -392,6 +416,13 @@
 
 .post-stats .stat svg { color: var(--primary); }
 
+.post-actions 
+{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .btn-read-more {
     background: transparent;
     border: 2px solid var(--primary);
@@ -409,6 +440,28 @@
     background: var(--primary);
     color: white;
     box-shadow: 0 0 20px rgba(108, 99, 255, 0.5);
+}
+
+.btn-report 
+{
+    background: transparent;
+    border: 2px solid #ef4444;
+    color: #ef4444;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.btn-report:hover 
+{
+    background: #ef4444;
+    color: white;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
 }
 
 /* ===== FLOATING CREATE BUTTON ===== */

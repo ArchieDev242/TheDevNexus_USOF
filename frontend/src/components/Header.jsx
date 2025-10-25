@@ -22,6 +22,7 @@ import
 } from 'react-icons/fi';
 
 import logo from '../images/logo.png';
+import NotificationDropdown from './NotificationDropdown';
 
 export default function Header() 
 {
@@ -29,6 +30,8 @@ export default function Header()
     const { isAuthenticated, user } = useSelector(state => state.auth);
     const [is_menu_open, set_is_menu_open] = useState(false);
     const [search_query, set_search_query] = useState('');
+    const [is_notifications_open, set_is_notifications_open] = useState(false);
+    const [unread_count, set_unread_count] = useState(0);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -38,17 +41,42 @@ export default function Header()
         set_search_query(current_query);
     }, [location.search]);
 
+    useEffect(() => {
+        if(isAuthenticated) 
+            {
+            const fetch_unread_count = async () => {
+                try 
+                {
+                    const res = await fetch('/api/notifications/unread/count', {
+                        credentials: 'include'
+                    });
+                    if(res.ok) 
+                        {
+                        const data = await res.json();
+                        if(data.status === 'success') set_unread_count(data.data?.count || 0);
+                    } else set_unread_count(0);
+                } catch(error) 
+                {
+                    console.error('Error fetching unread count:', error);
+                    set_unread_count(0);
+                }
+            };
+            
+            fetch_unread_count();
+            const interval = setInterval(fetch_unread_count, 30000);
+            return () => clearInterval(interval);
+        } else {
+            set_unread_count(0);
+        }
+    }, [isAuthenticated]);
+
     // Close menu when clicking outside
     useEffect(() => {
         const handle_click_outside = (event) => {
-            if (is_menu_open && !event.target.closest('.user-menu-wrapper')) {
-                set_is_menu_open(false);
-            }
+            if(is_menu_open && !event.target.closest('.user-menu-wrapper')) set_is_menu_open(false);
         };
 
-        if (is_menu_open) {
-            document.addEventListener('mousedown', handle_click_outside);
-        }
+        if(is_menu_open) document.addEventListener('mousedown', handle_click_outside);
 
         return () => {
             document.removeEventListener('mousedown', handle_click_outside);
@@ -69,11 +97,13 @@ export default function Header()
     };
 
     const handle_logout = async () => {
-        try {
+        try 
+        {
             await dispatch(logout()).unwrap();
             set_is_menu_open(false);
             navigate('/');
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Logout failed:', error);
         }
     };
@@ -133,10 +163,21 @@ export default function Header()
                                     <Link to="/saved-posts" className = "icon-btn" aria-label = "Saved Posts" title="Збережені пости">
                                         <FiBookmark />
                                     </Link>
-                                    <button className = "icon-btn" aria-label = "Notifications">
+                                    <button 
+                                        className = "icon-btn" 
+                                        aria-label = "Notifications"
+                                        onClick = {() => set_is_notifications_open(!is_notifications_open)}
+                                        title="Сповіщення"
+                                    >
                                         <FiBell />
-                                        <span className = "notification-badge">3</span>
+                                        {unread_count > 0 && (
+                                            <span className = "notification-badge">{unread_count > 99 ? '99+' : unread_count}</span>
+                                        )}
                                     </button>
+                                    <NotificationDropdown 
+                                        isOpen={is_notifications_open}
+                                        onClose={() => set_is_notifications_open(false)}
+                                    />
                                     <div className = "user-menu-wrapper">
                                         <button 
                                             className = "user-menu-btn"

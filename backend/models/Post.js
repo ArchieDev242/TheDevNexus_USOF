@@ -11,6 +11,9 @@ class Post
         this.title = postData?.title;
         this.content = postData?.content;
         this.status = postData?.status || 'active';
+        this.is_closed = postData?.is_closed || false;
+        this.closed_at = postData?.closed_at || null;
+        this.closed_reason = postData?.closed_reason || null;
         this.publish_date = postData?.publish_date;
         this.updated_at = postData?.updated_at;
     }
@@ -475,16 +478,50 @@ class Post
         try 
         {
             const offset = (page - 1) * limit;
-            // Base SELECT
+            
+            // Build base query with subqueries for aggregated metrics
             let query = `
-                SELECT p.*, u.login as author_login, u.full_name as author_name, u.profile_picture as author_avatar,
-                       COALESCE(SUM(CASE WHEN l.type = 'like' THEN 1 ELSE 0 END), 0) - 
-                       COALESCE(SUM(CASE WHEN l.type = 'dislike' THEN 1 ELSE 0 END), 0) as like_score,
-                       COUNT(c.id) as comments_count
+                SELECT 
+                    p.id,
+                    p.author_id,
+                    p.title,
+                    p.content,
+                    p.status,
+                    p.is_closed,
+                    p.closed_at,
+                    p.closed_reason,
+                    p.publish_date,
+                    p.created_at,
+                    p.updated_at,
+                    u.login as author_login,
+                    u.full_name as author_name,
+                    u.profile_picture as author_avatar,
+                    COALESCE(likes_data.likes_count, 0) as likes_count,
+                    COALESCE(likes_data.dislikes_count, 0) as dislikes_count,
+                    COALESCE(likes_data.likes_count, 0) - COALESCE(likes_data.dislikes_count, 0) as like_score,
+                    COALESCE(comments_data.comments_count, 0) as comments_count,
+                    COALESCE(views_data.view_count, 0) as view_count
                 FROM posts p
                 JOIN users u ON p.author_id = u.id
-                LEFT JOIN likes l ON p.id = l.post_id
-                LEFT JOIN comments c ON p.id = c.post_id AND c.status = 'active'
+                LEFT JOIN (
+                    SELECT post_id,
+                           SUM(CASE WHEN type = 'like' THEN 1 ELSE 0 END) as likes_count,
+                           SUM(CASE WHEN type = 'dislike' THEN 1 ELSE 0 END) as dislikes_count
+                    FROM likes
+                    WHERE post_id IS NOT NULL
+                    GROUP BY post_id
+                ) likes_data ON p.id = likes_data.post_id
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as comments_count
+                    FROM comments
+                    WHERE status = 'active'
+                    GROUP BY post_id
+                ) comments_data ON p.id = comments_data.post_id
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as view_count
+                    FROM post_views
+                    GROUP BY post_id
+                ) views_data ON p.id = views_data.post_id
             `;
             
             const queryParams = [];
@@ -536,8 +573,6 @@ class Post
                 query += ' WHERE ' + whereConditions.join(' AND ');
             }
             
-            query += ' GROUP BY p.id';
-            
             // sorting
             if(sort === 'likes') 
                 {
@@ -560,8 +595,11 @@ class Post
                 post.author_login = row.author_login;
                 post.author_name = row.author_name;
                 post.author_avatar = normalize_avatar(row.author_avatar);
+                post.likes_count = parseInt(row.likes_count) || 0;
+                post.dislikes_count = parseInt(row.dislikes_count) || 0;
                 post.like_score = parseInt(row.like_score) || 0;
                 post.comments_count = parseInt(row.comments_count) || 0;
+                post.view_count = parseInt(row.view_count) || 0;
                 return post;
             });
         } 
@@ -582,6 +620,9 @@ class Post
                     p.title,
                     p.content,
                     p.status,
+                    p.is_closed,
+                    p.closed_at,
+                    p.closed_reason,
                     p.publish_date,
                     p.created_at,
                     p.updated_at,
@@ -591,6 +632,7 @@ class Post
                     COALESCE(likes.like_count, 0) as like_count,
                     COALESCE(dislikes.dislike_count, 0) as dislike_count,
                     COALESCE(comments.comment_count, 0) as comment_count,
+                    COALESCE(views.view_count, 0) as view_count,
                     GROUP_CONCAT(DISTINCT c.title) as categories
                 FROM posts p
                 LEFT JOIN users u ON p.author_id = u.id
@@ -612,10 +654,15 @@ class Post
                     WHERE status = 'active' 
                     GROUP BY post_id
                 ) comments ON p.id = comments.post_id
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as view_count
+                    FROM post_views
+                    GROUP BY post_id
+                ) views ON p.id = views.post_id
                 LEFT JOIN post_categories pc ON p.id = pc.post_id
                 LEFT JOIN categories c ON pc.category_id = c.id
                 WHERE p.id = ?
-                GROUP BY p.id, p.author_id, p.title, p.content, p.status, p.publish_date, p.created_at, p.updated_at, u.login, u.full_name, u.profile_picture, likes.like_count, dislikes.dislike_count, comments.comment_count
+                GROUP BY p.id, p.author_id, p.title, p.content, p.status, p.is_closed, p.closed_at, p.closed_reason, p.publish_date, p.created_at, p.updated_at, u.login, u.full_name, u.profile_picture, likes.like_count, dislikes.dislike_count, comments.comment_count, views.view_count
             `;
             
             const result = await DB_connect.make_request(query, [post_id]);
@@ -630,6 +677,9 @@ class Post
                 title: post.title,
                 content: post.content,
                 status: post.status,
+                is_closed: post.is_closed || false,
+                closed_at: post.closed_at,
+                closed_reason: post.closed_reason,
                 publish_date: post.publish_date,
                 created_at: post.created_at,
                 updated_at: post.updated_at,
@@ -648,6 +698,7 @@ class Post
                 stats: 
                 {
                     comment_count: post.comment_count,
+                    view_count: post.view_count,
                     like_score: post.like_count - post.dislike_count
                 },
                 categories: post.categories ? post.categories.split(',') : []
@@ -678,6 +729,88 @@ class Post
         catch(error) 
         {
             throw new Error(`Error getting post categories: ${error.message}`);
+        }
+    }
+
+    // Record post view (authenticated users only)
+    static async record_view(user_id, post_id) 
+    {
+        try 
+        {
+            const query = `
+                INSERT INTO post_views (user_id, post_id)
+                VALUES (?, ?)
+                ON DUPLICATE KEY UPDATE viewed_at = NOW()
+            `;
+            
+            await DB_connect.make_request(query, [user_id, post_id]);
+            return true;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error recording post view: ${error.message}`);
+        }
+    }
+
+    // Get view count for a post
+    static async get_view_count(post_id) 
+    {
+        try 
+        {
+            const query = `
+                SELECT COUNT(*) as view_count 
+                FROM post_views 
+                WHERE post_id = ?
+            `;
+            
+            const result = await DB_connect.make_request(query, [post_id]);
+            const rows = result[0];
+            
+            return rows.length > 0 ? rows[0].view_count : 0;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error getting view count: ${error.message}`);
+        }
+    }
+
+    // Close post (prevent comments/edits)
+    static async close_post(post_id, reason = 'closed') 
+    {
+        try 
+        {
+            const query = `
+                UPDATE posts 
+                SET is_closed = TRUE, closed_at = NOW(), closed_reason = ?
+                WHERE id = ?
+            `;
+            
+            await DB_connect.make_request(query, [reason, post_id]);
+            return true;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error closing post: ${error.message}`);
+        }
+    }
+
+    // Reopen closed post
+    static async reopen_post(post_id) 
+    {
+        try 
+        {
+            const query = `
+                UPDATE posts 
+                SET is_closed = FALSE, closed_at = NULL, closed_reason = NULL
+                WHERE id = ?
+            `;
+            
+            await DB_connect.make_request(query, [post_id]);
+            return true;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error reopening post: ${error.message}`);
         }
     }
 }

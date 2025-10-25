@@ -60,6 +60,9 @@ CREATE TABLE IF NOT EXISTS posts(
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     status ENUM('active', 'inactive') DEFAULT 'active',
+    is_closed BOOLEAN DEFAULT FALSE, -- post is closed (no comments/edits allowed)
+    closed_at TIMESTAMP NULL, -- when the post was closed
+    closed_reason VARCHAR(255) NULL, -- reason for closing (e.g., "answered")
     publish_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -136,6 +139,18 @@ CREATE TABLE IF NOT EXISTS saved_posts(
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS post_views(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    post_id INT NOT NULL,
+    viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_user_post (user_id, post_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    INDEX idx_post_views (post_id),
+    INDEX idx_user_views (user_id)
+);
+
 -- notifications table
 CREATE TABLE IF NOT EXISTS notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -145,10 +160,27 @@ CREATE TABLE IF NOT EXISTS notifications (
     message TEXT NOT NULL,
     is_read BOOLEAN DEFAULT FALSE,
     related_id INT NULL,
-    related_type ENUM('post', 'comment', 'user') NULL,
+    related_type ENUM('post', 'comment', 'user', 'achievement') NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- reports table for content moderation
+CREATE TABLE IF NOT EXISTS reports (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    reporter_id INT NOT NULL,
+    reported_type ENUM('post', 'user', 'comment') NOT NULL,
+    reported_id INT NOT NULL,
+    reason VARCHAR(500) NOT NULL,
+    status ENUM('pending', 'resolved', 'dismissed', 'rejected') DEFAULT 'pending',
+    admin_notes TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_status (status),
+    INDEX idx_reported_type (reported_type),
+    INDEX idx_reporter (reporter_id),
+    FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- test categories for gamedev
@@ -157,6 +189,8 @@ INSERT IGNORE INTO categories (title, description) VALUES
 ('Unity', 'Обговорення розробки ігор на Unity Engine'),
 ('Godot', 'Спільнота розробників Godot Engine'),
 ('Ren''Py', 'Створення візуальних новел та інтерактивних історій на Ren''Py'),
+('GameMaker', '2D game development with GameMaker Studio and GML'),
+('CryEngine', 'CryEngine development, advanced graphics, and AAA quality games'),
 ('Custom Engines', 'Розробка власних ігрових рушіїв на OpenGL, Vulkan, DirectX та з нуля');
 
 -- test admin user
@@ -284,9 +318,9 @@ CREATE TABLE IF NOT EXISTS user_achievements(
 
 -- achievements
 INSERT IGNORE INTO achievements (key_name, title, description, icon, points) VALUES
-('hello_world', 'Hello, World!', 'Написати перший пост на форумі', 'user/achievements/HelloWorld.jpg', 10),
-('chatterbox', 'Chatterbox', 'Написати 10 коментарів під постами', 'user/achievements/Chatterbox.jpg', 25),
-('hero_of_the_day', 'Hero of the Day', 'Отримати мінімум 10 лайків на пост у перші 24 години його існування', 'user/achievements/HeroOfTheDay.jpg', 50),
-('wise_one', 'Wise One', 'Отримати 60+ лайків на один з любого посту', 'user/achievements/WiseOne.jpg', 100),
-('architect', 'Architect', 'Опублікувати пост разом зі сніппетом коду', 'user/achievements/Architect.jpg', 35),
-('legend', 'Legend', 'Отримати подяку від 50% користувачів форуму', 'user/achievements/Legend.jpg', 200);
+('hello_world', 'Hello, World!', 'Написати перший пост на форумі', '/user/achievements/HelloWorld.jpg', 10),
+('chatterbox', 'Chatterbox', 'Написати 10 коментарів під постами', '/user/achievements/Chatterbox.jpg', 25),
+('hero_of_the_day', 'Hero of the Day', 'Отримати мінімум 10 лайків на пост у перші 24 години його існування', '/user/achievements/HeroOfTheDay.jpg', 50),
+('wise_one', 'Wise One', 'Отримати 60+ лайків на один з любого посту', '/user/achievements/WiseOne.jpg', 100),
+('architect', 'Architect', 'Опублікувати пост разом зі сніппетом коду', '/user/achievements/Architect.jpg', 35),
+('legend', 'Legend', 'Отримати подяку від 50% користувачів форуму', '/user/achievements/Legend.jpg', 200);

@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
+import { IoHeartDislike, IoHeartDislikeOutline } from 'react-icons/io5';
+import { BiLike, BiDislike } from 'react-icons/bi';
+import { FiMessageCircle, FiFlag } from 'react-icons/fi';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import ReportModal from '../components/ReportModal';
 import '../style/user-profile.css';
 
 const UserProfilePage = () => {
@@ -16,87 +21,84 @@ const UserProfilePage = () => {
     const [rating, set_rating] = useState(null);
     const [loading, set_loading] = useState(true);
     const [active_tab, set_active_tab] = useState('posts');
+    const [show_report_modal, set_show_report_modal] = useState(false);
 
     useEffect(() => {
+        console.log('useEffect triggered with userId:', userId);
         fetch_user_data();
     }, [userId]);
 
     const fetch_user_data = async () => {
-        try {
+        try 
+        {
             set_loading(true);
+            console.log('Fetching data for userId:', userId);
 
-            // Fetch user profile
-            const user_res = await fetch(`/api/users/${userId}`, {
-                credentials: 'include'
-            });
+            const user_res = await fetch(`/api/users/${userId}`, { credentials: 'include' });
+            if(!user_res.ok) throw new Error('User not found');
+            
             const user_data = await user_res.json();
+            console.log('User data fetched:', user_data);
             set_user(user_data.data);
 
-            // Fetch user rating
-            const rating_res = await fetch(`/api/likes/user/${userId}/rating`, {
-                credentials: 'include'
-            });
+            const rating_res = await fetch(`/api/likes/user/${userId}/rating`, { credentials: 'include' });
             const rating_data = await rating_res.json();
             set_rating(rating_data);
 
-            // Fetch user posts
-            const posts_res = await fetch(`/api/users/${userId}/posts?limit=10`, {
-                credentials: 'include'
-            });
+            const posts_res = await fetch(`/api/users/${userId}/posts?limit=10`, { credentials: 'include' });
             const posts_data = await posts_res.json();
-            set_posts(posts_data.data);
+            console.log('Posts data fetched:', posts_data);
+            set_posts(posts_data.data || []);
 
-            // Fetch user achievements
-            const achievements_res = await fetch(`/api/users/${userId}/achievements`, {
-                credentials: 'include'
-            });
+            console.log('Fetching achievements for userId:', userId);
+            const achievements_res = await fetch(`/api/users/${userId}/achievements`, { credentials: 'include' });
             const achievements_data = await achievements_res.json();
-            set_achievements(achievements_data.data);
+            console.log('Achievements response:', achievements_data);
+            set_achievements(achievements_data.data || []);
 
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Error fetching user data:', error);
-        } finally {
+        } finally 
+        {
             set_loading(false);
         }
     };
 
     const handle_rate_user = async (value) => {
-        if (!current_user) {
+        if(!current_user) 
+            {
             alert('Увійдіть щоб оцінити користувача');
             return;
         }
 
-        if (current_user.id === parseInt(userId)) {
+        if(current_user.id === parseInt(userId)) 
+            {
             alert('Ви не можете оцінити себе');
             return;
         }
 
-        try {
+        try 
+        {
             const res = await fetch(`/api/likes/user/${userId}/rate`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({ value })
             });
 
-            if (res.ok) {
-                // Refresh rating
-                const rating_res = await fetch(`/api/likes/user/${userId}/rating`, {
-                    credentials: 'include'
-                });
+            if(res.ok) 
+                {
+                const rating_res = await fetch(`/api/likes/user/${userId}/rating`, { credentials: 'include' });
                 const rating_data = await rating_res.json();
                 set_rating(rating_data);
 
-                // Refresh user data to get updated rating
-                const user_res = await fetch(`/api/users/${userId}`, {
-                    credentials: 'include'
-                });
+                const user_res = await fetch(`/api/users/${userId}`, { credentials: 'include' });
                 const user_data = await user_res.json();
                 set_user(user_data.data);
             }
-        } catch (error) {
+        } catch(error) 
+        {
             console.error('Error rating user:', error);
         }
     };
@@ -105,204 +107,231 @@ const UserProfilePage = () => {
         const date = new Date(date_string);
         const now = new Date();
         const diff = now - date;
-        
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);
 
-        if (minutes < 1) return 'щойно';
-        if (minutes < 60) return `${minutes} хв тому`;
-        if (hours < 24) return `${hours} год тому`;
-        if (days < 7) return `${days} дн тому`;
-        
+        if(minutes < 1) return 'щойно';
+        if(minutes < 60) return `${minutes} хв тому`;
+        if(hours < 24) return `${hours} год тому`;
+        if(days < 7) return `${days} дн тому`;
         return date.toLocaleDateString('uk-UA');
     };
 
     const strip_markdown = (text) => {
-        if (!text) return '';
-        
-        // Remove code blocks
+        if(!text) return '';
         text = text.replace(/```[\s\S]*?```/g, '[код]');
-        // Remove inline code
         text = text.replace(/`([^`]+)`/g, '$1');
-        // Remove bold
         text = text.replace(/\*\*([^*]+)\*\*/g, '$1');
-        // Remove italic
         text = text.replace(/\*([^*]+)\*/g, '$1');
-        // Remove headers
         text = text.replace(/#{1,6}\s+/g, '');
-        // Remove links
         text = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
-        // Remove images
         text = text.replace(/!\[([^\]]*)\]\([^)]+\)/g, '');
-        // Remove blockquotes
         text = text.replace(/^>\s+/gm, '');
-        // Remove list markers
         text = text.replace(/^[-*+]\s+/gm, '');
-        
         return text.substring(0, 200) + (text.length > 200 ? '...' : '');
     };
 
-    if (loading) {
+    if(loading) 
+        {
         return (
-            <div className="app">
+            <>
                 <Header />
-                <main className="user-profile-page">
-                    <div className="loading">Завантаження...</div>
-                </main>
+                <div className = "profile-loading-state">
+                    <p>Завантаження...</p>
+                </div>
                 <Footer />
-            </div>
+            </>
         );
     }
 
-    if (!user) {
+    if(!user) 
+        {
         return (
-            <div className="app">
+            <>
                 <Header />
-                <main className="user-profile-page">
-                    <div className="error">Користувача не знайдено</div>
-                </main>
+                <div className = "profile-error-state">
+                    <p>Користувача не знайдено</p>
+                </div>
                 <Footer />
-            </div>
+            </>
         );
     }
 
     return (
-        <div className="app">
+        <>
             <Header />
-            <main className="user-profile-page">
-                <div className="profile-container">
-                    {/* User Header */}
-                    <div className="profile-header">
-                        <div className="profile-avatar">
-                            <img src={user.avatar} alt={user.login} />
-                        </div>
-                        <div className="profile-info">
-                            <h1>{user.login}</h1>
-                            <p className="profile-fullname">{user.full_name}</p>
-                            <div className="profile-stats">
-                                <div className="stat">
-                                    <span className="stat-value">{user.rating}</span>
-                                    <span className="stat-label">Рейтинг</span>
+            <div className = "profile-wrapper">
+                <div className = "profile-container">
+                    {/* Left Sidebar */}
+                    <aside className = "profile-sidebar">
+                        <div className = "profile-card">
+                            <div className = "avatar-container">
+                                <img src = {user.avatar || '/user/avatar.jpg'} alt = {user.login} className = "avatar" />
+                            </div>
+
+                            <h1 className = "user-login">{user.login}</h1>
+                            <p className = "user-fullname">{user.full_name}</p>
+
+                            <div className = "stats-grid">
+                                <div className = "stat-box">
+                                    <span className = "stat-num">{user.rating}</span>
+                                    <span className = "stat-name">Рейтинг</span>
                                 </div>
-                                <div className="stat">
-                                    <span className="stat-value">{posts?.length || 0}</span>
-                                    <span className="stat-label">Постів</span>
+                                <div className = "stat-box">
+                                    <span className = "stat-num">{posts.length}</span>
+                                    <span className = "stat-name">Постів</span>
                                 </div>
-                                <div className="stat">
-                                    <span className="stat-value">{achievements?.length || 0}</span>
-                                    <span className="stat-label">Ачівок</span>
+                                <div className = "stat-box">
+                                    <span className = "stat-num">{achievements.length}</span>
+                                    <span className = "stat-name">Ачівок</span>
                                 </div>
                             </div>
-                            <div className="profile-member-since">
-                                Зареєстрований: {new Date(user.created_at).toLocaleDateString('uk-UA')}
+
+                            <div className = "divider"></div>
+
+                            <div className = "info-section">
+                                <p className = "info-label">Дата реєстрації</p>
+                                <p className = "info-value">{new Date(user.created_at).toLocaleDateString('uk-UA')}</p>
                             </div>
-                        </div>
 
-                        {/* Rating Buttons */}
-                        {current_user && current_user.id !== parseInt(userId) && (
-                            <div className="profile-rating-buttons">
-                                <button 
-                                    className={`rating-btn like-btn ${rating?.user_vote === 1 ? 'active' : ''}`}
-                                    onClick={() => handle_rate_user(1)}
-                                    title="Лайк"
-                                >
-                                    <span>👍</span>
-                                    <span>{rating?.likes_count || 0}</span>
-                                </button>
-                                <button 
-                                    className={`rating-btn dislike-btn ${rating?.user_vote === -1 ? 'active' : ''}`}
-                                    onClick={() => handle_rate_user(-1)}
-                                    title="Дизлайк"
-                                >
-                                    <span>👎</span>
-                                    <span>{rating?.dislikes_count || 0}</span>
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                            {user.bio && (
+                                <div className = "bio-section">
+                                    <p className = "bio-text">{user.bio}</p>
+                                </div>
+                            )}
 
-                    {/* Tabs */}
-                    <div className="profile-tabs">
-                        <button 
-                            className={`tab-btn ${active_tab === 'posts' ? 'active' : ''}`}
-                            onClick={() => set_active_tab('posts')}
-                        >
-                            Пости ({posts?.length || 0})
-                        </button>
-                        <button 
-                            className={`tab-btn ${active_tab === 'achievements' ? 'active' : ''}`}
-                            onClick={() => set_active_tab('achievements')}
-                        >
-                            Ачівки ({achievements?.length || 0})
-                        </button>
-                    </div>
-
-                    {/* Tab Content */}
-                    <div className="profile-content">
-                        {active_tab === 'posts' && (
-                            <div className="posts-list">
-                                {!posts || posts.length === 0 ? (
-                                    <div className="empty-state">Користувач ще не створював постів</div>
-                                ) : (
-                                    posts.map(post => (
-                                        <div 
-                                            key={post.id} 
-                                            className="post-card"
-                                            onClick={() => navigate(`/posts/${post.id}`)}
+                            {current_user && current_user.id !== parseInt(userId) && (
+                                <div className = "rating-panel">
+                                    <p className = "rating-title">Оцініть користувача</p>
+                                    <div className = "rating-controls">
+                                        <button
+                                            className = {`rate-btn ${rating?.user_vote === 1 ? 'active' : ''}`}
+                                            onClick = {() => handle_rate_user(1)}
                                         >
-                                            <div className="post-header">
-                                                <h3>{post.title}</h3>
-                                                <span className="post-date">{format_date(post.created_at)}</span>
-                                            </div>
-                                            <p className="post-preview">{strip_markdown(post.content)}</p>
-                                            {post.categories && post.categories.length > 0 && (
-                                                <div className="post-categories">
-                                                    {post.categories.map((cat, idx) => (
-                                                        <span key={idx} className="category-tag">{cat}</span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                            <div className="post-stats">
-                                                <span>❤️ {post.likes_count || 0}</span>
-                                                <span>💬 {post.comments_count || 0}</span>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        )}
+                                            <BiLike /> {rating?.likes_count || 0}
+                                        </button>
+                                        <button
+                                            className = {`rate-btn ${rating?.user_vote === -1 ? 'active' : ''}`}
+                                            onClick = {() => handle_rate_user(-1)}
+                                        >
+                                            <BiDislike /> {rating?.dislikes_count || 0}
+                                        </button>
+                                    </div>
+                                    <button 
+                                        className = "report-user-btn"
+                                        onClick = {() => set_show_report_modal(true)}
+                                        title = "Поскаржитися на користувача"
+                                    >
+                                        <FiFlag /> Поскаржитися
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </aside>
 
-                        {active_tab === 'achievements' && (
-                            <div className="achievements-grid">
-                                {!achievements || achievements.length === 0 ? (
-                                    <div className="empty-state">Ачівок ще не отримано</div>
-                                ) : (
-                                    achievements.map(ach => (
-                                        <div key={ach.id} className="achievement-card">
-                                            <div className="achievement-icon">
-                                                <img src={`/${ach.icon}`} alt={ach.title} />
-                                            </div>
-                                            <div className="achievement-info">
-                                                <h4>{ach.title}</h4>
-                                                <p>{ach.description}</p>
-                                                <div className="achievement-meta">
-                                                    <span className="achievement-points">+{ach.points} рейтингу</span>
-                                                    <span className="achievement-date">
-                                                        {new Date(ach.earned_at).toLocaleDateString('uk-UA')}
-                                                    </span>
-                                                </div>
-                                            </div>
+                    {/* Right Content Area */}
+                    <section className = "profile-content-section">
+                        <div className = "tab-navigation">
+                            <button
+                                className = {`nav-tab ${active_tab === 'posts' ? 'active' : ''}`}
+                                onClick = {() => set_active_tab('posts')}
+                            >
+                                Пості ({posts.length})
+                            </button>
+                            <button
+                                className = {`nav-tab ${active_tab === 'achievements' ? 'active' : ''}`}
+                                onClick = {() => set_active_tab('achievements')}
+                            >
+                                Ачівки ({achievements.length})
+                            </button>
+                        </div>
+
+                        <div className = "tab-content">
+                            {active_tab === 'posts' && (
+                                <div className = "posts-section">
+                                    {posts.length === 0 ? (
+                                        <div className = "no-content">
+                                            <p>Користувач ще не створював постів</p>
                                         </div>
-                                    ))
-                                )}
-                            </div>
-                        )}
-                    </div>
+                                    ) : (
+                                        <div className = "posts-grid">
+                                            {posts.map(post => (
+                                                <article
+                                                    key = {post.id}
+                                                    className = "post-item"
+                                                    onClick = {() => navigate(`/posts/${post.id}`)}
+                                                >
+                                                    <div className = "post-title-section">
+                                                        <h3>{post.title}</h3>
+                                                        <span className = "post-time">{format_date(post.created_at)}</span>
+                                                    </div>
+                                                    <p className = "post-text">{strip_markdown(post.content)}</p>
+                                                    {post.categories?.length > 0 && (
+                                                        <div className = "tags-section">
+                                                            {post.categories.map((cat, idx) => (
+                                                                <span key={idx} className = "tag">{cat}</span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    <div className = "post-meta">
+                                                        <span><FaHeart /> {post.likes_count || 0}</span>
+                                                        <span><IoHeartDislike /> {post.dislikes_count || 0}</span>
+                                                        <span><FiMessageCircle /> {post.comments_count || 0}</span>
+                                                    </div>
+                                                </article>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {active_tab === 'achievements' && (
+                                <div className = "achievements-section">
+                                    {achievements.length === 0 ? (
+                                        <div className = "no-content">
+                                            <p>Ачівок ще не отримано</p>
+                                        </div>
+                                    ) : (
+                                        <div className = "achievements-list">
+                                            {achievements.map(ach => (
+                                                <div key = {ach.id} className="achievement-row">
+                                                    <div className = "ach-icon">
+                                                        <img src = {ach.icon} alt = {ach.title} />
+                                                    </div>
+                                                    <div className = "ach-content">
+                                                        <h4>{ach.title}</h4>
+                                                        <p>{ach.description}</p>
+                                                        <div className = "ach-footer">
+                                                            <span className = "points">+{ach.points} рейтингу</span>
+                                                            <span className = "earned-date">{new Date(ach.earned_at).toLocaleDateString('uk-UA')}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </section>
                 </div>
-            </main>
+            </div>
+            {show_report_modal && (
+                <ReportModal 
+                    isOpen={true}
+                    targetType="user"
+                    targetId={parseInt(userId)}
+                    targetTitle={user?.login}
+                    onClose={() => set_show_report_modal(false)}
+                    onSubmit={() => {
+                        alert('✅ Спасибо! Ваш звіт была успішно подана.');
+                        set_show_report_modal(false);
+                    }}
+                />
+            )}
             <Footer />
-        </div>
+        </>
     );
 };
 

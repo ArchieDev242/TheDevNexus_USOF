@@ -3,3 +3,6 @@ frontend/node_modules/
 backend/.adminjs/
 backend/env
 server.log
+frontend/dist/
+.DS_Store
+.vscode/

@@ -19,7 +19,16 @@ class Achievement
         const [rows] = await DB_connect.make_request(
             'SELECT * FROM achievements WHERE is_active = TRUE ORDER BY points ASC'
         );
-        return rows.map(row => new Achievement(row));
+        return rows.map(row => ({
+            id: row.id,
+            key_name: row.key_name,
+            title: row.title,
+            description: row.description,
+            icon: row.icon,
+            points: row.points,
+            is_active: row.is_active,
+            created_at: row.created_at
+        }));
     }
 
     static async get_by_key(key_name) 

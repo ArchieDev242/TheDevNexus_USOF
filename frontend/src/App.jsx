@@ -11,6 +11,8 @@ import AboutPage from './pages/AboutPage';
 import SettingsPage from './pages/SettingsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import SavedPostsPage from './pages/SavedPostsPage';
+import AdminReportsPage from './pages/AdminReportsPage';
+import AdminDashboard from './pages/AdminDashboard';
 import PublicRoute from './components/PublicRoute';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -48,6 +50,16 @@ export default function App()
                 <Route path = "/saved-posts" element = {
                     <ProtectedRoute>
                         <SavedPostsPage />
+                    </ProtectedRoute>
+                } />
+                <Route path = "/admin/reports" element = {
+                    <ProtectedRoute>
+                        <AdminReportsPage />
+                    </ProtectedRoute>
+                } />
+                <Route path = "/admin-dashboard" element = {
+                    <ProtectedRoute>
+                        <AdminDashboard />
                     </ProtectedRoute>
                 } />
             </Routes>
