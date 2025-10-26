@@ -1,0 +1,804 @@
+{
+  "header": {
+    "home": "Home",
+    "posts": "Forums",
+    "categories": "Categories",
+    "about": "About",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register",
+    "search": "Search...",
+    "saved_posts": "Saved Posts"
+  },
+  "home": {
+    "title": "Welcome to TheDevNexus",
+    "subtitle": "The largest platform for developers",
+    "trending": "Trending Posts",
+    "latest": "Latest Posts",
+    "featured_engines": "Featured Engines",
+    "view_all": "View All",
+    "by_author": "by {{author}}",
+    "trending_comments_one": "{{count}} comment",
+    "trending_comments_other": "{{count}} comments",
+    "trending_likes_one": "{{count}} like",
+    "trending_likes_other": "{{count}} likes",
+    "trending_recent_time": "2h ago",
+    "trending_empty": "No posts available yet. Be the first to create one!",
+    "community_title": "Community Highlights",
+    "community_featured_badge": "Featured",
+    "community_featured_title": "The Future of Indie Game Development",
+    "community_featured_description": "An in-depth look at how indie developers are shaping the future of gaming with innovative approaches and technologies.",
+    "community_posted_by": "Posted by {{author}}",
+    "community_recent_time": "3h ago",
+    "community_top_contributors": "Top Contributors",
+    "community_posts_count_one": "{{count}} post",
+    "community_posts_count_other": "{{count}} posts",
+    "community_latest_resources": "Latest Resources",
+    "community_resource_1": "Free 3D Models Pack",
+    "community_resource_2": "Ultimate Shader Guide",
+    "community_resource_3": "Game Design eBook",
+    "community_resource_4": "Unity Best Practices",
+    "community_cta_title": "Ready to Level Up?",
+    "community_cta_description": "Join thousands of game developers and enthusiasts in our thriving community.",
+    "community_cta_button": "Create Free Account"
+  },
+  "posts": {
+    "title": "Posts",
+    "create_post": "Create Post",
+    "edit_post": "Edit Post",
+    "delete_post": "Delete Post",
+    "view_details": "View Details",
+    "no_posts": "No posts found",
+    "loading": "Loading posts...",
+    "like": "Like",
+    "unlike": "Unlike",
+    "comments": "Comments",
+    "share": "Share",
+    "add_comment": "Add Comment",
+    "comment_placeholder": "Write your comment...",
+    "reply": "Reply",
+    "edit": "Edit",
+    "delete": "Delete",
+    "views_one": "{{count}} view",
+    "views_other": "{{count}} views"
+  },
+  "categories": {
+    "title": "Categories",
+    "all_categories": "All Categories",
+    "select_category": "Select Category",
+    "no_categories": "No categories found",
+    "posts_count_one": "{{count}} post",
+    "posts_count_other": "{{count}} posts"
+  },
+  "profile": {
+    "title": "My Profile",
+    "my_posts": "My Posts",
+    "followers": "Followers",
+    "following": "Following",
+    "bio": "Bio",
+    "edit_profile": "Edit Profile",
+    "my_achievements": "My Achievements",
+    "reputation": "Reputation",
+    "joined": "Joined",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "avatar_alt": "User avatar",
+    "remove_avatar": "Remove Avatar",
+    "avatar_hint": "Supported: JPG, PNG, GIF, WEBP (up to 5MB)",
+    "game_engines_label": "Game Engines:",
+    "stats": {
+      "rating_label": "Rating",
+      "rating_value": "+{{value}}",
+      "achievements_label": "Achievements",
+      "achievements_value_one": "{{count}} unlocked",
+      "achievements_value_other": "{{count}} unlocked"
+    },
+    "sections": {
+      "posts": {
+        "list_title_one": "My Posts ({{count}})",
+        "list_title_other": "My Posts ({{count}})",
+        "empty": "You haven't created any posts yet.",
+        "closed_tooltip": "This post is closed",
+        "status": {
+          "active": "Active",
+          "inactive": "Draft",
+          "closed": "Closed"
+        }
+      },
+      "achievements": {
+        "title": "Achievements",
+        "points": "+{{points}} pts",
+        "empty": "No achievements available."
+      },
+      "settings": {
+        "title": "Security Settings",
+        "change_password": {
+          "title": "Change Password",
+          "current": "Current Password",
+          "new": "New Password",
+          "confirm": "Confirm Password",
+          "submit": "Update Password"
+        },
+        "danger_zone": {
+          "title": "Danger Zone",
+          "description": "Once you delete your account, there is no going back. Please be certain.",
+          "delete_button": "Delete Account"
+        }
+      }
+    },
+    "delete_modal": {
+      "title": "Delete Account",
+      "description": "This action cannot be undone. This will permanently delete your account and remove all your data.",
+      "password_label": "Enter your password to confirm",
+      "password_placeholder": "Enter password",
+      "delete_button": "Delete Account"
+    },
+    "edit_modal": {
+      "title": "Edit Profile",
+      "username": "Username",
+      "full_name": "Full Name",
+      "email": "Email",
+      "bio": "Bio",
+      "toolbar": {
+        "bold": "Bold",
+        "italic": "Italic",
+        "inline_code": "Inline code",
+        "code_block": "Code block",
+        "link": "Insert link",
+        "heading": "Heading",
+        "list": "Bullet list",
+        "color": "Colored text",
+        "background": "Highlight background",
+        "mark": "Mark text",
+        "emoji": "Emoji"
+      },
+      "bio_placeholder": "Tell us about yourself... Markdown is supported!",
+      "bio_hint": "Markdown is supported. Try **bold**, *italic*, `code`, [color=#ff6b6b]color[/color] or [bg=yellow]background[/bg].",
+      "website": "Website",
+      "website_placeholder": "https://yourwebsite.com",
+      "twitter": "Twitter",
+      "twitter_placeholder": "@username",
+      "github": "GitHub",
+      "github_placeholder": "username",
+      "linkedin": "LinkedIn",
+      "linkedin_placeholder": "username",
+      "itch": "Itch.io",
+      "itch_placeholder": "username or URL",
+      "gamebanana": "GameBanana",
+      "gamebanana_placeholder": "username or URL",
+      "gamejolt": "GameJolt",
+      "gamejolt_placeholder": "username or URL",
+      "twitch": "Twitch",
+      "twitch_placeholder": "username or URL",
+      "engines": "Game Engines"
+    },
+    "notifications": {
+      "avatar_format_error": "Only JPG, PNG, GIF, or WEBP files are supported.",
+      "avatar_size_error": "File is too large. Maximum size is 5MB.",
+      "avatar_upload_error": "Failed to upload avatar.",
+      "profile_update_success": "Profile updated successfully!",
+      "profile_update_error": "Failed to update profile.",
+      "password_mismatch": "Passwords do not match!",
+      "avatar_delete_error": "Failed to delete avatar.",
+      "delete_password_required": "Please enter your password to confirm."
+    },
+    "engine_modal": {
+      "description_title": "Description",
+      "audience_title": "Who it's for",
+      "languages_title": "Programming languages"
+    },
+    "engines": {
+      "unreal_engine": {
+        "description": "A powerful AAA engine from Epic Games.",
+        "audience": "Ideal for high-quality 3D games and VR/AR projects.",
+        "languages": "C++, Blueprints"
+      },
+      "unity": {
+        "description": "The most popular cross-platform engine.",
+        "audience": "For mobile, indie, and AA games.",
+        "languages": "C#"
+      },
+      "godot": {
+        "description": "A free open-source engine.",
+        "audience": "For indie developers building 2D or 3D games.",
+        "languages": "GDScript, C#, C++"
+      },
+      "renpy": {
+        "description": "A specialized engine for visual novels.",
+        "audience": "For interactive stories and visual novels.",
+        "languages": "Python, Ren'Py Script"
+      },
+      "gamemaker": {
+        "description": "A friendly engine for 2D games.",
+        "audience": "For beginners and indie 2D projects.",
+        "languages": "GML (GameMaker Language)"
+      },
+      "cryengine": {
+        "description": "A high-end engine with realistic graphics.",
+        "audience": "For AAA projects focused on visuals.",
+        "languages": "C++, Lua"
+      },
+      "custom_engines": {
+        "description": "Custom engines built on OpenGL/Vulkan.",
+        "audience": "For experienced programmers who need full control.",
+        "languages": "C++, OpenGL, Vulkan"
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "Account",
+    "privacy": "Privacy",
+    "notifications": "Notifications",
+    "language": "Language",
+    "theme": "Theme",
+    "change_password": "Change Password",
+    "delete_account": "Delete Account",
+    "save_changes": "Save Changes",
+    "select_language": "Select Language",
+    "current_language": "Current Language",
+    "dark_mode": "Dark Mode",
+    "light_mode": "Light Mode"
+  },
+  "auth": {
+    "login_title": "Login",
+    "register_title": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "username": "Username",
+    "login_button": "Login",
+    "register_button": "Register",
+    "forgot_password": "Forgot Password?",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "login_success": "You have successfully logged in",
+    "register_success": "Registration successful",
+    "login_error": "Login error. Please check your credentials",
+    "register_error": "Error during registration"
+  },
+  "about": {
+    "title": "About Us",
+    "page_title": "About TheDevNexus",
+    "page_subtitle": "Ukrainian Forum for Game and Mod Developers",
+    "page_description": "TheDevNexus is a community created for Ukrainian video game and modification developers. We unite professionals and enthusiasts who work with popular game engines or create their own technologies.",
+    "mission": "Our Mission",
+    "mission_text": "To create the largest Ukrainian-language platform for sharing knowledge, experience and ideas in the field of video game development. We strive to support and develop the Ukrainian gamedev community by providing space for learning, collaboration and professional growth.",
+    "who_is_for": "Who Is This Forum For?",
+    "game_developers": "Game Developers",
+    "game_developers_desc": "Programmers, designers, artists and other specialists working on creating video games",
+    "modders": "Modders",
+    "modders_desc": "Enthusiasts who create modifications for their favorite games and expand their capabilities",
+    "engine_engineers": "Engine Engineers",
+    "engine_engineers_desc": "Geeks who write their own game engines from scratch or using OpenGL/Vulkan",
+    "beginners": "Beginners",
+    "beginners_desc": "Those who are just starting their journey in gamedev and looking for advice and support",
+    "supported_technologies": "Supported Technologies",
+    "supported_technologies_desc": "Our forum covers a wide range of game engines and technologies",
+    "what_we_offer": "What Do We Offer?",
+    "ukrainian_community": "Ukrainian Community",
+    "ukrainian_community_desc": "Forum created for Ukrainian audience of game and mod developers",
+    "for_all_levels": "For All Levels",
+    "for_all_levels_desc": "From beginners to professionals - everyone will find something interesting",
+    "knowledge_base": "Knowledge Base",
+    "knowledge_base_desc": "Tutorials, guides and solutions to common problems from the community",
+    "active_discussions": "Active Discussions",
+    "active_discussions_desc": "Discussions about technologies, practices and trends in game development",
+    "quick_help": "Quick Help",
+    "quick_help_desc": "Get answers to your questions from experienced developers",
+    "open_source": "Open Source",
+    "open_source_desc": "We support the culture of open source and collaborative development",
+    "active_users": "Active Users",
+    "discussions": "Discussions",
+    "game_engines": "Game Engines",
+    "ukrainian_language": "Ukrainian Language",
+    "join_community": "Join The Community!",
+    "join_community_desc": "Become part of the Ukrainian gamedev community. Share your experience, learn from the best and create amazing games together!",
+    "sign_up": "Sign Up",
+    "view_posts": "View Posts"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "posts": "Posts",
+    "reports": "Reports",
+    "categories": "Categories",
+    "statistics": "Statistics",
+    "manage_users": "Manage Users",
+    "manage_posts": "Manage Posts",
+    "manage_reports": "Manage Reports",
+    "total_users": "Total Users",
+    "total_posts": "Total Posts",
+    "total_comments": "Total Comments",
+    "pending_reports": "Pending Reports"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "yes": "Yes",
+    "no": "No",
+    "confirm": "Confirm",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "anonymous": "Anonymous",
+    "time": {
+      "just_now": "just now",
+      "minutes_ago_one": "{{count}} minute ago",
+      "minutes_ago_other": "{{count}} minutes ago",
+      "hours_ago_one": "{{count}} hour ago",
+      "hours_ago_other": "{{count}} hours ago",
+      "yesterday": "yesterday",
+      "days_ago_one": "{{count}} day ago",
+      "days_ago_other": "{{count}} days ago",
+      "weeks_ago_one": "{{count}} week ago",
+      "weeks_ago_other": "{{count}} weeks ago",
+      "months_ago_one": "{{count}} month ago",
+      "months_ago_other": "{{count}} months ago",
+      "years_ago_one": "{{count}} year ago",
+      "years_ago_other": "{{count}} years ago"
+    }
+  },
+  "engines": {
+    "unreal_engine": "Unreal Engine",
+    "godot": "Godot",
+    "unity": "Unity",
+    "gdevelop": "GDevelop",
+    "pygame": "Pygame",
+    "phaser": "Phaser",
+    "other": "Other"
+  },
+  "posts_page": {
+    "title": "Forum Posts",
+    "subtitle": "Explore discussions and share your knowledge",
+    "search_placeholder": "Search posts...",
+    "filter_latest": "Latest",
+    "filter_popular": "Most Popular",
+    "sidebar_title": "Categories",
+    "sidebar_all_posts": "All Posts",
+    "no_posts_title": "No posts found",
+    "no_posts_description": "Be the first to start a discussion!",
+    "read_more": "Read More",
+    "report_tooltip": "Report post",
+    "report_success": "Thank you! Your report has been submitted.",
+    "login_to_report": "Please log in to report content.",
+    "closed_tooltip": "This post is closed"
+  },
+  "footer": {
+    "description": "The ultimate hub for game developers and tech enthusiasts to connect, learn, and create.",
+    "quick_links": "Quick Links",
+    "link_forums": "Forum",
+    "categories": "Categories",
+    "category_gamedev": "Game Dev",
+    "category_programming": "Programming",
+    "category_design": "Art & Design",
+    "category_career": "Career",
+    "connect": "Connect",
+    "twitter": "Twitter",
+    "github": "GitHub",
+    "youtube": "YouTube",
+    "discord": "Discord",
+    "copyright": "© {{year}} TheDevNexus. All rights reserved."
+  },
+  "saved_posts": {
+    "confirm_unsave": "Remove this post from saved items?",
+    "error_unsave": "Failed to remove post from saved list",
+    "title": "Saved Posts",
+    "subtitle_one": "Your saved posts collection ({{count}})",
+    "subtitle_other": "Your saved posts collection ({{count}})",
+    "empty_title": "No saved posts",
+    "empty_description_line1": "Save interesting posts to revisit them later.",
+    "empty_description_line2": "Click the bookmark icon under a post to save it.",
+    "browse_posts_button": "Browse posts",
+    "remove_tooltip": "Remove from saved",
+    "saved_label": "Saved {{time}}"
+  },
+  "admin_dashboard": {
+    "access_denied_title": "Access Denied",
+    "access_denied_description": "Only administrators can access this page.",
+    "sidebar": {
+      "comments": "Comments"
+    },
+    "stats": {
+      "users": "Users",
+      "posts": "Posts",
+      "comments": "Comments",
+      "categories": "Categories"
+    },
+    "users": {
+      "search_placeholder": "Search users...",
+      "table": {
+        "login": "Login",
+        "name": "Name",
+        "role": "Role",
+        "actions": "Actions"
+      }
+    },
+    "posts": {
+      "search_placeholder": "Search posts...",
+      "table": {
+        "title": "Title",
+        "author": "Author",
+        "date": "Date",
+        "likes": "Likes",
+        "comments": "Comments",
+        "actions": "Actions"
+      }
+    },
+    "comments": {
+      "title": "Manage Comments",
+      "description": "Comments are managed through the posts admin page."
+    },
+    "categories": {
+      "title": "Manage Categories",
+      "empty": "No categories found"
+    },
+    "reports": {
+      "table": {
+        "type": "Type",
+        "target": "Target",
+        "reason": "Reason",
+        "status": "Status",
+        "action": "Action"
+      },
+      "view_button": "View",
+      "empty": "No reports found"
+    },
+    "report_reasons": {
+      "spam": "Spam",
+      "harassment": "Harassment / Bullying",
+      "inappropriate": "Inappropriate content",
+      "misinformation": "Misinformation",
+      "copyright": "Copyright violation"
+    },
+    "report_types": {
+      "post": "Post",
+      "comment": "Comment",
+      "user": "User"
+    },
+    "report_status": {
+      "pending": "Pending",
+      "resolved": "Resolved",
+      "rejected": "Rejected"
+    },
+    "confirm_delete_user": "Delete this user?",
+    "confirm_delete_post": "Delete this post?",
+    "confirm_delete_comment": "Delete this comment?",
+    "confirm_report_status": "Are you sure? The status will be changed to \"{{status}}\".",
+    "notifications": {
+      "report_status_updated": "Report status updated successfully!",
+      "report_status_error": "Failed to update report status.",
+      "user_update_error": "Failed to update user."
+    },
+    "settings": {
+      "title": "System Settings",
+      "general": {
+        "title": "General Settings",
+        "version": "Version: {{version}}",
+        "status": "Status: 🟢 Active"
+      },
+      "database": {
+        "title": "Database",
+        "type": "Type: {{type}}",
+        "status": "Status: 🟢 Connected"
+      }
+    },
+    "edit_user": {
+      "title": "Edit User",
+      "fields": {
+        "login": "Login",
+        "full_name": "Full Name",
+        "role": "Role"
+      }
+    },
+    "roles": {
+      "user": "User",
+      "admin": "Admin"
+    },
+    "report_modal": {
+      "title": "Report Details #{{id}}",
+      "object_type": "Object type:",
+      "object_id": "Object ID:",
+      "reason": "Reason:",
+      "description": "Description:",
+      "no_description": "No description provided",
+      "submitted_at": "Submitted:",
+      "status": "Status:",
+      "resolve_button": "Resolve",
+      "reject_button": "Reject"
+    }
+  },
+  "post_form": {
+    "create": {
+      "title": "Create new post"
+    },
+    "edit": {
+      "title": "Edit post"
+    },
+    "fields": {
+      "title_label": "Post title",
+      "title_placeholder": "Enter your post title...",
+      "content_placeholder": "Write your post here... Markdown is supported!"
+    },
+    "tabs": {
+      "write": "Write",
+      "preview": "Preview"
+    },
+    "toolbar": {
+      "bold": "Bold",
+      "italic": "Italic",
+      "inline_code": "Inline code",
+      "code_block": "Code block",
+      "link": "Link",
+      "heading": "Heading",
+      "list": "List",
+      "emoji": "Emoji"
+    },
+    "preview": {
+      "empty": "Nothing to preview yet..."
+    },
+    "categories": {
+      "label": "Categories"
+    },
+    "status": {
+      "label": "Status",
+      "publish_now": "Publish now",
+      "save_draft": "Save as draft"
+    },
+    "buttons": {
+      "publish": "Publish",
+      "publishing": "Publishing...",
+      "update": "Save changes",
+      "saving": "Saving..."
+    },
+    "validation": {
+      "title_required": "Please enter the post title",
+      "content_required": "Please enter the post content",
+      "categories_required": "Please select at least one category",
+      "blueprint_title_required": "Enter a blueprint name"
+    },
+    "notifications": {
+      "post_created": "Post created successfully!",
+      "post_updated": "Post updated successfully!",
+      "blueprint_created": "Blueprint saved successfully!"
+    },
+    "errors": {
+      "post_create": "Failed to create the post",
+      "post_update": "Failed to update the post",
+      "blueprint_create": "Failed to create blueprint"
+    },
+    "blueprints": {
+      "section_title": "📘 Blueprints (Unreal Engine)",
+      "search_placeholder": "Search blueprints (e.g. AI, Movement, Inventory)...",
+      "loading": "Searching...",
+      "create_button_title": "Create new blueprint",
+      "create_title": "Create new blueprint",
+      "name_placeholder": "Blueprint name",
+      "author_placeholder": "Author (optional)",
+      "url_placeholder": "Blueprint link (optional)",
+      "creating": "Creating...",
+      "create_action": "Create",
+      "add_button": "Add",
+      "selected_label": "Selected blueprints:",
+      "by_author": "by {{author}}",
+      "unknown_author": "Unknown author"
+    }
+  },
+  "settings_page": {
+    "subtitle": "Manage your account settings and preferences",
+    "sidebar": {
+      "account": "Account",
+      "privacy": "Privacy & Security",
+      "notifications": "Notifications",
+      "appearance": "Appearance",
+      "content": "Content Preferences"
+    },
+    "account": {
+      "title": "Account Settings",
+      "email_preferences": {
+        "title": "Email Preferences",
+        "email_notifications": {
+          "title": "Email Notifications",
+          "description": "Receive email notifications about your activity"
+        }
+      },
+      "info": {
+        "title": "Account Information",
+        "username": "Username",
+        "member_since": "Member Since",
+        "account_type": "Account Type"
+      }
+    },
+    "privacy": {
+      "title": "Privacy & Security",
+      "profile_visibility": {
+        "title": "Profile Visibility",
+        "setting_title": "Who can see your profile",
+        "setting_description": "Control who can view your profile information",
+        "options": {
+          "public": "Public",
+          "members": "Members Only",
+          "private": "Private"
+        }
+      },
+      "show_email": {
+        "title": "Show Email on Profile",
+        "description": "Display your email address on your public profile"
+      },
+      "online_status": {
+        "title": "Online Status",
+        "description": "Show when you're online to other members"
+      }
+    },
+    "notifications": {
+      "title": "Notification Preferences",
+      "channels": {
+        "title": "Notification Channels",
+        "email": {
+          "title": "Email Notifications",
+          "description": "Get notified via email about important updates"
+        },
+        "browser": {
+          "title": "Browser Notifications",
+          "description": "Receive push notifications in your browser"
+        }
+      }
+    },
+    "appearance": {
+      "title": "Appearance",
+      "display": {
+        "title": "Display Settings",
+        "theme": {
+          "title": "Theme",
+          "description": "Choose your preferred color scheme",
+          "options": {
+            "dark": "Dark",
+            "light": "Light",
+            "auto": "Auto"
+          }
+        },
+        "font_size": {
+          "title": "Font Size",
+          "description": "Adjust the text size for better readability",
+          "options": {
+            "small": "Small",
+            "medium": "Medium",
+            "large": "Large"
+          }
+        }
+      },
+      "language": {
+        "title": "Language",
+        "description": "Select your preferred language",
+        "options": {
+          "uk": {
+            "tooltip": "Ukrainian",
+            "label": "Ukrainian"
+          },
+          "en": {
+            "tooltip": "English",
+            "label": "English"
+          },
+          "de": {
+            "tooltip": "German",
+            "label": "German"
+          }
+        }
+      }
+    },
+    "content": {
+      "title": "Content Preferences",
+      "feed": {
+        "title": "Feed Settings",
+        "posts_per_page": {
+          "title": "Posts Per Page",
+          "description": "Number of posts to display per page",
+          "options": {
+            "ten": "10 posts",
+            "twenty_five": "25 posts",
+            "fifty": "50 posts"
+          }
+        },
+        "default_sort": {
+          "title": "Default Sort Order",
+          "description": "How posts should be sorted by default",
+          "options": {
+            "latest": "Latest",
+            "popular": "Most Popular",
+            "trending": "Trending"
+          }
+        },
+        "show_nsfw": {
+          "title": "Show NSFW Content",
+          "description": "Display content marked as not safe for work"
+        }
+      }
+    },
+    "actions": {
+      "saved": "Saved successfully!",
+      "save": "Save Changes"
+    }
+  },
+  "auth_page": {
+    "common": {
+      "or": "OR"
+    },
+    "login": {
+      "title": "Login",
+      "subtitle": "Enter the Nexus",
+      "username_label": "Username or email",
+      "username_placeholder": "Enter your username",
+      "password_label": "Password",
+      "password_placeholder": "Enter your password",
+      "forgot_password": "Forgot password?",
+      "loading": "Loading...",
+      "submit": "Login",
+      "create_account": "Create account",
+      "footer_text": "New to TheDevNexus?",
+      "footer_link": "Join now!",
+      "verified_success": "Email verified successfully! You can log in now.",
+      "reset_success": "Password updated! Please log in with your new credentials."
+    },
+    "register": {
+      "title": "Register",
+      "subtitle": "Join the Nexus",
+      "username_label": "Username",
+      "username_placeholder": "Choose your username",
+      "full_name_label": "Full name",
+      "full_name_placeholder": "Enter your full name",
+      "email_label": "Email",
+      "email_placeholder": "Enter your email",
+      "password_label": "Password",
+      "password_placeholder": "Create a password",
+      "confirm_password_label": "Confirm password",
+      "confirm_password_placeholder": "Confirm your password",
+      "password_mismatch": "Passwords do not match!",
+      "loading": "Creating...",
+      "submit": "Create account",
+      "login_button": "Login",
+      "footer_text": "Already have an account?",
+      "footer_link": "Login here!"
+    },
+    "forgot_password": {
+      "title": "Forgot Password?",
+      "subtitle": "No worries, we'll help you recover",
+      "email_label": "Email address",
+      "email_placeholder": "Enter your email",
+      "description": "Enter the email address associated with your account, and we'll send you instructions to reset your password.",
+      "loading": "Sending...",
+      "submit": "Send Reset Link",
+      "success_message": "Check your email for password reset instructions!",
+      "back_to_login": "Back to Login",
+      "footer_text": "Remember your password?",
+      "footer_link": "Login here!"
+    },
+    "reset_password": {
+      "title": "Reset Password",
+      "subtitle": "Create a new password for your account",
+      "password_label": "New password",
+      "password_placeholder": "Enter new password",
+      "confirm_password_label": "Confirm password",
+      "confirm_password_placeholder": "Confirm new password",
+      "password_requirements": "Password must be at least 8 characters long",
+      "password_mismatch": "Passwords do not match!",
+      "loading": "Resetting...",
+      "submit": "Reset Password",
+      "success_message": "Password successfully reset! You can now login with your new password.",
+      "invalid_token": "This reset link is invalid or has expired.",
+      "error_message": "An error occurred. Please try again.",
+      "back_to_login": "Back to Login",
+      "resend_link": "Send a new reset link",
+      "redirecting": "Redirecting to login..."
+    }
+  }
+}

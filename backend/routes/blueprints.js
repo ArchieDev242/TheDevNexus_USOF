@@ -4,22 +4,21 @@ import blueprints_controller from '../controllers/blueprintsController.js';
 
 const router = express.Router();
 
-// Initialize user identification for all routes
 router.use(auth_middleware.identify_user);
 
-// GET /api/blueprints/search - Search blueprints
+// GET /api/blueprints/search
 router.get('/search', blueprints_controller.search);
 
-// GET /api/blueprints/popular - Get popular blueprints
+// GET /api/blueprints/popular
 router.get('/popular', blueprints_controller.get_popular);
 
-// POST /api/blueprints - Create blueprint (requires authentication)
+// POST /api/blueprints
 router.post('/', auth_middleware.require_auth, blueprints_controller.create);
 
-// GET /api/blueprints/:blueprint_id - Get blueprint by ID
+// GET /api/blueprints/:blueprint_id
 router.get('/:blueprint_id', blueprints_controller.get_by_id);
 
-// DELETE /api/blueprints/:blueprint_id - Delete blueprint (requires authentication)
+// DELETE /api/blueprints/:blueprint_id
 router.delete('/:blueprint_id', auth_middleware.require_auth, blueprints_controller.delete_blueprint);
 
 export default router;

@@ -1,0 +1,832 @@
+{
+  "header": {
+    "home": "Головна",
+    "posts": "Форуми",
+    "categories": "Категорії",
+    "about": "Про нас",
+    "profile": "Профіль",
+    "settings": "Налаштування",
+    "logout": "Вихід",
+    "login": "Вхід",
+    "register": "Реєстрація",
+    "search": "Пошук...",
+    "saved_posts": "Збережені пости"
+  },
+  "home": {
+    "title": "Ласкаво просимо на TheDevNexus",
+    "subtitle": "Найбільша платформа для розробників",
+    "trending": "Популярні пости",
+    "latest": "Останні пости",
+    "featured_engines": "Рекомендовані рушії",
+    "view_all": "Переглянути все",
+    "by_author": "від {{author}}",
+    "trending_comments_one": "{{count}} коментар",
+    "trending_comments_few": "{{count}} коментарі",
+    "trending_comments_many": "{{count}} коментарів",
+    "trending_comments_other": "{{count}} коментарів",
+    "trending_likes_one": "{{count}} вподобання",
+    "trending_likes_few": "{{count}} вподобання",
+    "trending_likes_many": "{{count}} вподобань",
+    "trending_likes_other": "{{count}} вподобань",
+    "trending_recent_time": "2 год тому",
+    "trending_empty": "Поки немає постів. Станьте першим, хто створить його!",
+    "community_title": "Головні події спільноти",
+    "community_featured_badge": "Вибір",
+    "community_featured_title": "Майбутнє інді-розробки",
+    "community_featured_description": "Детальний погляд на те, як інді-розробники формують майбутнє ігор завдяки інноваційним підходам та технологіям.",
+    "community_posted_by": "Опубліковано {{author}}",
+    "community_recent_time": "3 год тому",
+    "community_top_contributors": "Топ-учасники",
+    "community_posts_count_one": "{{count}} пост",
+    "community_posts_count_few": "{{count}} пости",
+    "community_posts_count_many": "{{count}} постів",
+    "community_posts_count_other": "{{count}} постів",
+    "community_latest_resources": "Останні ресурси",
+    "community_resource_1": "Безкоштовний пак 3D моделей",
+    "community_resource_2": "Повний гайд із шейдерів",
+    "community_resource_3": "Електронна книга з геймдизайну",
+    "community_resource_4": "Найкращі практики Unity",
+    "community_cta_title": "Готові перейти на новий рівень?",
+    "community_cta_description": "Приєднуйтеся до тисяч розробників ігор та ентузіастів у нашій активній спільноті.",
+    "community_cta_button": "Створити безкоштовний акаунт"
+  },
+  "posts": {
+    "title": "Пости",
+    "create_post": "Створити пост",
+    "edit_post": "Редагувати пост",
+    "delete_post": "Видалити пост",
+    "view_details": "Переглянути деталі",
+    "no_posts": "Постів не знайдено",
+    "loading": "Завантаження постів...",
+    "like": "Подобається",
+    "unlike": "Не подобається",
+    "comments": "Коментарі",
+    "share": "Поділитися",
+    "add_comment": "Додати коментар",
+    "comment_placeholder": "Напишіть ваш коментар...",
+    "reply": "Відповісти",
+    "edit": "Редагувати",
+    "delete": "Видалити",
+    "views_one": "{{count}} перегляд",
+    "views_few": "{{count}} перегляди",
+    "views_many": "{{count}} переглядів",
+    "views_other": "{{count}} переглядів"
+  },
+  "categories": {
+    "title": "Категорії",
+    "all_categories": "Всі категорії",
+    "select_category": "Виберіть категорію",
+    "no_categories": "Категорій не знайдено",
+    "posts_count_one": "{{count}} пост",
+    "posts_count_few": "{{count}} пости",
+    "posts_count_many": "{{count}} постів",
+    "posts_count_other": "{{count}} постів"
+  },
+  "profile": {
+    "title": "Мій профіль",
+    "my_posts": "Мої пости",
+    "followers": "Підписники",
+    "following": "Підписки",
+    "bio": "Біографія",
+    "edit_profile": "Редагувати профіль",
+    "my_achievements": "Мої досягнення",
+    "reputation": "Репутація",
+    "joined": "Приєднався",
+    "follow": "Підписатися",
+    "unfollow": "Відписатися",
+    "avatar_alt": "Аватар користувача",
+    "remove_avatar": "Видалити аватар",
+    "avatar_hint": "Підтримуються: JPG, PNG, GIF, WEBP (до 5 MB)",
+    "game_engines_label": "Ігрові рушії:",
+    "stats": {
+      "rating_label": "Рейтинг",
+      "rating_value": "+{{value}}",
+      "achievements_label": "Досягнення",
+      "achievements_value_one": "{{count}} відзначено",
+      "achievements_value_few": "{{count}} відзначено",
+      "achievements_value_many": "{{count}} відзначено",
+      "achievements_value_other": "{{count}} відзначено"
+    },
+    "sections": {
+      "posts": {
+        "list_title_one": "Мої пости ({{count}})",
+        "list_title_few": "Мої пости ({{count}})",
+        "list_title_many": "Мої пости ({{count}})",
+        "list_title_other": "Мої пости ({{count}})",
+        "empty": "Ви ще не створили жодного поста.",
+        "closed_tooltip": "Цей пост закрито",
+        "status": {
+          "active": "Активний",
+          "inactive": "Чернетка",
+          "closed": "Закритий"
+        }
+      },
+      "achievements": {
+        "title": "Досягнення",
+        "points": "+{{points}} балів",
+        "empty": "Наразі немає доступних досягнень."
+      },
+      "settings": {
+        "title": "Налаштування безпеки",
+        "change_password": {
+          "title": "Змінити пароль",
+          "current": "Поточний пароль",
+          "new": "Новий пароль",
+          "confirm": "Підтвердження пароля",
+          "submit": "Оновити пароль"
+        },
+        "danger_zone": {
+          "title": "Небезпечна зона",
+          "description": "Після видалення акаунта повернути його буде неможливо. Будьте певні у своєму рішенні.",
+          "delete_button": "Видалити акаунт"
+        }
+      }
+    },
+    "delete_modal": {
+      "title": "Видалити акаунт",
+      "description": "Цю дію не можна скасувати. Це назавжди видалить ваш акаунт та всі дані.",
+      "password_label": "Введіть пароль для підтвердження",
+      "password_placeholder": "Введіть пароль",
+      "delete_button": "Видалити акаунт"
+    },
+    "edit_modal": {
+      "title": "Редагувати профіль",
+      "username": "Ім'я користувача",
+      "full_name": "Повне ім'я",
+      "email": "Email",
+      "bio": "Біо",
+      "toolbar": {
+        "bold": "Жирний",
+        "italic": "Курсив",
+        "inline_code": "Вбудований код",
+        "code_block": "Блок коду",
+        "link": "Вставити посилання",
+        "heading": "Заголовок",
+        "list": "Список",
+        "color": "Кольоровий текст",
+        "background": "Підсвічений фон",
+        "mark": "Позначити текст",
+        "emoji": "Емодзі"
+      },
+      "bio_placeholder": "Розкажіть про себе... Підтримується Markdown!",
+      "bio_hint": "Підтримується Markdown. Спробуйте **жирний**, *курсив*, `код`, [color=#ff6b6b]колір[/color] або [bg=yellow]фон[/bg].",
+      "website": "Вебсайт",
+      "website_placeholder": "https://yourwebsite.com",
+      "twitter": "Twitter",
+      "twitter_placeholder": "@username",
+      "github": "GitHub",
+      "github_placeholder": "username",
+      "linkedin": "LinkedIn",
+      "linkedin_placeholder": "username",
+      "itch": "Itch.io",
+      "itch_placeholder": "username або URL",
+      "gamebanana": "GameBanana",
+      "gamebanana_placeholder": "username або URL",
+      "gamejolt": "GameJolt",
+      "gamejolt_placeholder": "username або URL",
+      "twitch": "Twitch",
+      "twitch_placeholder": "username або URL",
+      "engines": "Ігрові рушії"
+    },
+    "notifications": {
+      "avatar_format_error": "Підтримуються тільки формати JPG, PNG, GIF або WEBP.",
+      "avatar_size_error": "Файл занадто великий. Максимальний розмір 5 MB.",
+      "avatar_upload_error": "Не вдалося завантажити аватар.",
+      "profile_update_success": "Профіль успішно оновлено!",
+      "profile_update_error": "Не вдалося оновити профіль.",
+      "password_mismatch": "Паролі не збігаються!",
+      "avatar_delete_error": "Не вдалося видалити аватар.",
+      "delete_password_required": "Введіть пароль для підтвердження."
+    },
+    "engine_modal": {
+      "description_title": "Опис",
+      "audience_title": "Для кого",
+      "languages_title": "Мови програмування"
+    },
+    "engines": {
+      "unreal_engine": {
+        "description": "Потужний AAA-рушій від Epic Games.",
+        "audience": "Підходить для створення високоякісних 3D ігор та VR/AR проєктів.",
+        "languages": "C++, Blueprints"
+      },
+      "unity": {
+        "description": "Найпопулярніший кросплатформений рушій.",
+        "audience": "Для мобільних, інді та AA ігор.",
+        "languages": "C#"
+      },
+      "godot": {
+        "description": "Безкоштовний open-source рушій.",
+        "audience": "Для інді-розробників 2D та 3D ігор.",
+        "languages": "GDScript, C#, C++"
+      },
+      "renpy": {
+        "description": "Спеціалізований рушій для візуальних новел.",
+        "audience": "Для інтерактивних історій та візуальних новел.",
+        "languages": "Python, Ren'Py Script"
+      },
+      "gamemaker": {
+        "description": "Зручний рушій для 2D ігор.",
+        "audience": "Для початківців та інді 2D-проєктів.",
+        "languages": "GML (GameMaker Language)"
+      },
+      "cryengine": {
+        "description": "Високоякісний рушій з реалістичною графікою.",
+        "audience": "Для AAA-проєктів з акцентом на графіку.",
+        "languages": "C++, Lua"
+      },
+      "custom_engines": {
+        "description": "Власні рушії на базі OpenGL/Vulkan.",
+        "audience": "Для досвідчених програмістів, яким потрібен повний контроль.",
+        "languages": "C++, OpenGL, Vulkan"
+      }
+    }
+  },
+  "settings": {
+    "title": "Налаштування",
+    "account": "Акаунт",
+    "privacy": "Приватність",
+    "notifications": "Сповіщення",
+    "language": "Мова",
+    "theme": "Тема",
+    "change_password": "Змінити пароль",
+    "delete_account": "Видалити акаунт",
+    "save_changes": "Зберегти зміни",
+    "select_language": "Виберіть мову",
+    "current_language": "Поточна мова",
+    "dark_mode": "Темна тема",
+    "light_mode": "Світла тема"
+  },
+  "auth": {
+    "login_title": "Вхід",
+    "register_title": "Реєстрація",
+    "email": "Email",
+    "password": "Пароль",
+    "confirm_password": "Підтвердіть пароль",
+    "username": "Ім'я користувача",
+    "login_button": "Вхід",
+    "register_button": "Реєстрація",
+    "forgot_password": "Забули пароль?",
+    "no_account": "Ще не маєте акаунту?",
+    "have_account": "Уже маєте акаунт?",
+    "login_success": "Ви успішно увійшли",
+    "register_success": "Реєстрація успішна",
+    "login_error": "Помилка входу. Перевірте ваші облікові дані",
+    "register_error": "Помилка при реєстрації"
+  },
+  "about": {
+    "title": "Про нас",
+    "page_title": "Про TheDevNexus",
+    "page_subtitle": "Український форум для розробників ігор та модів",
+    "page_description": "TheDevNexus - це спільнота створена для українських розробників відеоігор та модифікацій. Ми об'єднуємо професіоналів і любителів, які працюють з популярними ігровими рушіями або створюють власні технології.",
+    "mission": "Наша місія",
+    "mission_text": "Створити найбільшу українськомовну платформу для обміну знаннями, досвідом та ідеями в галузі розробки відеоігор. Ми прагнемо підтримувати та розвивати українську gamedev спільноту, надаючи простір для навчання, співпраці та професійного зростання.",
+    "who_is_for": "Для кого цей форум?",
+    "game_developers": "Розробники ігор",
+    "game_developers_desc": "Програмісти, дизайнери, художники та інші спеціалісти, які працюють над створенням відеоігор",
+    "modders": "Модери",
+    "modders_desc": "Ентузіасти, які створюють модифікації для своїх улюблених ігор та розширюють їхні можливості",
+    "engine_engineers": "Інженери двигунів",
+    "engine_engineers_desc": "Геймери, які пишуть власні ігрові рушії з нуля або використовуючи OpenGL/Vulkan",
+    "beginners": "Новачки",
+    "beginners_desc": "Ті, хто тільки починає свою подорож у gamedev і шукає поради та підтримку",
+    "supported_technologies": "Підтримувані технології",
+    "supported_technologies_desc": "Наш форум охоплює широкий спектр ігрових рушіїв та технологій",
+    "what_we_offer": "Що ми пропонуємо?",
+    "ukrainian_community": "Українська спільнота",
+    "ukrainian_community_desc": "Форум створений для української аудиторії розробників ігор та модів",
+    "for_all_levels": "Для всіх рівнів",
+    "for_all_levels_desc": "Від новачків до професіоналів - кожен знайде щось цікаве",
+    "knowledge_base": "База знань",
+    "knowledge_base_desc": "Підручники, гайди та розв'язання поширених проблем від спільноти",
+    "active_discussions": "Активні обговорення",
+    "active_discussions_desc": "Дискусії про технології, практики та тренди в розробці ігор",
+    "quick_help": "Швидка допомога",
+    "quick_help_desc": "Отримуйте відповіді на ваші питання від досвідчених розробників",
+    "open_source": "Відкрите програмне забезпечення",
+    "open_source_desc": "Ми підтримуємо культуру відкритого коду та спільної розробки",
+    "active_users": "Активних користувачів",
+    "discussions": "Обговорень",
+    "game_engines": "Ігрові рушії",
+    "ukrainian_language": "Українська мова",
+    "join_community": "Приєднайтеся до спільноти!",
+    "join_community_desc": "Станьте частиною української gamedev спільноти. Ділітеся своїм досвідом, вчіться від найкращих і разом створюйте чудові ігри!",
+    "sign_up": "Реєстрація",
+    "view_posts": "Переглянути пости"
+  },
+  "admin": {
+    "title": "Адмін-панель",
+    "dashboard": "Панель управління",
+    "users": "Користувачі",
+    "posts": "Пости",
+    "reports": "Скарги",
+    "categories": "Категорії",
+    "statistics": "Статистика",
+    "manage_users": "Керування користувачами",
+    "manage_posts": "Керування постами",
+    "manage_reports": "Керування скаргами",
+    "total_users": "Всього користувачів",
+    "total_posts": "Всього постів",
+    "total_comments": "Всього коментарів",
+    "pending_reports": "Невирішені скарги"
+  },
+  "common": {
+    "save": "Зберегти",
+    "cancel": "Скасувати",
+    "delete": "Видалити",
+    "edit": "Редагувати",
+    "close": "Закрити",
+    "loading": "Завантаження...",
+    "error": "Помилка",
+    "success": "Успіх",
+    "warning": "Попередження",
+    "yes": "Так",
+    "no": "Ні",
+    "confirm": "Підтвердити",
+    "submit": "Надіслати",
+    "back": "Назад",
+    "next": "Далі",
+    "anonymous": "Анонім",
+    "time": {
+      "just_now": "щойно",
+      "minutes_ago_one": "{{count}} хвилину тому",
+      "minutes_ago_few": "{{count}} хвилини тому",
+      "minutes_ago_many": "{{count}} хвилин тому",
+      "minutes_ago_other": "{{count}} хвилин тому",
+      "hours_ago_one": "{{count}} годину тому",
+      "hours_ago_few": "{{count}} години тому",
+      "hours_ago_many": "{{count}} годин тому",
+      "hours_ago_other": "{{count}} годин тому",
+      "yesterday": "вчора",
+      "days_ago_one": "{{count}} день тому",
+      "days_ago_few": "{{count}} дні тому",
+      "days_ago_many": "{{count}} днів тому",
+      "days_ago_other": "{{count}} днів тому",
+      "weeks_ago_one": "{{count}} тиждень тому",
+      "weeks_ago_few": "{{count}} тижні тому",
+      "weeks_ago_many": "{{count}} тижнів тому",
+      "weeks_ago_other": "{{count}} тижнів тому",
+      "months_ago_one": "{{count}} місяць тому",
+      "months_ago_few": "{{count}} місяці тому",
+      "months_ago_many": "{{count}} місяців тому",
+      "months_ago_other": "{{count}} місяців тому",
+      "years_ago_one": "{{count}} рік тому",
+      "years_ago_few": "{{count}} роки тому",
+      "years_ago_many": "{{count}} років тому",
+      "years_ago_other": "{{count}} років тому"
+    }
+  },
+  "engines": {
+    "unreal_engine": "Unreal Engine",
+    "godot": "Godot",
+    "unity": "Unity",
+    "gdevelop": "GDevelop",
+    "pygame": "Pygame",
+    "phaser": "Phaser",
+    "other": "Інший"
+  },
+  "posts_page": {
+    "title": "Форумні пости",
+    "subtitle": "Досліджуйте обговорення та діліться своїми знаннями",
+    "search_placeholder": "Пошук постів...",
+    "filter_latest": "Найновіші",
+    "filter_popular": "Найпопулярніші",
+    "sidebar_title": "Категорії",
+    "sidebar_all_posts": "Усі пости",
+    "no_posts_title": "Пости не знайдено",
+    "no_posts_description": "Станьте першим, хто розпочне обговорення!",
+    "read_more": "Читати далі",
+    "report_tooltip": "Поскаржитися на пост",
+    "report_success": "Дякуємо! Ваш звіт успішно надіслано.",
+    "login_to_report": "Будь ласка, увійдіть, щоб поскаржитися на контент.",
+    "closed_tooltip": "Цей пост закрито"
+  },
+  "footer": {
+    "description": "Найкраще місце для розробників ігор та техентузіастів, щоб спілкуватися, навчатися та створювати.",
+    "quick_links": "Швидкі посилання",
+    "link_forums": "Форум",
+    "categories": "Категорії",
+    "category_gamedev": "Геймдев",
+    "category_programming": "Програмування",
+    "category_design": "Арт & Дизайн",
+    "category_career": "Карʼєра",
+    "connect": "Ми в соціальних мережах",
+    "twitter": "Twitter",
+    "github": "GitHub",
+    "youtube": "YouTube",
+    "discord": "Discord",
+    "copyright": "© {{year}} TheDevNexus. Усі права захищено."
+  },
+  "saved_posts": {
+    "confirm_unsave": "Прибрати цей пост зі збережених?",
+    "error_unsave": "Не вдалося видалити пост зі збережених",
+    "title": "Збережені пости",
+    "subtitle_one": "Ваша колекція збережених постів ({{count}})",
+    "subtitle_few": "Ваша колекція збережених постів ({{count}})",
+    "subtitle_many": "Ваша колекція збережених постів ({{count}})",
+    "subtitle_other": "Ваша колекція збережених постів ({{count}})",
+    "empty_title": "Немає збережених постів",
+    "empty_description_line1": "Зберігайте цікаві пости, щоб повернутися до них пізніше.",
+    "empty_description_line2": "Натисніть на іконку закладки під постом, щоб додати його в збережені.",
+    "browse_posts_button": "Переглянути пости",
+    "remove_tooltip": "Прибрати зі збережених",
+    "saved_label": "Збережено {{time}}"
+  },
+  "admin_dashboard": {
+    "access_denied_title": "Доступ заборонений",
+    "access_denied_description": "Тільки адміністратори можуть заходити на цю сторінку.",
+    "sidebar": {
+      "comments": "Коментарі"
+    },
+    "stats": {
+      "users": "Користувачі",
+      "posts": "Пости",
+      "comments": "Коментарі",
+      "categories": "Категорії"
+    },
+    "users": {
+      "search_placeholder": "Пошук користувачів...",
+      "table": {
+        "login": "Логін",
+        "name": "Ім'я",
+        "role": "Роль",
+        "actions": "Дії"
+      }
+    },
+    "posts": {
+      "search_placeholder": "Пошук постів...",
+      "table": {
+        "title": "Заголовок",
+        "author": "Автор",
+        "date": "Дата",
+        "likes": "Лайки",
+        "comments": "Коментарі",
+        "actions": "Дії"
+      }
+    },
+    "comments": {
+      "title": "Управління коментарями",
+      "description": "Коментарі керуються через адмін-сторінку постів."
+    },
+    "categories": {
+      "title": "Управління категоріями",
+      "empty": "Категорії не знайдені"
+    },
+    "reports": {
+      "table": {
+        "type": "Тип",
+        "target": "Об'єкт",
+        "reason": "Причина",
+        "status": "Статус",
+        "action": "Дія"
+      },
+      "view_button": "Переглянути",
+      "empty": "Репортів не знайдено"
+    },
+    "report_reasons": {
+      "spam": "Спам",
+      "harassment": "Агресія/Переслідування",
+      "inappropriate": "Неналежний контент",
+      "misinformation": "Дезінформація",
+      "copyright": "Порушення авторських прав"
+    },
+    "report_types": {
+      "post": "Пост",
+      "comment": "Коментар",
+      "user": "Користувач"
+    },
+    "report_status": {
+      "pending": "Очікує",
+      "resolved": "Розв'язано",
+      "rejected": "Відхилено"
+    },
+    "confirm_delete_user": "Видалити користувача?",
+    "confirm_delete_post": "Видалити пост?",
+    "confirm_delete_comment": "Видалити коментар?",
+    "confirm_report_status": "Ви впевнені? Статус буде змінено на \"{{status}}\".",
+    "notifications": {
+      "report_status_updated": "Статус репорту успішно оновлено!",
+      "report_status_error": "Помилка при оновленні статусу репорту.",
+      "user_update_error": "Не вдалося оновити користувача."
+    },
+    "settings": {
+      "title": "Системні налаштування",
+      "general": {
+        "title": "Загальні налаштування",
+        "version": "Версія: {{version}}",
+        "status": "Статус: 🟢 Активний"
+      },
+      "database": {
+        "title": "База даних",
+        "type": "Тип: {{type}}",
+        "status": "Статус: 🟢 Підключено"
+      }
+    },
+    "edit_user": {
+      "title": "Редагувати користувача",
+      "fields": {
+        "login": "Логін",
+        "full_name": "Повне ім'я",
+        "role": "Роль"
+      }
+    },
+    "roles": {
+      "user": "Користувач",
+      "admin": "Адміністратор"
+    },
+    "report_modal": {
+      "title": "Деталі репорту #{{id}}",
+      "object_type": "Тип об'єкта:",
+      "object_id": "ID об'єкта:",
+      "reason": "Причина:",
+      "description": "Опис:",
+      "no_description": "Без опису",
+      "submitted_at": "Поданий:",
+      "status": "Статус:",
+      "resolve_button": "Розв'язати",
+      "reject_button": "Відхилити"
+    }
+  },
+  "post_form": {
+    "create": {
+      "title": "Створити новий пост"
+    },
+    "edit": {
+      "title": "Редагувати пост"
+    },
+    "fields": {
+      "title_label": "Назва поста",
+      "title_placeholder": "Введіть назву вашого поста...",
+      "content_placeholder": "Напишіть ваш пост тут... Підтримується Markdown!"
+    },
+    "tabs": {
+      "write": "Написати",
+      "preview": "Попередній перегляд"
+    },
+    "toolbar": {
+      "bold": "Жирний",
+      "italic": "Курсив",
+      "inline_code": "Вбудований код",
+      "code_block": "Блок коду",
+      "link": "Посилання",
+      "heading": "Заголовок",
+      "list": "Список",
+      "emoji": "Емодзі"
+    },
+    "preview": {
+      "empty": "Нічого для попереднього перегляду..."
+    },
+    "categories": {
+      "label": "Категорії"
+    },
+    "status": {
+      "label": "Статус",
+      "publish_now": "Опублікувати зараз",
+      "save_draft": "Зберегти як чернетку"
+    },
+    "buttons": {
+      "publish": "Опублікувати",
+      "publishing": "Публікація...",
+      "update": "Зберегти зміни",
+      "saving": "Збереження..."
+    },
+    "validation": {
+      "title_required": "Будь ласка, введіть назву поста",
+      "content_required": "Будь ласка, введіть вміст поста",
+      "categories_required": "Будь ласка, виберіть хоча б одну категорію",
+      "blueprint_title_required": "Введіть назву blueprint"
+    },
+    "notifications": {
+      "post_created": "Пост успішно створено!",
+      "post_updated": "Пост успішно оновлено!",
+      "blueprint_created": "Blueprint успішно збережено!"
+    },
+    "errors": {
+      "post_create": "Не вдалося створити пост",
+      "post_update": "Не вдалося оновити пост",
+      "blueprint_create": "Не вдалося створити blueprint"
+    },
+    "blueprints": {
+      "section_title": "📘 Blueprints (Unreal Engine)",
+      "search_placeholder": "Пошук blueprint'ів (наприклад: AI, Movement, Inventory)...",
+      "loading": "Пошук...",
+      "create_button_title": "Створити новий blueprint",
+      "create_title": "Створити новий blueprint",
+      "name_placeholder": "Назва blueprint",
+      "author_placeholder": "Автор (опційно)",
+      "url_placeholder": "Посилання на blueprint (опційно)",
+      "creating": "Створення...",
+      "create_action": "Створити",
+      "add_button": "Додати",
+      "selected_label": "Вибрані Blueprints:",
+      "by_author": "від {{author}}",
+      "unknown_author": "Невідомий автор"
+    }
+  },
+  "settings_page": {
+    "subtitle": "Керуйте налаштуваннями акаунта та вподобаннями",
+    "sidebar": {
+      "account": "Акаунт",
+      "privacy": "Приватність та безпека",
+      "notifications": "Сповіщення",
+      "appearance": "Вигляд",
+      "content": "Контент"
+    },
+    "account": {
+      "title": "Налаштування акаунта",
+      "email_preferences": {
+        "title": "Налаштування електронної пошти",
+        "email_notifications": {
+          "title": "Email-сповіщення",
+          "description": "Отримуйте email-сповіщення про вашу активність"
+        }
+      },
+      "info": {
+        "title": "Інформація про акаунт",
+        "username": "Логін",
+        "member_since": "З нами від",
+        "account_type": "Тип акаунта"
+      }
+    },
+    "privacy": {
+      "title": "Приватність та безпека",
+      "profile_visibility": {
+        "title": "Видимість профілю",
+        "setting_title": "Хто може бачити ваш профіль",
+        "setting_description": "Керуйте тим, хто може переглядати інформацію вашого профілю",
+        "options": {
+          "public": "Публічно",
+          "members": "Лише учасники",
+          "private": "Приватно"
+        }
+      },
+      "show_email": {
+        "title": "Показувати email у профілі",
+        "description": "Відображати адресу електронної пошти у публічному профілі"
+      },
+      "online_status": {
+        "title": "Статус онлайн",
+        "description": "Показувати іншим, коли ви онлайн"
+      }
+    },
+    "notifications": {
+      "title": "Налаштування сповіщень",
+      "channels": {
+        "title": "Канали сповіщень",
+        "email": {
+          "title": "Email-сповіщення",
+          "description": "Отримуйте важливі оновлення на email"
+        },
+        "browser": {
+          "title": "Браузерні сповіщення",
+          "description": "Отримуйте push-сповіщення у браузері"
+        }
+      }
+    },
+    "appearance": {
+      "title": "Вигляд",
+      "display": {
+        "title": "Налаштування відображення",
+        "theme": {
+          "title": "Тема",
+          "description": "Оберіть бажану кольорову схему",
+          "options": {
+            "dark": "Темна",
+            "light": "Світла",
+            "auto": "Авто"
+          }
+        },
+        "font_size": {
+          "title": "Розмір шрифту",
+          "description": "Налаштуйте розмір тексту для кращої читабельності",
+          "options": {
+            "small": "Малий",
+            "medium": "Середній",
+            "large": "Великий"
+          }
+        }
+      },
+      "language": {
+        "title": "Мова",
+        "description": "Виберіть бажану мову",
+        "options": {
+          "uk": {
+            "tooltip": "Українська",
+            "label": "Українська"
+          },
+          "en": {
+            "tooltip": "Англійська",
+            "label": "Англійська"
+          },
+          "de": {
+            "tooltip": "Німецька",
+            "label": "Німецька"
+          }
+        }
+      }
+    },
+    "content": {
+      "title": "Налаштування контенту",
+      "feed": {
+        "title": "Налаштування стрічки",
+        "posts_per_page": {
+          "title": "Кількість постів на сторінці",
+          "description": "Скільки постів відображати на сторінці",
+          "options": {
+            "ten": "10 постів",
+            "twenty_five": "25 постів",
+            "fifty": "50 постів"
+          }
+        },
+        "default_sort": {
+          "title": "Тип сортування за замовчуванням",
+          "description": "Як сортувати пости за замовчуванням",
+          "options": {
+            "latest": "Останні",
+            "popular": "Найпопулярніші",
+            "trending": "У тренді"
+          }
+        },
+        "show_nsfw": {
+          "title": "Показувати NSFW контент",
+          "description": "Відображати контент з позначкою 18+"
+        }
+      }
+    },
+    "actions": {
+      "saved": "Налаштування збережено!",
+      "save": "Зберегти зміни"
+    }
+  },
+  "auth_page": {
+    "common": {
+      "or": "АБО"
+    },
+    "login": {
+      "title": "Вхід",
+      "subtitle": "Увійдіть до Nexus",
+      "username_label": "Логін або email",
+      "username_placeholder": "Введіть свій логін",
+      "password_label": "Пароль",
+      "password_placeholder": "Введіть свій пароль",
+      "forgot_password": "Забули пароль?",
+      "loading": "Завантаження...",
+      "submit": "Увійти",
+      "create_account": "Створити акаунт",
+      "footer_text": "Новачок у TheDevNexus?",
+      "footer_link": "Приєднуйтесь зараз!",
+      "verified_success": "Email підтверджено! Тепер ви можете увійти.",
+      "reset_success": "Пароль оновлено! Увійдіть із новими даними."
+    },
+    "register": {
+      "title": "Реєстрація",
+      "subtitle": "Приєднайтесь до Nexus",
+      "username_label": "Логін",
+      "username_placeholder": "Оберіть свій логін",
+      "full_name_label": "Повне ім'я",
+      "full_name_placeholder": "Введіть ваше ім'я",
+      "email_label": "Email",
+      "email_placeholder": "Введіть ваш email",
+      "password_label": "Пароль",
+      "password_placeholder": "Створіть пароль",
+      "confirm_password_label": "Підтвердіть пароль",
+      "confirm_password_placeholder": "Підтвердіть ваш пароль",
+      "password_mismatch": "Паролі не співпадають!",
+      "loading": "Створюємо...",
+      "submit": "Створити акаунт",
+      "login_button": "Увійти",
+      "footer_text": "Вже маєте акаунт?",
+      "footer_link": "Увійдіть тут!"
+    },
+    "forgot_password": {
+      "title": "Забули пароль?",
+      "subtitle": "Не хвилюйтесь, ми вам допоможемо",
+      "email_label": "Email адреса",
+      "email_placeholder": "Введіть ваш email",
+      "description": "Введіть email адресу, пов'язану з вашим акаунтом, і ми надішлемо вам інструкції для відновлення пароля.",
+      "loading": "Відправляємо...",
+      "submit": "Надіслати посилання",
+      "success_message": "Перевірте ваш email для інструкцій щодо відновлення пароля!",
+      "back_to_login": "Повернутися до входу",
+      "footer_text": "Пам'ятаєте свій пароль?",
+      "footer_link": "Увійдіть тут!"
+    },
+    "reset_password": {
+      "title": "Відновити пароль",
+      "subtitle": "Створіть новий пароль для вашого акаунту",
+      "password_label": "Новий пароль",
+      "password_placeholder": "Введіть новий пароль",
+      "confirm_password_label": "Підтвердіть пароль",
+      "confirm_password_placeholder": "Підтвердіть новий пароль",
+      "password_requirements": "Пароль повинен містити не менше 8 символів",
+      "password_mismatch": "Паролі не співпадають!",
+      "loading": "Відновлюємо...",
+      "submit": "Відновити пароль",
+      "success_message": "Пароль успішно змінено! Тепер ви можете увійти з новим паролем.",
+      "invalid_token": "Це посилання для відновлення невалідне або минув його термін дії.",
+      "error_message": "Сталася помилка. Спробуйте ще раз.",
+      "back_to_login": "Повернутися до входу",
+      "resend_link": "Надіслати нове посилання",
+      "redirecting": "Переадресація на сторінку входу..."
+    }
+  }
+}

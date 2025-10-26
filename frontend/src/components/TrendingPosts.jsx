@@ -1,12 +1,14 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { FiMessageSquare, FiHeart, FiClock, FiChevronRight } from 'react-icons/fi';
 
 export default function TrendingPosts() 
 {
     const { posts, loading } = useSelector(state => state.posts);
+    const { t } = useTranslation();
     
-    if(loading) return <div className="loading-spinner">Loading posts...</div>;
+    if(loading) return <div className="loading-spinner">{t('common.loading')}</div>;
     
     const display_posts = posts.slice(0, 6);
     
@@ -15,10 +17,10 @@ export default function TrendingPosts()
             <div className = "container">
                 <div className = "section-header">
                     <h2 className = "section-title">
-                        <span className = "gradient-text">Trending Topics</span>
+                        <span className = "gradient-text">{t('home.trending')}</span>
                     </h2>
                     <a href = "/posts" className = "view-all-link">
-                        View all <FiChevronRight />
+                        {t('home.view_all')} <FiChevronRight />
                     </a>
                 </div>
 
@@ -45,7 +47,9 @@ export default function TrendingPosts()
                                         </div>
                                         <div className = "author-info">
                                             <h3 className = "post-title">{post.title}</h3>
-                                            <p className = "author-name">by {post.author_name || 'Anonymous'}</p>
+                                            <p className = "author-name">
+                                                {t('home.by_author', { author: post.author_name || t('common.anonymous') })}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -55,22 +59,22 @@ export default function TrendingPosts()
                                 <div className = "post-meta">
                                     <div className = "meta-item">
                                         <FiMessageSquare />
-                                        <span>{post.comments_count || 0} comments</span>
+                                        <span>{t('home.trending_comments', { count: post.comments_count || 0 })}</span>
                                     </div>
                                     <div className = "meta-item">
                                         <FiHeart />
-                                        <span>{post.likes || 0} likes</span>
+                                        <span>{t('home.trending_likes', { count: post.likes || 0 })}</span>
                                     </div>
                                     <div className = "meta-item">
                                         <FiClock />
-                                        <span>2h ago</span>
+                                        <span>{t('home.trending_recent_time')}</span>
                                     </div>
                                 </div>
                             </div>
                         ))
                     ) : (
                         <div className = "no-posts">
-                            <p>No posts available yet. Be the first to create one!</p>
+                            <p>{t('home.trending_empty')}</p>
                         </div>
                     )}
                 </div>

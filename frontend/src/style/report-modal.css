@@ -1,4 +1,4 @@
-.report-modal-overlay 
+.report-modal-overlay
 {
     position: fixed;
     top: 0;
@@ -12,7 +12,7 @@
     z-index: 1000;
 }
 
-.report-modal 
+.report-modal
 {
     background: white;
     border-radius: 8px;
@@ -23,7 +23,7 @@
     overflow-y: auto;
 }
 
-.report-modal-header 
+.report-modal-header
 {
     display: flex;
     justify-content: space-between;
@@ -32,7 +32,7 @@
     border-bottom: 1px solid #e5e7eb;
 }
 
-.report-modal-header h2 
+.report-modal-header h2
 {
     margin: 0;
     font-size: 20px;
@@ -40,7 +40,7 @@
     color: #111827;
 }
 
-.report-modal-close 
+.report-modal-close
 {
     background: none;
     border: none;
@@ -57,7 +57,7 @@
 
 .report-modal-body { padding: 20px; }
 
-.report-info 
+.report-info
 {
     display: flex;
     gap: 12px;
@@ -68,21 +68,21 @@
     margin-bottom: 20px;
 }
 
-.report-info svg 
+.report-info svg
 {
     color: #f59e0b;
     flex-shrink: 0;
     margin-top: 2px;
 }
 
-.report-target-type 
+.report-target-type
 {
     margin: 0 0 4px 0;
     font-size: 14px;
     color: #6b7280;
 }
 
-.report-target-title 
+.report-target-title
 {
     margin: 0;
     font-size: 14px;
@@ -93,7 +93,7 @@
 
 .form-group { margin-bottom: 20px; }
 
-.form-group label 
+.form-group label
 {
     display: block;
     margin-bottom: 8px;
@@ -102,7 +102,7 @@
     color: #111827;
 }
 
-.reason-select 
+.reason-select
 {
     width: 100%;
     padding: 10px 12px;
@@ -116,27 +116,27 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-.reason-select:focus 
+.reason-select:focus
 {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.reason-select:disabled 
+.reason-select:disabled
 {
     background-color: #f3f4f6;
     cursor: not-allowed;
 }
 
-.reason-select option 
+.reason-select option
 {
     padding: 8px;
     background-color: white;
     color: #111827;
 }
 
-.form-group textarea 
+.form-group textarea
 {
     width: 100%;
     padding: 10px 12px;
@@ -148,20 +148,20 @@
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.form-group textarea:focus 
+.form-group textarea:focus
 {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.form-group textarea:disabled 
+.form-group textarea:disabled
 {
     background-color: #f3f4f6;
     cursor: not-allowed;
 }
 
-.textarea-counter 
+.textarea-counter
 {
     display: flex;
     justify-content: flex-end;
@@ -170,7 +170,7 @@
     color: #6b7280;
 }
 
-.report-error 
+.report-error
 {
     padding: 10px 12px;
     background: #fee2e2;
@@ -181,14 +181,14 @@
     margin-bottom: 16px;
 }
 
-.report-modal-actions 
+.report-modal-actions
 {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
 }
 
-.btn 
+.btn
 {
     padding: 10px 16px;
     border: none;
@@ -199,25 +199,25 @@
     transition: all 0.2s;
 }
 
-.btn:disabled 
+.btn:disabled
 {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.btn-primary 
+.btn-primary
 {
     background: #3b82f6;
     color: white;
 }
 
-.btn-primary:hover:not(:disabled) 
+.btn-primary:hover:not(:disabled)
 {
     background: #2563eb;
     box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
 }
 
-.btn-secondary 
+.btn-secondary
 {
     background: #e5e7eb;
     color: #111827;
@@ -225,10 +225,9 @@
 
 .btn-secondary:hover:not(:disabled) { background: #d1d5db; }
 
-/* Responsive */
-@media (max-width: 640px) 
+@media (max-width: 640px)
 {
-    .report-modal 
+    .report-modal
     {
         width: 95%;
         max-height: 90vh;

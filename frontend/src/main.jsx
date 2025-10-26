@@ -4,6 +4,7 @@ import { Provider, useDispatch, useSelector } from 'react-redux';
 import App from './App.jsx';
 import './style/styles.css';
 import './style/home.css';
+import './i18n/i18n.js';
 
 import { store } from './redux/store.js';
 import { fetch_current_user } from './redux/slices/authSlice.js';
@@ -22,7 +23,7 @@ function Boot()
 const root = createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>
-        <Provider store={store}>
+        <Provider store = {store}>
             <Boot />
         </Provider>
     </React.StrictMode>

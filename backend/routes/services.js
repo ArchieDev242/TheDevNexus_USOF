@@ -9,11 +9,11 @@ router.get('/status', ServicesController.get_services_status);
 // GET /api/services/documentation
 router.get('/documentation', ServicesController.get_documentation);
 
-// code execution endpoints (require authentication)
+// code execution endpoints
 router.post('/code/execute', authenticate, ServicesController.execute_code);
 router.post('/code/highlight', authenticate, ServicesController.highlight_code);
 
-// mail service endpoints (require authentication)  
+// mail service endpoints
 router.post('/mail/test', authenticate, ServicesController.test_mail_service);
 
 module.exports = router;

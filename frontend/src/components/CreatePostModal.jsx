@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import 
 { 
     FiX, 
@@ -32,6 +33,7 @@ const EMOJI_LIST = [
 export default function CreatePostModal({ show, onClose, onPostCreated }) 
 {
     const { user } = useSelector(state => state.auth);
+    const { t } = useTranslation();
     const [active_tab, set_active_tab] = useState('write');
     const [show_emoji_picker, set_show_emoji_picker] = useState(false);
     
@@ -148,7 +150,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
     const handle_create_blueprint = async () => {
         if(!blueprint_form.title.trim())
         {
-            alert('Введіть назву blueprint');
+            alert(t('post_form.validation.blueprint_title_required'));
             return;
         }
 
@@ -176,15 +178,15 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                 // Reset form
                 set_blueprint_form({ title: '', author: '', url: '' });
                 set_show_create_blueprint(false);
-                alert('Blueprint створено! ✅');
+                alert(t('post_form.notifications.blueprint_created'));
             } else 
             {
-                alert(data.error || 'Помилка при створенні blueprint');
+                alert(data.error || t('post_form.errors.blueprint_create'));
             }
         } catch(error)
         {
             console.error('Error creating blueprint:', error);
-            alert('Помилка при створенні blueprint');
+            alert(t('post_form.errors.blueprint_create'));
         } finally 
         {
             set_creating_blueprint(false);
@@ -263,19 +265,19 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
         
         if(!post_data.title.trim()) 
             {
-            alert('Будь ласка, введіть назву поста');
+            alert(t('post_form.validation.title_required'));
             return;
         }
 
         if(!post_data.content.trim()) 
             {
-            alert('Будь ласка, введіть вміст поста');
+            alert(t('post_form.validation.content_required'));
             return;
         }
 
         if(!post_data.categories || post_data.categories.length === 0) 
             {
-            alert('Будь ласка, виберіть хоча б одну категорію');
+            alert(t('post_form.validation.categories_required'));
             return;
         }
 
@@ -317,7 +319,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
 
             if(response.ok && data.status === 'success') 
                 {
-                alert('Пост успішно створено! 🎉');
+                alert(t('post_form.notifications.post_created'));
                 set_post_data({
                     title: '',
                     content: '',
@@ -329,12 +331,12 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                 onClose();
             } else 
                 {
-                alert(data.error || 'Помилка при створенні поста');
+                alert(data.error || t('post_form.errors.post_create'));
             }
         } catch(error) 
         {
             console.error('Error creating post:', error);
-            alert('Помилка при створенні поста');
+            alert(t('post_form.errors.post_create'));
         } finally 
         {
             set_loading(false);
@@ -347,7 +349,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
         <div className = "modal-overlay" onClick = {onClose}>
             <div className = "create-post-modal" onClick = {(e) => e.stopPropagation()}>
                 <div className = "modal-header">
-                    <h2>✨ Створити новий пост</h2>
+                    <h2>✨ {t('post_form.create.title')}</h2>
                     <button className = "close-btn" onClick = {onClose}>
                         <FiX />
                     </button>
@@ -356,13 +358,13 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                 <div className = "modal-body">
                     <form onSubmit = {handle_submit}>
                         <div className = "form-group">
-                            <label htmlFor = "title">Назва поста</label>
+                            <label htmlFor = "title">{t('post_form.fields.title_label')}</label>
                             <input
                                 type = "text"
                                 id = "title"
                                 name = "title"
                                 className = "form-input"
-                                placeholder = "Введіть назву вашого поста..."
+                                placeholder = {t('post_form.fields.title_placeholder')}
                                 value = {post_data.title}
                                 onChange = {handle_input_change}
                                 required
@@ -376,7 +378,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                 onClick = {() => set_active_tab('write')}
                             >
                                 <FiEdit3 />
-                                <span>Write</span>
+                                <span>{t('post_form.tabs.write')}</span>
                             </button>
                             <button
                                 type = "button"
@@ -384,7 +386,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                 onClick = {() => set_active_tab('preview')}
                             >
                                 <FiEye />
-                                <span>Preview</span>
+                                <span>{t('post_form.tabs.preview')}</span>
                             </button>
                         </div>
 
@@ -395,7 +397,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('bold')}
-                                        title = "Bold"
+                                        title = {t('post_form.toolbar.bold')}
                                     >
                                         <strong>B</strong>
                                     </button>
@@ -403,7 +405,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('italic')}
-                                        title="Italic"
+                                        title = {t('post_form.toolbar.italic')}
                                     >
                                         <em>I</em>
                                     </button>
@@ -411,7 +413,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('code')}
-                                        title = "Inline code"
+                                        title = {t('post_form.toolbar.inline_code')}
                                     >
                                         <FiCode />
                                     </button>
@@ -419,7 +421,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('code-block')}
-                                        title = "Code block"
+                                        title = {t('post_form.toolbar.code_block')}
                                     >
                                         <code>{'{ }'}</code>
                                     </button>
@@ -427,7 +429,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('link')}
-                                        title = "Link"
+                                        title = {t('post_form.toolbar.link')}
                                     >
                                         <FiLink />
                                     </button>
@@ -435,7 +437,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('heading')}
-                                        title = "Heading"
+                                        title = {t('post_form.toolbar.heading')}
                                     >
                                         H
                                     </button>
@@ -443,7 +445,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('list')}
-                                        title = "List"
+                                        title = {t('post_form.toolbar.list')}
                                     >
                                         ☰
                                     </button>
@@ -452,7 +454,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                             type = "button"
                                             className = "toolbar-btn"
                                             onClick = {() => set_show_emoji_picker(!show_emoji_picker)}
-                                            title = "Emoji"
+                                            title = {t('post_form.toolbar.emoji')}
                                         >
                                             <FiSmile />
                                         </button>
@@ -476,7 +478,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                 <textarea
                                     name = "content"
                                     className = "form-input post-content-textarea"
-                                    placeholder = "Напишіть ваш пост тут... Підтримується Markdown!"
+                                    placeholder = {t('post_form.fields.content_placeholder')}
                                     value = {post_data.content}
                                     onChange = {handle_input_change}
                                     rows = {15}
@@ -508,7 +510,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                         {post_data.content}
                                     </ReactMarkdown>
                                 ) : (
-                                    <p className = "preview-placeholder">Нічого для попереднього перегляду...</p>
+                                    <p className = "preview-placeholder">{t('post_form.preview.empty')}</p>
                                 )}
                             </div>
                         )}
@@ -516,7 +518,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                         <div className = "form-group">
                             <label>
                                 <FiTag />
-                                <span>Категорії</span>
+                                <span>{t('post_form.categories.label')}</span>
                             </label>
                             <div className = "categories-grid">
                                 {Array.isArray(categories_list) && categories_list.map(category => (
@@ -538,13 +540,13 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                             <div className = "form-group">
                                 <label>
                                     <FiCode />
-                                    <span>📘 Blueprints (Unreal Engine)</span>
+                                    <span>{t('post_form.blueprints.section_title')}</span>
                                 </label>
                                 <div className = "blueprint-search-box">
                                     <input
                                         type = "text"
                                         className = "form-input"
-                                        placeholder = "Пошук Blueprints (наприклад: AI, Movement, Inventory)..."
+                                        placeholder = {t('post_form.blueprints.search_placeholder')}
                                         value = {blueprint_search}
                                         onChange = {(e) => {
                                             set_blueprint_search(e.target.value);
@@ -552,13 +554,13 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                         }}
                                     />
                                     {searching_blueprints && (
-                                        <div className = "blueprint-loading">Пошук...</div>
+                                        <div className = "blueprint-loading">{t('post_form.blueprints.loading')}</div>
                                     )}
                                     <button
                                         type = "button"
                                         className = "btn-create-blueprint"
                                         onClick = {() => set_show_create_blueprint(!show_create_blueprint)}
-                                        title = "Створити новий blueprint"
+                                        title = {t('post_form.blueprints.create_button_title')}
                                     >
                                         <FiPlus />
                                     </button>
@@ -566,25 +568,25 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
 
                                 {show_create_blueprint && (
                                     <div className = "blueprint-create-form">
-                                        <h4>Створити новий Blueprint</h4>
+                                        <h4>{t('post_form.blueprints.create_title')}</h4>
                                         <input
                                             type = "text"
                                             className = "form-input"
-                                            placeholder = "Назва blueprint"
+                                            placeholder = {t('post_form.blueprints.name_placeholder')}
                                             value = {blueprint_form.title}
                                             onChange = {(e) => set_blueprint_form({...blueprint_form, title: e.target.value})}
                                         />
                                         <input
                                             type = "text"
                                             className = "form-input"
-                                            placeholder = "Автор (опційно)"
+                                            placeholder = {t('post_form.blueprints.author_placeholder')}
                                             value = {blueprint_form.author}
                                             onChange = {(e) => set_blueprint_form({...blueprint_form, author: e.target.value})}
                                         />
                                         <input
                                             type = "text"
                                             className = "form-input"
-                                            placeholder = "Посилання на blueprint (опційно)"
+                                            placeholder = {t('post_form.blueprints.url_placeholder')}
                                             value = {blueprint_form.url}
                                             onChange = {(e) => set_blueprint_form({...blueprint_form, url: e.target.value})}
                                         />
@@ -595,7 +597,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                                 onClick = {handle_create_blueprint}
                                                 disabled = {creating_blueprint}
                                             >
-                                                {creating_blueprint ? 'Створення...' : 'Створити'}
+                                                {creating_blueprint ? t('post_form.blueprints.creating') : t('post_form.blueprints.create_action')}
                                             </button>
                                             <button
                                                 type = "button"
@@ -605,7 +607,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                                     set_blueprint_form({title: '', author: '', url: ''});
                                                 }}
                                             >
-                                                Скасувати
+                                                {t('common.cancel')}
                                             </button>
                                         </div>
                                     </div>
@@ -617,14 +619,14 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                             <div key = {blueprint.id} className = "blueprint-result-item">
                                                 <div className = "blueprint-info">
                                                     <div className = "blueprint-name">{blueprint.title}</div>
-                                                    <div className = "blueprint-author">by {blueprint.author || 'Unknown'}</div>
+                                                    <div className = "blueprint-author">{t('post_form.blueprints.by_author', { author: blueprint.author || t('post_form.blueprints.unknown_author') })}</div>
                                                 </div>
                                                 <button
                                                     type = "button"
                                                     className = "btn-add-blueprint"
                                                     onClick = {() => add_blueprint(blueprint)}
                                                 >
-                                                    <FiPlus /> Додати
+                                                    <FiPlus /> {t('post_form.blueprints.add_button')}
                                                 </button>
                                             </div>
                                         ))}
@@ -633,7 +635,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
 
                                 {post_data.blueprints.length > 0 && (
                                     <div className = "blueprints-list">
-                                        <label>Вибрані Blueprints:</label>
+                                        <label>{t('post_form.blueprints.selected_label')}</label>
                                         {post_data.blueprints.map(blueprint => (
                                             <div key = {blueprint.id} className = "blueprint-tag">
                                                 <span>{blueprint.title}</span>
@@ -652,7 +654,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                         )}
 
                         <div className = "form-group">
-                            <label htmlFor = "status">Статус</label>
+                            <label htmlFor = "status">{t('post_form.status.label')}</label>
                             <select
                                 id = "status"
                                 name = "status"
@@ -660,8 +662,8 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                 value = {post_data.status}
                                 onChange = {handle_input_change}
                             >
-                                <option value = "active">Опублікувати зараз</option>
-                                <option value = "inactive">Зберегти як чернетку</option>
+                                <option value = "active">{t('post_form.status.publish_now')}</option>
+                                <option value = "inactive">{t('post_form.status.save_draft')}</option>
                             </select>
                         </div>
 
@@ -672,7 +674,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                 onClick = {onClose}
                                 disabled = {loading}
                             >
-                                Скасувати
+                                {t('common.cancel')}
                             </button>
                             <button 
                                 type = "submit" 
@@ -680,7 +682,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                 disabled = {loading}
                             >
                                 <FiSend />
-                                <span>{loading ? 'Публікація...' : 'Опублікувати'}</span>
+                                <span>{loading ? t('post_form.buttons.publishing') : t('post_form.buttons.publish')}</span>
                             </button>
                         </div>
                     </form>

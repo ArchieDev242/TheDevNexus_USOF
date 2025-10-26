@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import 
 {  
     FiCode, 
@@ -24,10 +25,12 @@ import '../style/about.css';
 
 export default function AboutPage() 
 {
+    const { t } = useTranslation();
+    
     const engines = [
-        { name: 'Unreal Engine', icon: <SiUnrealengine />, description: 'Потужна AAA платформа для 3D ігор' },
-        { name: 'Unity', icon: <SiUnity />, description: 'Популярний кросплатформенний двигун' },
-        { name: 'Godot', icon: <SiGodotengine />, description: 'Безкоштовний open-source двигун' },
+        { name: 'Unreal Engine', icon: <SiUnrealengine />, description: t('engines.unreal_engine') },
+        { name: 'Unity', icon: <SiUnity />, description: t('engines.unity') },
+        { name: 'Godot', icon: <SiGodotengine />, description: t('engines.godot') },
         { name: "Ren'Py", icon: <SiPython />, description: 'Спеціалізований для візуальних новел' },
         { name: 'GameMaker', icon: <FiTarget />, description: '2D ігри для багатьох платформ' },
         { name: 'CryEngine', icon: <FiZap />, description: 'Професійний двигун для AAA проектів' },
@@ -38,33 +41,33 @@ export default function AboutPage()
     const features = [
         {
             icon: <FiUsers />,
-            title: 'Ukrainian Community',
-            description: 'Forum created for Ukrainian audience of game and mod developers'
+            title: t('about.ukrainian_community'),
+            description: t('about.ukrainian_community_desc')
         },
         {
             icon: <FiCode />,
-            title: 'For All Levels',
-            description: 'From beginners to professionals - everyone will find something interesting'
+            title: t('about.for_all_levels'),
+            description: t('about.for_all_levels_desc')
         },
         {
             icon: <FiBook />,
-            title: 'Knowledge Base',
-            description: 'Tutorials, guides and solutions to common problems from the community'
+            title: t('about.knowledge_base'),
+            description: t('about.knowledge_base_desc')
         },
         {
             icon: <FiMessageCircle />,
-            title: 'Active Discussions',
-            description: 'Discussions about technologies, practices and trends in game development'
+            title: t('about.active_discussions'),
+            description: t('about.active_discussions_desc')
         },
         {
             icon: <FiZap />,
-            title: 'Quick Help',
-            description: 'Get answers to your questions from experienced developers'
+            title: t('about.quick_help'),
+            description: t('about.quick_help_desc')
         },
         {
             icon: <FiHeart />,
-            title: 'Open Source',
-            description: 'We support the culture of open source and collaborative development'
+            title: t('about.open_source'),
+            description: t('about.open_source_desc')
         }
     ];
 
@@ -77,16 +80,14 @@ export default function AboutPage()
                     {/* Hero Section */}
                     <section className = "about-hero">
                         <h1 className = "gradient-text">
-                            About TheDevNexus
+                            {t('about.page_title')}
                         </h1>
                         <p className = "hero-subtitle">
-                            Ukrainian Forum for Game and Mod Developers
+                            {t('about.page_subtitle')}
                         </p>
                         <div className = "hero-description">
                             <p>
-                                TheDevNexus is a community created for Ukrainian video game 
-                                and modification developers. We unite professionals and enthusiasts 
-                                who work with popular game engines or create their own technologies.
+                                {t('about.page_description')}
                             </p>
                         </div>
                     </section>
@@ -97,12 +98,9 @@ export default function AboutPage()
                             <div className = "mission-icon">
                                 <FiGlobe size = {48} />
                             </div>
-                            <h2 className = "gradient-text">Our Mission</h2>
+                            <h2 className = "gradient-text">{t('about.mission')}</h2>
                             <p>
-                                To create the largest Ukrainian-language platform for sharing knowledge, 
-                                experience and ideas in the field of video game development. We strive to support 
-                                and develop the Ukrainian gamedev community by providing space for 
-                                learning, collaboration and professional growth.
+                                {t('about.mission_text')}
                             </p>
                         </div>
                     </section>
@@ -110,39 +108,35 @@ export default function AboutPage()
                     {/* Target Audience */}
                     <section className = "about-audience">
                         <h2 className = "section-title">
-                            <span className = "gradient-text">Who Is This Forum For?</span>
+                            <span className = "gradient-text">{t('about.who_is_for')}</span>
                         </h2>
                         <div className = "audience-grid">
                             <div className = "audience-card">
                                 <div className = "audience-icon"><FiMonitor size={48} /></div>
-                                <h3>Game Developers</h3>
+                                <h3>{t('about.game_developers')}</h3>
                                 <p>
-                                    Programmers, designers, artists and other specialists 
-                                    working on creating video games
+                                    {t('about.game_developers_desc')}
                                 </p>
                             </div>
                             <div className = "audience-card">
                                 <div className = "audience-icon"><FiCpu size={48} /></div>
-                                <h3>Modders</h3>
+                                <h3>{t('about.modders')}</h3>
                                 <p>
-                                    Enthusiasts who create modifications for their favorite games 
-                                    and expand their capabilities
+                                    {t('about.modders_desc')}
                                 </p>
                             </div>
                             <div className = "audience-card">
                                 <div className = "audience-icon"><FiBox size={48} /></div>
-                                <h3>Engine Engineers</h3>
+                                <h3>{t('about.engine_engineers')}</h3>
                                 <p>
-                                    Geeks who write their own game engines from scratch 
-                                    or using OpenGL/Vulkan
+                                    {t('about.engine_engineers_desc')}
                                 </p>
                             </div>
                             <div className = "audience-card">
                                 <div className = "audience-icon"><FiBook size={48} /></div>
-                                <h3>Beginners</h3>
+                                <h3>{t('about.beginners')}</h3>
                                 <p>
-                                    Those who are just starting their journey in gamedev and looking for 
-                                    advice and support
+                                    {t('about.beginners_desc')}
                                 </p>
                             </div>
                         </div>
@@ -151,10 +145,10 @@ export default function AboutPage()
                     {/* Supported Engines */}
                     <section className = "about-engines">
                         <h2 className = "section-title">
-                            <span className = "gradient-text">Supported Technologies</span>
+                            <span className = "gradient-text">{t('about.supported_technologies')}</span>
                         </h2>
                         <p className = "engines-description">
-                            Our forum covers a wide range of game engines and technologies
+                            {t('about.supported_technologies_desc')}
                         </p>
                         <div className = "engines-grid">
                             {engines.map((engine, index) => (
@@ -170,7 +164,7 @@ export default function AboutPage()
                     {/* Features */}
                     <section className = "about-features">
                         <h2 className = "section-title">
-                            <span className = "gradient-text">What Do We Offer?</span>
+                            <span className = "gradient-text">{t('about.what_we_offer')}</span>
                         </h2>
                         <div className = "features-grid">
                             {features.map((feature, index) => (
@@ -191,22 +185,22 @@ export default function AboutPage()
                             <div className = "stat-card">
                                 <FiUsers size = {40} />
                                 <h3 className = "stat-number">500+</h3>
-                                <p>Active Users</p>
+                                <p>{t('about.active_users')}</p>
                             </div>
                             <div className = "stat-card">
                                 <FiMessageCircle size = {40} />
                                 <h3 className = "stat-number">1000+</h3>
-                                <p>Discussions</p>
+                                <p>{t('about.discussions')}</p>
                             </div>
                             <div className = "stat-card">
                                 <FiStar size = {40} />
                                 <h3 className = "stat-number">8</h3>
-                                <p>Game Engines</p>
+                                <p>{t('about.game_engines')}</p>
                             </div>
                             <div className = "stat-card">
                                 <FiTrendingUp size = {40} />
                                 <h3 className = "stat-number">100%</h3>
-                                <p>Ukrainian Language</p>
+                                <p>{t('about.ukrainian_language')}</p>
                             </div>
                         </div>
                     </section>
@@ -214,17 +208,16 @@ export default function AboutPage()
                     {/* CTA */}
                     <section className = "about-cta">
                         <div className = "cta-content">
-                            <h2 className = "gradient-text">Join The Community!</h2>
+                            <h2 className = "gradient-text">{t('about.join_community')}</h2>
                             <p>
-                                Become part of the Ukrainian gamedev community. Share your experience, 
-                                learn from the best and create amazing games together!
+                                {t('about.join_community_desc')}
                             </p>
                             <div className = "cta-buttons">
                                 <a href = "/register" className = "btn btn-gradient">
-                                    Sign Up
+                                    {t('about.sign_up')}
                                 </a>
                                 <a href = "/posts" className = "btn btn-outline">
-                                    View Posts
+                                    {t('about.view_posts')}
                                 </a>
                             </div>
                         </div>

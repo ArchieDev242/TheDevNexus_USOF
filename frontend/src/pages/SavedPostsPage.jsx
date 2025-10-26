@@ -6,12 +6,14 @@ import { FaHeart } from 'react-icons/fa';
 import { IoHeartDislike } from 'react-icons/io5';
 import Header from '../components/Header';
 import '../style/saved-posts.css';
+import { useTranslation } from 'react-i18next';
 
 export default function SavedPostsPage() {
     const navigate = useNavigate();
-    const { isAuthenticated, user } = useSelector(state => state.auth);
+    const { isAuthenticated } = useSelector(state => state.auth);
     const [saved_posts, set_saved_posts] = useState([]);
     const [loading, set_loading] = useState(true);
+    const { t } = useTranslation();
 
     useEffect(() => {
         if(!isAuthenticated) 
@@ -45,7 +47,7 @@ export default function SavedPostsPage() {
     const handle_unsave = async (post_id, event) => {
         event.stopPropagation();
         
-        if(!window.confirm('Прибрати цей пост зі збережених?')) return;
+        if(!window.confirm(t('saved_posts.confirm_unsave'))) return;
 
         try 
         {
@@ -60,7 +62,7 @@ export default function SavedPostsPage() {
         } catch(error) 
         {
             console.error('Error unsaving post:', error);
-            alert('Помилка видалення поста зі збережених');
+            alert(t('saved_posts.error_unsave'));
         }
     };
 
@@ -77,16 +79,14 @@ export default function SavedPostsPage() {
         const months = Math.floor(days / 30);
         const years = Math.floor(days / 365);
 
-        if(seconds < 60) return 'щойно';
-        if(minutes < 60) return `${minutes} хв тому`;
-        if(hours < 24) return `${hours} год тому`;
-        if(days === 1) return 'вчора';
-        if(days < 7) return `${days} дн тому`;
-        if(weeks < 4) return `${weeks} тиж тому`;
-        if(months < 12) return `${months} міс тому`;
-        
-        const years_txt = years === 1 ? 'рік' : years < 5 ? 'роки' : 'років';
-        return `${years} ${years_txt} тому`;
+        if(seconds < 60) return t('common.time.just_now');
+        if(minutes < 60) return t('common.time.minutes_ago', { count: minutes });
+        if(hours < 24) return t('common.time.hours_ago', { count: hours });
+        if(days === 1) return t('common.time.yesterday');
+        if(days < 7) return t('common.time.days_ago', { count: days });
+        if(weeks < 4) return t('common.time.weeks_ago', { count: weeks });
+        if(months < 12) return t('common.time.months_ago', { count: months });
+        return t('common.time.years_ago', { count: years });
     };
 
     const strip_markdown = (text) => {
@@ -115,7 +115,7 @@ export default function SavedPostsPage() {
                 <Header />
                 <div className = "saved-posts-page">
                     <div className = "container">
-                        <div className = "loading-spinner">Завантаження...</div>
+                        <div className = "loading-spinner">{t('common.loading')}</div>
                     </div>
                 </div>
             </>
@@ -131,9 +131,9 @@ export default function SavedPostsPage() {
                         <div className = "header-content">
                             <FiBookmark className = "header-icon" />
                             <div>
-                                <h1 className = "gradient-text">Збережені пости</h1>
+                                <h1 className = "gradient-text">{t('saved_posts.title')}</h1>
                                 <p className = "header-subtitle">
-                                    Ваша колекція збережених постів ({saved_posts.length})
+                                    {t('saved_posts.subtitle', { count: saved_posts.length })}
                                 </p>
                             </div>
                         </div>
@@ -142,17 +142,17 @@ export default function SavedPostsPage() {
                     {saved_posts.length === 0 ? (
                         <div className = "empty-state">
                             <FiBookmark className = "empty-icon" />
-                            <h2>Немає збережених постів</h2>
+                            <h2>{t('saved_posts.empty_title')}</h2>
                             <p>
-                                Збережіть цікаві пости щоб повернутися до них пізніше.
+                                {t('saved_posts.empty_description_line1')}
                                 <br />
-                                Натисніть на іконку закладки під постом щоб зберегти його.
+                                {t('saved_posts.empty_description_line2')}
                             </p>
                             <button 
                                 className = "btn btn-gradient"
                                 onClick = {() => navigate('/posts')}
                             >
-                                Переглянути пости
+                                {t('saved_posts.browse_posts_button')}
                             </button>
                         </div>
                     ) : (
@@ -166,7 +166,7 @@ export default function SavedPostsPage() {
                                     <button 
                                         className = "unsave-btn"
                                         onClick = {(e) => handle_unsave(saved.post_id, e)}
-                                        title = "Прибрати зі збережених"
+                                        title = {t('saved_posts.remove_tooltip')}
                                     >
                                         <FiX />
                                     </button>
@@ -201,7 +201,7 @@ export default function SavedPostsPage() {
 
                                     <div className = "saved-info">
                                         <FiBookmark />
-                                        <span>Збережено {format_date(saved.saved_at)}</span>
+                                        <span>{t('saved_posts.saved_label', { time: format_date(saved.saved_at) })}</span>
                                     </div>
                                 </div>
                             ))}

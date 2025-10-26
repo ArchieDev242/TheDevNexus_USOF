@@ -3,14 +3,31 @@ import error_handler from '../middleware/errorHandler.js';
 
 class blueprints_controller 
 {
+    static async ensure_library_table()
+    {
+        await DB_connect.make_request(`
+            CREATE TABLE IF NOT EXISTS blueprint_library(
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                blueprint_id VARCHAR(255) NOT NULL UNIQUE,
+                blueprint_title VARCHAR(255) NOT NULL,
+                blueprint_author VARCHAR(255),
+                blueprint_url VARCHAR(500),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+    }
+
     // GET /api/blueprints/search
     static async search(req, res)
     {
         try 
         {
+            await blueprints_controller.ensure_library_table();
             const { query = '', limit = 10 } = req.query;
             
-            if(!query.trim())
+            const normalized_query = String(query || '').trim();
+
+            if(!normalized_query)
             {
                 return res.json({
                     status: 'success',
@@ -18,14 +35,25 @@ class blueprints_controller
                 });
             }
 
-            const search_term = `%${query}%`;
+            const search_term = `%${normalized_query}%`;
+            let parsed_limit = Number.parseInt(limit, 10);
+
+            if(!Number.isFinite(parsed_limit) || parsed_limit <= 0)
+            {
+                parsed_limit = 10;
+            }
+            parsed_limit = Math.min(parsed_limit, 20);
+
+            const query_string = `
+                SELECT DISTINCT blueprint_id as id, blueprint_title as title, blueprint_author as author, blueprint_url as url
+                FROM blueprint_library
+                WHERE blueprint_title LIKE ? OR blueprint_author LIKE ?
+                ORDER BY created_at DESC
+                LIMIT ?`;
+
             const result = await DB_connect.make_request(
-                `SELECT DISTINCT blueprint_id as id, blueprint_title as title, blueprint_author as author, blueprint_url as url
-                 FROM post_blueprints 
-                 WHERE blueprint_title LIKE ? OR blueprint_author LIKE ?
-                 ORDER BY id DESC
-                 LIMIT ?`,
-                [search_term, search_term, parseInt(limit)]
+                query_string,
+                [search_term, search_term, parsed_limit]
             );
 
             const rows = result[0] || [];
@@ -45,7 +73,8 @@ class blueprints_controller
     {
         try 
         {
-            const { title, author, url } = req.body;
+            await blueprints_controller.ensure_library_table();
+            const { title, author, url, post_id } = req.body;
             const user_id = req.user?.id;
 
             if(!title || !title.trim())
@@ -53,16 +82,38 @@ class blueprints_controller
                 throw error_handler.validation_error('Blueprint title is required');
             }
 
-            // Generate unique blueprint ID - simpler format
+            const parsed_post_id = Number.parseInt(post_id, 10);
+            const attach_to_post = Number.isInteger(parsed_post_id) && parsed_post_id > 0;
+
             const timestamp = Date.now().toString(36);
             const random = Math.random().toString(36).substr(2, 5);
             const blueprint_id = `${timestamp}${random}`;
 
-            const result = await DB_connect.make_request(
-                `INSERT INTO post_blueprints (blueprint_id, blueprint_title, blueprint_author, blueprint_url)
-                 VALUES (?, ?, ?, ?)`,
-                [blueprint_id, title.trim(), author || user_id, url || null]
+            const author_value = (author && String(author).trim()) || req.user?.login || (user_id ? `user:${user_id}` : null);
+            const url_value = url && String(url).trim() ? String(url).trim() : null;
+
+            await DB_connect.make_request(
+                `INSERT INTO blueprint_library (blueprint_id, blueprint_title, blueprint_author, blueprint_url)
+                 VALUES (?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE 
+                    blueprint_title = VALUES(blueprint_title),
+                    blueprint_author = VALUES(blueprint_author),
+                    blueprint_url = VALUES(blueprint_url)`,
+                [blueprint_id, title.trim(), author_value, url_value]
             );
+
+            if(attach_to_post)
+            {
+                await DB_connect.make_request(
+                    `INSERT INTO post_blueprints (post_id, blueprint_id, blueprint_title, blueprint_author, blueprint_url)
+                     VALUES (?, ?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE 
+                        blueprint_title = VALUES(blueprint_title),
+                        blueprint_author = VALUES(blueprint_author),
+                        blueprint_url = VALUES(blueprint_url)`,
+                    [parsed_post_id, blueprint_id, title.trim(), author_value, url_value]
+                );
+            }
 
             res.status(201).json({
                 status: 'success',
@@ -70,8 +121,8 @@ class blueprints_controller
                 data: {
                     id: blueprint_id,
                     title: title.trim(),
-                    author: author || user_id,
-                    url: url || null
+                    author: author_value,
+                    url: url_value
                 }
             });
         }
@@ -94,10 +145,7 @@ class blueprints_controller
             );
 
             const rows = result[0];
-            if(!rows || rows.length === 0)
-            {
-                throw error_handler.not_found_error('Blueprint');
-            }
+            if(!rows || rows.length === 0) throw error_handler.not_found_error('Blueprint'); 
 
             const blueprint = rows[0];
             res.json({
@@ -125,23 +173,15 @@ class blueprints_controller
             const { blueprint_id } = req.params;
             const user_id = req.user?.id;
 
-            // Check if user is admin or created this blueprint
             const result = await DB_connect.make_request(
                 `SELECT * FROM post_blueprints WHERE blueprint_id = ? LIMIT 1`,
                 [blueprint_id]
             );
 
             const rows = result[0];
-            if(!rows || rows.length === 0)
-            {
-                throw error_handler.not_found_error('Blueprint');
-            }
+            if(!rows || rows.length === 0) throw error_handler.not_found_error('Blueprint');
 
-            // Only admin or creator can delete
-            if(req.user?.role !== 'admin' && rows[0].blueprint_author !== user_id)
-            {
-                throw error_handler.forbidden_error('You cannot delete this blueprint');
-            }
+            if(req.user?.role !== 'admin' && rows[0].blueprint_author !== user_id) throw error_handler.forbidden_error('You cannot delete this blueprint');
 
             await DB_connect.make_request(
                 `DELETE FROM post_blueprints WHERE blueprint_id = ?`,

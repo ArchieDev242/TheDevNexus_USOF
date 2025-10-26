@@ -18,27 +18,27 @@ router.get('/:id',
     error_handler.async_handler(comments_controller.get_by_id)
 );
 
-// GET /api/comments/:comment_id/like - get all likes under the specified comment
+// GET /api/comments/:comment_id/like
 router.get('/:id/like', 
     Validator.validate_id('id'), 
     error_handler.async_handler(comments_controller.get_comment_likes)
 );
 
-// POST /api/comments/:comment_id/like - create a new like under a comment
+// POST /api/comments/:comment_id/like
 router.post('/:id/like', 
     auth_middleware.require_auth,
     Validator.validate_id('id'),
     error_handler.async_handler(comments_controller.like_comment)
 );
 
-// DELETE /api/comments/:comment_id/like - delete a like under a comment
+// DELETE /api/comments/:comment_id/like
 router.delete('/:id/like', 
     auth_middleware.require_auth,
     Validator.validate_id('id'),
     error_handler.async_handler(comments_controller.unlike_comment)
 );
 
-// POST /api/comments/:comment_id/reply - create a reply to a comment
+// POST /api/comments/:comment_id/reply
 router.post('/:id/reply',
     auth_middleware.require_auth,
     Validator.validate_id('id'),

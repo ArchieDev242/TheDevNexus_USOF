@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import 
 { 
     FiUser, 
@@ -20,6 +21,7 @@ import '../style/settings.css';
 export default function SettingsPage() 
 {
     const { user } = useSelector(state => state.auth);
+    const { t, i18n } = useTranslation();
     const [active_section, set_active_section] = useState('account');
     const [saved, set_saved] = useState(false);
 
@@ -36,7 +38,7 @@ export default function SettingsPage()
         // appearance
         theme: 'dark',
         font_size: 'medium',
-        language: 'uk',
+        language: i18n.language || 'uk',
 
         // content
         posts_per_page: 10,
@@ -46,6 +48,9 @@ export default function SettingsPage()
 
     const handle_change = (key, value) => {
         set_settings(prev => ({ ...prev, [key]: value }));
+        if(key === 'language') {
+            i18n.changeLanguage(value);
+        }
         set_saved(false);
     };
 
@@ -57,11 +62,11 @@ export default function SettingsPage()
     };
 
     const sections = [
-        { id: 'account', icon: <FiUser />, title: 'Account' },
-        { id: 'privacy', icon: <FiShield />, title: 'Privacy & Security' },
-        { id: 'notifications', icon: <FiBell />, title: 'Notifications' },
-        { id: 'appearance', icon: <FiMonitor />, title: 'Appearance' },
-        { id: 'content', icon: <FiGlobe />, title: 'Content Preferences' }
+        { id: 'account', icon: <FiUser />, title: t('settings_page.sidebar.account') },
+        { id: 'privacy', icon: <FiShield />, title: t('settings_page.sidebar.privacy') },
+        { id: 'notifications', icon: <FiBell />, title: t('settings_page.sidebar.notifications') },
+        { id: 'appearance', icon: <FiMonitor />, title: t('settings_page.sidebar.appearance') },
+        { id: 'content', icon: <FiGlobe />, title: t('settings_page.sidebar.content') }
     ];
 
     return (
@@ -70,8 +75,8 @@ export default function SettingsPage()
             <div className = "settings-page">
                 <div className = "container">
                     <div className = "settings-header">
-                        <h1 className = "gradient-text">Settings</h1>
-                        <p className = "settings-subtitle">Manage your account settings and preferences</p>
+                        <h1 className = "gradient-text">{t('settings.title')}</h1>
+                        <p className = "settings-subtitle">{t('settings_page.subtitle')}</p>
                     </div>
 
                     <div className = "settings-layout">
@@ -96,17 +101,17 @@ export default function SettingsPage()
                             {/* Account Section */}
                             {active_section === 'account' && (
                                 <div className = "settings-section">
-                                    <h2 className = "section-title">Account Settings</h2>
+                                    <h2 className = "section-title">{t('settings_page.account.title')}</h2>
 
                                     <div className = "settings-group">
-                                        <h3 className = "group-title">Email Preferences</h3>
+                                        <h3 className = "group-title">{t('settings_page.account.email_preferences.title')}</h3>
 
                                         <div className = "setting-item">
                                             <div className = "setting-info">
                                                 <FiMail />
                                                 <div>
-                                                    <h4>Email Notifications</h4>
-                                                    <p>Receive email notifications about your activity</p>
+                                                    <h4>{t('settings_page.account.email_preferences.email_notifications.title')}</h4>
+                                                    <p>{t('settings_page.account.email_preferences.email_notifications.description')}</p>
                                                 </div>
                                             </div>
                                             <label className = "toggle">
@@ -121,10 +126,10 @@ export default function SettingsPage()
                                     </div>
 
                                     <div className = "settings-group">
-                                        <h3 className = "group-title">Account Information</h3>
+                                        <h3 className = "group-title">{t('settings_page.account.info.title')}</h3>
                                         <div className = "info-grid">
                                             <div className = "info-item">
-                                                <label>Username</label>
+                                                <label>{t('settings_page.account.info.username')}</label>
                                                 <p>{user?.login}</p>
                                             </div>
                                             <div className = "info-item">
@@ -132,12 +137,12 @@ export default function SettingsPage()
                                                 <p>{user?.email}</p>
                                             </div>
                                             <div className = "info-item">
-                                                <label>Member Since</label>
-                                                <p>{new Date().toLocaleDateString()}</p>
+                                                <label>{t('settings_page.account.info.member_since')}</label>
+                                                <p>{new Date().toLocaleDateString(i18n.language || undefined)}</p>
                                             </div>
                                             <div className = "info-item">
-                                                <label>Account Type</label>
-                                                <p className = "badge">{user?.role}</p>
+                                                <label>{t('settings_page.account.info.account_type')}</label>
+                                                <p className = "badge">{user?.role === 'admin' ? 'Admin' : 'User'}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -147,17 +152,17 @@ export default function SettingsPage()
                             {/* Privacy Section */}
                             {active_section === 'privacy' && (
                                 <div className = "settings-section">
-                                    <h2 className = "section-title">Privacy & Security</h2>
+                                    <h2 className = "section-title">{t('settings_page.privacy.title')}</h2>
                                     
                                     <div className = "settings-group">
-                                        <h3 className = "group-title">Profile Visibility</h3>
+                                        <h3 className = "group-title">{t('settings_page.privacy.profile_visibility.title')}</h3>
 
                                         <div className = "setting-item">
                                             <div className = "setting-info">
                                                 <FiEye />
                                                 <div>
-                                                    <h4>Who can see your profile</h4>
-                                                    <p>Control who can view your profile information</p>
+                                                    <h4>{t('settings_page.privacy.profile_visibility.setting_title')}</h4>
+                                                    <p>{t('settings_page.privacy.profile_visibility.setting_description')}</p>
                                                 </div>
                                             </div>
                                             <select
@@ -165,9 +170,9 @@ export default function SettingsPage()
                                                 value = {settings.profile_visibility}
                                                 onChange = {(e) => handle_change('profile_visibility', e.target.value)}
                                             >
-                                                <option value = "public">Public</option>
-                                                <option value = "members">Members Only</option>
-                                                <option value = "private">Private</option>
+                                                <option value = "public">{t('settings_page.privacy.profile_visibility.options.public')}</option>
+                                                <option value = "members">{t('settings_page.privacy.profile_visibility.options.members')}</option>
+                                                <option value = "private">{t('settings_page.privacy.profile_visibility.options.private')}</option>
                                             </select>
                                         </div>
 
@@ -175,8 +180,8 @@ export default function SettingsPage()
                                             <div className = "setting-info">
                                                 <FiMail />
                                                 <div>
-                                                    <h4>Show Email on Profile</h4>
-                                                    <p>Display your email address on your public profile</p>
+                                                    <h4>{t('settings_page.privacy.show_email.title')}</h4>
+                                                    <p>{t('settings_page.privacy.show_email.description')}</p>
                                                 </div>
                                             </div>
                                             <label className = "toggle">
@@ -193,8 +198,8 @@ export default function SettingsPage()
                                             <div className = "setting-info">
                                                 <FiUser />
                                                 <div>
-                                                    <h4>Online Status</h4>
-                                                    <p>Show when you're online to other members</p>
+                                                    <h4>{t('settings_page.privacy.online_status.title')}</h4>
+                                                    <p>{t('settings_page.privacy.online_status.description')}</p>
                                                 </div>
                                             </div>
                                             <label className = "toggle">
@@ -213,17 +218,17 @@ export default function SettingsPage()
                             {/* Notifications Section */}
                             {active_section === 'notifications' && (
                                 <div className = "settings-section">
-                                    <h2 className = "section-title">Notification Preferences</h2>
+                                    <h2 className = "section-title">{t('settings_page.notifications.title')}</h2>
 
                                     <div className = "settings-group">
-                                        <h3 className = "group-title">Notification Channels</h3>
+                                        <h3 className = "group-title">{t('settings_page.notifications.channels.title')}</h3>
 
                                         <div className = "setting-item">
                                             <div className = "setting-info">
                                                 <FiMail />
                                                 <div>
-                                                    <h4>Email Notifications</h4>
-                                                    <p>Get notified via email about important updates</p>
+                                                    <h4>{t('settings_page.notifications.channels.email.title')}</h4>
+                                                    <p>{t('settings_page.notifications.channels.email.description')}</p>
                                                 </div>
                                             </div>
                                             <label className = "toggle">
@@ -240,8 +245,8 @@ export default function SettingsPage()
                                             <div className = "setting-info">
                                                 <FiBell />
                                                 <div>
-                                                    <h4>Browser Notifications</h4>
-                                                    <p>Receive push notifications in your browser</p>
+                                                    <h4>{t('settings_page.notifications.channels.browser.title')}</h4>
+                                                    <p>{t('settings_page.notifications.channels.browser.description')}</p>
                                                 </div>
                                             </div>
                                             <label className = "toggle">
@@ -260,17 +265,17 @@ export default function SettingsPage()
                             {/* Appearance Section */}
                             {active_section === 'appearance' && (
                                 <div className = "settings-section">
-                                    <h2 className = "section-title">Appearance</h2>
+                                    <h2 className = "section-title">{t('settings_page.appearance.title')}</h2>
 
                                     <div className = "settings-group">
-                                        <h3 className = "group-title">Display Settings</h3>
+                                        <h3 className = "group-title">{t('settings_page.appearance.display.title')}</h3>
 
                                         <div className = "setting-item">
                                             <div className = "setting-info">
                                                 <FiMonitor />
                                                 <div>
-                                                    <h4>Theme</h4>
-                                                    <p>Choose your preferred color scheme</p>
+                                                    <h4>{t('settings_page.appearance.display.theme.title')}</h4>
+                                                    <p>{t('settings_page.appearance.display.theme.description')}</p>
                                                 </div>
                                             </div>
                                             <select 
@@ -278,9 +283,9 @@ export default function SettingsPage()
                                                 value = {settings.theme}
                                                 onChange = {(e) => handle_change('theme', e.target.value)}
                                             >
-                                                <option value = "dark">Dark</option>
-                                                <option value = "light">Light</option>
-                                                <option value = "auto">Auto</option>
+                                                <option value = "dark">{t('settings_page.appearance.display.theme.options.dark')}</option>
+                                                <option value = "light">{t('settings_page.appearance.display.theme.options.light')}</option>
+                                                <option value = "auto">{t('settings_page.appearance.display.theme.options.auto')}</option>
                                             </select>
                                         </div>
 
@@ -288,8 +293,8 @@ export default function SettingsPage()
                                             <div className = "setting-info">
                                                 <FiMonitor />
                                                 <div>
-                                                    <h4>Font Size</h4>
-                                                    <p>Adjust the text size for better readability</p>
+                                                    <h4>{t('settings_page.appearance.display.font_size.title')}</h4>
+                                                    <p>{t('settings_page.appearance.display.font_size.description')}</p>
                                                 </div>
                                             </div>
                                             <select 
@@ -297,9 +302,9 @@ export default function SettingsPage()
                                                 value = {settings.font_size}
                                                 onChange = {(e) => handle_change('font_size', e.target.value)}
                                             >
-                                                <option value = "small">Small</option>
-                                                <option value = "medium">Medium</option>
-                                                <option value = "large">Large</option>
+                                                <option value = "small">{t('settings_page.appearance.display.font_size.options.small')}</option>
+                                                <option value = "medium">{t('settings_page.appearance.display.font_size.options.medium')}</option>
+                                                <option value = "large">{t('settings_page.appearance.display.font_size.options.large')}</option>
                                             </select>
                                         </div>
 
@@ -307,34 +312,34 @@ export default function SettingsPage()
                                             <div className = "setting-info">
                                                 <FiGlobe />
                                                 <div>
-                                                    <h4>Language / Мова</h4>
-                                                    <p>Select your preferred language</p>
+                                                    <h4>{t('settings_page.appearance.language.title')}</h4>
+                                                    <p>{t('settings_page.appearance.language.description')}</p>
                                                 </div>
                                             </div>
                                             <div className = "language-selector">
                                                 <button
                                                     className = {`language-btn ${settings.language === 'uk' ? 'active' : ''}`}
                                                     onClick = {() => handle_change('language', 'uk')}
-                                                    title = "Українська"
+                                                    title = {t('settings_page.appearance.language.options.uk.tooltip')}
                                                 >
                                                     <span className = "flag-icon">🇺🇦</span>
-                                                    <span className = "language-name">Українська</span>
+                                                    <span className = "language-name">{t('settings_page.appearance.language.options.uk.label')}</span>
                                                 </button>
                                                 <button
                                                     className = {`language-btn ${settings.language === 'en' ? 'active' : ''}`}
                                                     onClick = {() => handle_change('language', 'en')}
-                                                    title = "English"
+                                                    title = {t('settings_page.appearance.language.options.en.tooltip')}
                                                 >
                                                     <span className = "flag-icon">🇬🇧</span>
-                                                    <span className = "language-name">English</span>
+                                                    <span className = "language-name">{t('settings_page.appearance.language.options.en.label')}</span>
                                                 </button>
                                                 <button
                                                     className = {`language-btn ${settings.language === 'de' ? 'active' : ''}`}
                                                     onClick = {() => handle_change('language', 'de')}
-                                                    title = "Deutsch"
+                                                    title = {t('settings_page.appearance.language.options.de.tooltip')}
                                                 >
                                                     <span className = "flag-icon">🇩🇪</span>
-                                                    <span className = "language-name">Deutsch</span>
+                                                    <span className = "language-name">{t('settings_page.appearance.language.options.de.label')}</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -345,16 +350,16 @@ export default function SettingsPage()
                             {/* Content Preferences Section */}
                             {active_section === 'content' && (
                                 <div className = "settings-section">
-                                    <h2 className = "section-title">Content Preferences</h2>
+                                    <h2 className = "section-title">{t('settings_page.content.title')}</h2>
                                     
                                     <div className = "settings-group">
-                                        <h3 className = "group-title">Feed Settings</h3>
+                                        <h3 className = "group-title">{t('settings_page.content.feed.title')}</h3>
                                         <div className = "setting-item">
                                             <div className = "setting-info">
                                                 <FiGlobe />
                                                 <div>
-                                                    <h4>Posts Per Page</h4>
-                                                    <p>Number of posts to display per page</p>
+                                                    <h4>{t('settings_page.content.feed.posts_per_page.title')}</h4>
+                                                    <p>{t('settings_page.content.feed.posts_per_page.description')}</p>
                                                 </div>
                                             </div>
                                             <select 
@@ -362,9 +367,9 @@ export default function SettingsPage()
                                                 value = {settings.posts_per_page}
                                                 onChange = {(e) => handle_change('posts_per_page', parseInt(e.target.value))}
                                             >
-                                                <option value = "10">10 posts</option>
-                                                <option value = "25">25 posts</option>
-                                                <option value = "50">50 posts</option>
+                                                <option value = "10">{t('settings_page.content.feed.posts_per_page.options.ten')}</option>
+                                                <option value = "25">{t('settings_page.content.feed.posts_per_page.options.twenty_five')}</option>
+                                                <option value = "50">{t('settings_page.content.feed.posts_per_page.options.fifty')}</option>
                                             </select>
                                         </div>
 
@@ -372,8 +377,8 @@ export default function SettingsPage()
                                             <div className = "setting-info">
                                                 <FiGlobe />
                                                 <div>
-                                                    <h4>Default Sort Order</h4>
-                                                    <p>How posts should be sorted by default</p>
+                                                    <h4>{t('settings_page.content.feed.default_sort.title')}</h4>
+                                                    <p>{t('settings_page.content.feed.default_sort.description')}</p>
                                                 </div>
                                             </div>
                                             <select 
@@ -381,9 +386,9 @@ export default function SettingsPage()
                                                 value = {settings.default_sort}
                                                 onChange = {(e) => handle_change('default_sort', e.target.value)}
                                             >
-                                                <option value = "latest">Latest</option>
-                                                <option value = "popular">Most Popular</option>
-                                                <option value = "trending">Trending</option>
+                                                <option value = "latest">{t('settings_page.content.feed.default_sort.options.latest')}</option>
+                                                <option value = "popular">{t('settings_page.content.feed.default_sort.options.popular')}</option>
+                                                <option value = "trending">{t('settings_page.content.feed.default_sort.options.trending')}</option>
                                             </select>
                                         </div>
 
@@ -391,8 +396,8 @@ export default function SettingsPage()
                                             <div className = "setting-info">
                                                 <FiEye />
                                                 <div>
-                                                    <h4>Show NSFW Content</h4>
-                                                    <p>Display content marked as not safe for work</p>
+                                                    <h4>{t('settings_page.content.feed.show_nsfw.title')}</h4>
+                                                    <p>{t('settings_page.content.feed.show_nsfw.description')}</p>
                                                 </div>
                                             </div>
                                             <label className = "toggle">
@@ -416,11 +421,11 @@ export default function SettingsPage()
                                 >
                                     {saved ? (
                                         <>
-                                            <FiCheck /> Saved Successfully!
+                                            <FiCheck /> {t('settings_page.actions.saved')}
                                         </>
                                     ) : (
                                         <>
-                                            <FiSave /> Save Changes
+                                            <FiSave /> {t('settings_page.actions.save')}
                                         </>
                                     )}
                                 </button>

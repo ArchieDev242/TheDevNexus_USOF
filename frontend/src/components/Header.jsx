@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { logout } from '../redux/slices/authSlice';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../hooks/useLanguage';
 import 
 { 
     FiHome, 
@@ -27,7 +29,10 @@ export default function Header()
 {
     const dispatch = useDispatch();
     const { isAuthenticated, user } = useSelector(state => state.auth);
+    const { t } = useTranslation();
+    const { currentLanguage, changeLanguage, availableLanguages, languageNames } = useLanguage();
     const [is_menu_open, set_is_menu_open] = useState(false);
+    const [is_language_menu_open, set_is_language_menu_open] = useState(false);
     const [is_mobile_nav_open, set_is_mobile_nav_open] = useState(false);
     const [search_query, set_search_query] = useState('');
     const [is_notifications_open, set_is_notifications_open] = useState(false);
@@ -53,7 +58,7 @@ export default function Header()
                     if(res.ok) 
                         {
                         const data = await res.json();
-                        if(data.status === 'success') set_unread_count(data.data?.count || 0);
+                        if(data.status === 'success') set_unread_count(data.data?.unread_count ?? 0);
                     } else set_unread_count(0);
                 } catch(error) 
                 {
@@ -129,19 +134,19 @@ export default function Header()
                                 <li className = 'nav-list__item'>
                                     <a href = "/">
                                         <FiHome />
-                                        <span>Home</span>
+                                        <span>{t('header.home')}</span>
                                     </a>
                                 </li>
                                 <li className = 'nav-list__item'>
                                     <a href = "/posts">
                                         <FiMessageSquare />
-                                        <span>Forums</span>
+                                        <span>{t('header.posts')}</span>
                                     </a>
                                 </li>
                                 <li className = 'nav-list__item'>
                                     <a href = "/about">
                                         <FiInfo />
-                                        <span>About</span>
+                                        <span>{t('header.about')}</span>
                                     </a>
                                 </li>
                             </ul>
@@ -154,7 +159,7 @@ export default function Header()
                                 className = 'search__input'
                                 type = 'text'
                                 name = 'search'
-                                placeholder = 'Search...'
+                                placeholder = {t('header.search')}
                                 value = {search_query}
                                 onChange = {(event) => set_search_query(event.target.value)}
                             />
@@ -213,19 +218,34 @@ export default function Header()
                                             <div className = "user-dropdown">
                                                 <Link to = "/profile" className = "dropdown-item">
                                                     <FiUser />
-                                                    <span>Profile</span>
+                                                    <span>{t('header.profile')}</span>
                                                 </Link>
                                                 <Link to = "/settings" className = "dropdown-item">
                                                     <FiSettings />
-                                                    <span>Settings</span>
+                                                    <span>{t('header.settings')}</span>
                                                 </Link>
+                                                <hr className = "dropdown-divider" />
+                                                <div className="language-selector-dropdown">
+                                                    <div className="language-selector-label">{t('settings.language')}</div>
+                                                    <div className="language-options">
+                                                        {availableLanguages.map(lng => (
+                                                            <button
+                                                                key={lng}
+                                                                className={`language-option ${currentLanguage === lng ? 'active' : ''}`}
+                                                                onClick={() => changeLanguage(lng)}
+                                                            >
+                                                                {languageNames[lng]}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                                 <hr className = "dropdown-divider" />
                                                 <button 
                                                     className = "dropdown-item logout-btn"
                                                     onClick = {handle_logout}
                                                 >
                                                     <FiLogOut />
-                                                    <span>Logout</span>
+                                                    <span>{t('header.logout')}</span>
                                                 </button>
                                             </div>
                                         )}
@@ -235,11 +255,11 @@ export default function Header()
                                 <div className = "auth-buttons">
                                     <Link to = "/login" className = "btn btn-outline btn--hide">
                                         <FiLogIn />
-                                        <span>Login</span>
+                                        <span>{t('header.login')}</span>
                                     </Link>
                                     <Link to = "/register" className = "btn btn-gradient btn--hide">
                                         <FiUserPlus />
-                                        <span>Sign Up</span>
+                                        <span>{t('header.register')}</span>
                                     </Link>
                                 </div>
                             )}
@@ -273,7 +293,7 @@ export default function Header()
                                 className = 'search__input'
                                 type = 'text'
                                 name = 'search'
-                                placeholder = 'Search...'
+                                placeholder = {t('header.search')}
                                 value = {search_query}
                                 onChange = {(event) => set_search_query(event.target.value)}
                             />
@@ -286,26 +306,26 @@ export default function Header()
                                 <li>
                                     <Link to="/" onClick={() => set_is_mobile_nav_open(false)}>
                                         <FiHome />
-                                        <span>Home</span>
+                                        <span>{t('header.home')}</span>
                                     </Link>
                                 </li>
                                 <li>
                                     <Link to="/posts" onClick={() => set_is_mobile_nav_open(false)}>
                                         <FiMessageSquare />
-                                        <span>Forums</span>
+                                        <span>{t('header.posts')}</span>
                                     </Link>
                                 </li>
                                 <li>
                                     <Link to="/about" onClick={() => set_is_mobile_nav_open(false)}>
                                         <FiInfo />
-                                        <span>About</span>
+                                        <span>{t('header.about')}</span>
                                     </Link>
                                 </li>
                                 {isAuthenticated && (
                                     <li>
                                         <Link to="/saved-posts" onClick={() => set_is_mobile_nav_open(false)}>
                                             <FiBookmark />
-                                            <span>Saved Posts</span>
+                                            <span>{t('header.saved_posts')}</span>
                                         </Link>
                                     </li>
                                 )}
@@ -317,26 +337,26 @@ export default function Header()
                                 <>
                                     <Link to="/profile" className="btn btn-outline" onClick={() => set_is_mobile_nav_open(false)}>
                                         <FiUser />
-                                        <span>Profile</span>
+                                        <span>{t('header.profile')}</span>
                                     </Link>
                                     <Link to="/settings" className="btn btn-outline" onClick={() => set_is_mobile_nav_open(false)}>
                                         <FiSettings />
-                                        <span>Settings</span>
+                                        <span>{t('header.settings')}</span>
                                     </Link>
                                     <button className="btn btn-gradient" onClick={handle_logout}>
                                         <FiLogOut />
-                                        <span>Logout</span>
+                                        <span>{t('header.logout')}</span>
                                     </button>
                                 </>
                             ) : (
                                 <>
                                     <Link to="/login" className="btn btn-outline" onClick={() => set_is_mobile_nav_open(false)}>
                                         <FiLogIn />
-                                        <span>Login</span>
+                                        <span>{t('header.login')}</span>
                                     </Link>
                                     <Link to="/register" className="btn btn-gradient" onClick={() => set_is_mobile_nav_open(false)}>
                                         <FiUserPlus />
-                                        <span>Sign Up</span>
+                                        <span>{t('header.register')}</span>
                                     </Link>
                                 </>
                             )}

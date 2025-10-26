@@ -8,26 +8,26 @@ const router = express.Router();
 
 router.use(auth_middleware.identify_user);
 
-// GET /api/comments/:comment_id - get specified comment data
+// GET /api/comments/:comment_id
 router.get('/:comment_id', 
     Validator.validate_id('comment_id'),
     error_handler.async_handler(comments_controller.get_by_id)
 );
 
-// GET /api/comments/:comment_id/like - get all likes under the specified comment
+// GET /api/comments/:comment_id/like
 router.get('/:comment_id/like', 
     Validator.validate_id('comment_id'),
     error_handler.async_handler(comments_controller.get_comment_likes)
 );
 
-// POST /api/comments/:comment_id/like - create a new like under a comment
+// POST /api/comments/:comment_id/like
 router.post('/:comment_id/like', 
     auth_middleware.require_auth,
     Validator.validate_id('comment_id'),
     error_handler.async_handler(comments_controller.like_comment)
 );
 
-// PATCH /api/comments/:comment_id - update specified comment data
+// PATCH /api/comments/:comment_id
 router.patch('/:comment_id', 
     auth_middleware.require_auth,
     Validator.validate_id('comment_id'),
@@ -35,14 +35,14 @@ router.patch('/:comment_id',
     error_handler.async_handler(comments_controller.update)
 );
 
-// DELETE /api/comments/:comment_id - delete a comment
+// DELETE /api/comments/:comment_id
 router.delete('/:comment_id', 
     auth_middleware.require_auth,
     Validator.validate_id('comment_id'),
     error_handler.async_handler(comments_controller.delete)
 );
 
-// DELETE /api/comments/:comment_id/like - delete a like under a comment
+// DELETE /api/comments/:comment_id/like
 router.delete('/:comment_id/like', 
     auth_middleware.require_auth,
     Validator.validate_id('comment_id'),

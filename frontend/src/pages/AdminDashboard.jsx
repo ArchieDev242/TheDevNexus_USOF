@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { FiSettings, FiHome, FiMoreVertical, FiEdit2, FiTrash2, FiPlus, FiFlag } from 'react-icons/fi';
 import { FaUsers, FaComments } from 'react-icons/fa';
 import { BsFileEarmarkPost } from 'react-icons/bs';
@@ -8,17 +9,10 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../style/admin-dashboard.css';
 
-const REPORT_REASONS_MAP = {
-    spam: 'Спам',
-    harassment: 'Агресія/Переслідування',
-    inappropriate: 'Неналежний контент',
-    misinformation: 'Дезінформація',
-    copyright: 'Порушення авторських прав'
-};
-
 export default function AdminDashboard() 
 {
     const { user, isAuthenticated } = useSelector(state => state.auth);
+    const { t, i18n } = useTranslation();
     const [activeSection, set_active_section] = useState('dashboard');
     const [stats, set_stats] = useState({
         totalUsers: 0,
@@ -45,13 +39,37 @@ export default function AdminDashboard()
         role: 'user'
     });
 
+    const get_report_reason_label = (reason) => t(`admin_dashboard.report_reasons.${reason}`, { defaultValue: reason });
+
+    const get_report_type_label = (type) => {
+        switch(type) 
+        {
+            case 'post': return `📝 ${t('admin_dashboard.report_types.post')}`;
+            case 'comment': return `💬 ${t('admin_dashboard.report_types.comment')}`;
+            case 'user': return `👤 ${t('admin_dashboard.report_types.user')}`;
+            default: return type;
+        }
+    };
+
+    const get_report_status_label = (status) => {
+        switch(status) 
+        {
+            case 'pending': return `⏳ ${t('admin_dashboard.report_status.pending')}`;
+            case 'resolved': return `✅ ${t('admin_dashboard.report_status.resolved')}`;
+            case 'rejected': return `❌ ${t('admin_dashboard.report_status.rejected')}`;
+            default: return status;
+        }
+    };
+
+    const format_role_label = (role) => role === 'admin' ? 'Admin' : 'User';
+
     useEffect(() => {
         if(!isAuthenticated || user?.role !== 'admin') return;
 
-        fetchDashboardData();
+        fetch_dashboard_data();
     }, [isAuthenticated, user]);
 
-    const fetchDashboardData = async () => {
+    const fetch_dashboard_data = async () => {
         try 
         {
             set_loading(true);
@@ -105,8 +123,8 @@ export default function AdminDashboard()
         }
     };
 
-    const handleDeleteUser = async (userId) => {
-        if(!window.confirm('Видалити користувача?')) return;
+    const handle_delete_user = async (userId) => {
+        if(!window.confirm(t('admin_dashboard.confirm_delete_user'))) return;
         
         try 
         {
@@ -121,7 +139,7 @@ export default function AdminDashboard()
         }
     };
 
-    const openEditUserModal = (user) => {
+    const open_edit_user_modal = (user) => {
         set_editing_user(user);
         set_edit_user_form({
             login: user.login || '',
@@ -132,23 +150,25 @@ export default function AdminDashboard()
         set_show_edit_user_modal(true);
     };
 
-    const handleEditUserChange = (field, value) => {
+    const handle_edit_user_change = (field, value) => {
         set_edit_user_form(prev => ({
             ...prev,
             [field]: value
         }));
     };
 
-    const handleUpdateUser = async () => {
+    const handle_update_user = async () => {
         if(!editing_user) return;
 
         try 
         {
             const response = await fetch(`/api/users/${editing_user.id}`, {
                 method: 'PATCH',
-                headers: {
+                headers: 
+                {
                     'Content-Type': 'application/json'
                 },
+
                 credentials: 'include',
                 body: JSON.stringify({
                     login: edit_user_form.login,
@@ -162,7 +182,7 @@ export default function AdminDashboard()
 
             if(!response.ok) 
                 {
-                throw new Error(data?.message || 'Не вдалося оновити користувача');
+                throw new Error(data?.message || t('admin_dashboard.notifications.user_update_error'));
             }
 
             if(data?.data) 
@@ -175,12 +195,12 @@ export default function AdminDashboard()
             set_editing_user(null);
         } catch(error) 
         {
-            alert(error.message || 'Помилка оновлення користувача');
+            alert(error.message || t('admin_dashboard.notifications.user_update_error'));
         }
     };
 
-    const handleDeletePost = async (postId) => {
-        if(!window.confirm('Видалити пост?')) return;
+    const handle_delete_post = async (postId) => {
+        if(!window.confirm(t('admin_dashboard.confirm_delete_post'))) return;
         
         try 
         {
@@ -196,8 +216,8 @@ export default function AdminDashboard()
         }
     };
 
-    const handleDeleteComment = async (commentId) => {
-        if(!window.confirm('Видалити коментар?')) return;
+    const handle_delete_comment = async (commentId) => {
+        if(!window.confirm(t('admin_dashboard.confirm_delete_comment'))) return;
         
         try 
         {
@@ -213,13 +233,13 @@ export default function AdminDashboard()
         }
     };
 
-    const handleViewReport = (report) => {
+    const handle_view_report = (report) => {
         set_selected_report(report);
         set_show_report_modal(true);
     };
 
-    const handleReportAction = async (reportId, action) => {
-        if(!window.confirm(`Ви впевнені? Статус буде змінений на "${action}".`)) return;
+    const handle_report_action = async (reportId, action) => {
+        if(!window.confirm(t('admin_dashboard.confirm_report_status', { status: t(`admin_dashboard.report_status.${action}`, { defaultValue: action }) }))) return;
         
         try 
         {
@@ -234,17 +254,13 @@ export default function AdminDashboard()
                 {
                 set_reports(reports.map(r => r.id === reportId ? { ...r, status: action } : r));
                 set_show_report_modal(false);
-                alert('Статус отчета оновлений успішно!');
+                alert(t('admin_dashboard.notifications.report_status_updated'));
             }
         } catch(error) 
         {
             console.error('Error updating report:', error);
-            alert('Помилка при оновленні статусу отчета');
+            alert(t('admin_dashboard.notifications.report_status_error'));
         }
-    };
-
-    const format_report_reason = (reason) => {
-        return REPORT_REASONS_MAP[reason] || reason;
     };
 
     const filtered_users = users.filter(u => 
@@ -263,8 +279,8 @@ export default function AdminDashboard()
                 <Header />
                 <main className = "main-content">
                     <div className = "admin-access-denied">
-                        <h1>Доступ заборонений</h1>
-                        <p>Тільки адміністратори можуть заходити на цю сторінку</p>
+                        <h1>{t('admin_dashboard.access_denied_title')}</h1>
+                        <p>{t('admin_dashboard.access_denied_description')}</p>
                     </div>
                 </main>
                 <Footer />
@@ -278,7 +294,7 @@ export default function AdminDashboard()
             <div className = "app-container">
                 <Header />
                 <main className = "main-content">
-                    <div className = "admin-loading">Завантаження...</div>
+                    <div className = "admin-loading">{t('common.loading')}</div>
                 </main>
                 <Footer />
             </div>
@@ -293,50 +309,50 @@ export default function AdminDashboard()
                     {/* Sidebar */}
                     <aside className = "admin-sidebar">
                         <div className = "sidebar-header">
-                            <h2>🛡️ Admin Panel</h2>
+                            <h2>🛡️ {t('admin.title')}</h2>
                         </div>
                         <nav className = "sidebar-menu">
                             <button
                                 className = {`menu-item ${activeSection === 'dashboard' ? 'active' : ''}`}
                                 onClick = {() => set_active_section('dashboard')}
                             >
-                                <FiHome /> Дашборд
+                                <FiHome /> {t('admin.dashboard')}
                             </button>
                             <button
                                 className = {`menu-item ${activeSection === 'users' ? 'active' : ''}`}
                                 onClick = {() => set_active_section('users')}
                             >
-                                <FaUsers /> Користувачі
+                                <FaUsers /> {t('admin.users')}
                             </button>
                             <button
                                 className = {`menu-item ${activeSection === 'posts' ? 'active' : ''}`}
                                 onClick = {() => set_active_section('posts')}
                             >
-                                <BsFileEarmarkPost /> Пости
+                                <BsFileEarmarkPost /> {t('admin.posts')}
                             </button>
                             <button
                                 className = {`menu-item ${activeSection === 'comments' ? 'active' : ''}`}
                                 onClick = {() => set_active_section('comments')}
                             >
-                                <FaComments /> Коментарі
+                                <FaComments /> {t('admin_dashboard.sidebar.comments')}
                             </button>
                             <button
                                 className = {`menu-item ${activeSection === 'categories' ? 'active' : ''}`}
                                 onClick = {() => set_active_section('categories')}
                             >
-                                <BiCategory /> Категорії
+                                <BiCategory /> {t('admin.categories')}
                             </button>
                             <button
                                 className={`menu-item ${activeSection === 'reports' ? 'active' : ''}`}
                                 onClick={() => set_active_section('reports')}
                             >
-                                <FiFlag /> Репорти
+                                <FiFlag /> {t('admin.reports')}
                             </button>
                             <button
                                 className = {`menu-item ${activeSection === 'settings' ? 'active' : ''}`}
                                 onClick = {() => set_active_section('settings')}
                             >
-                                <FiSettings /> Налаштування
+                                <FiSettings /> {t('settings.title')}
                             </button>
                         </nav>
                     </aside>
@@ -346,7 +362,7 @@ export default function AdminDashboard()
                         {/* Dashboard */}
                         {activeSection === 'dashboard' && (
                             <div className = "section-dashboard">
-                                <h1>Дашборд</h1>
+                                <h1>{t('admin.dashboard')}</h1>
                                 <div className = "stats-grid">
                                     <div className = "stat-card users">
                                         <div className = "stat-icon">
@@ -354,7 +370,7 @@ export default function AdminDashboard()
                                         </div>
                                         <div className = "stat-info">
                                             <h3>{stats.totalUsers}</h3>
-                                            <p>Користувачів</p>
+                                            <p>{t('admin_dashboard.stats.users')}</p>
                                         </div>
                                     </div>
                                     <div className = "stat-card posts">
@@ -363,7 +379,7 @@ export default function AdminDashboard()
                                         </div>
                                         <div className = "stat-info">
                                             <h3>{stats.totalPosts}</h3>
-                                            <p>Постів</p>
+                                            <p>{t('admin_dashboard.stats.posts')}</p>
                                         </div>
                                     </div>
                                     <div className = "stat-card comments">
@@ -372,7 +388,7 @@ export default function AdminDashboard()
                                         </div>
                                         <div className = "stat-info">
                                             <h3>{stats.totalComments}</h3>
-                                            <p>Коментарів</p>
+                                            <p>{t('admin_dashboard.stats.comments')}</p>
                                         </div>
                                     </div>
                                     <div className = "stat-card categories">
@@ -381,7 +397,7 @@ export default function AdminDashboard()
                                         </div>
                                         <div className = "stat-info">
                                             <h3>{stats.totalCategories}</h3>
-                                            <p>Категорій</p>
+                                            <p>{t('admin_dashboard.stats.categories')}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -392,10 +408,10 @@ export default function AdminDashboard()
                         {activeSection === 'users' && (
                             <div className = "section-users">
                                 <div className = "section-header">
-                                    <h1>Управління користувачами</h1>
+                                    <h1>{t('admin.manage_users')}</h1>
                                     <input
                                         type = "text"
-                                        placeholder = "Пошук користувачів..."
+                                        placeholder = {t('admin_dashboard.users.search_placeholder')}
                                         value = {search_query}
                                         onChange = {(e) => set_search_query(e.target.value)}
                                         className = "search-input"
@@ -406,11 +422,11 @@ export default function AdminDashboard()
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
-                                                <th>Логін</th>
-                                                <th>Ім'я</th>
+                                                <th>{t('admin_dashboard.users.table.login')}</th>
+                                                <th>{t('admin_dashboard.users.table.name')}</th>
                                                 <th>Email</th>
-                                                <th>Роль</th>
-                                                <th>Дії</th>
+                                                <th>{t('admin_dashboard.users.table.role')}</th>
+                                                <th>{t('admin_dashboard.users.table.actions')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -420,20 +436,20 @@ export default function AdminDashboard()
                                                     <td>{user.login}</td>
                                                     <td>{user.full_name}</td>
                                                     <td>{user.email}</td>
-                                                    <td><span className = {`role-badge ${user.role}`}>{user.role}</span></td>
+                                                    <td><span className = {`role-badge ${user.role}`}>{format_role_label(user.role)}</span></td>
                                                     <td>
                                                         <div className = "table-actions">
                                                             <button
                                                                 className = "admin-btn-edit"
-                                                                onClick = {() => openEditUserModal(user)}
-                                                                title = "Редагувати"
+                                                                onClick = {() => open_edit_user_modal(user)}
+                                                                title = {t('common.edit')}
                                                             >
                                                                 <FiEdit2 />
                                                             </button>
                                                             <button
                                                                 className = "btn-delete"
-                                                                onClick = {() => handleDeleteUser(user.id)}
-                                                                title = "Видалити"
+                                                                onClick = {() => handle_delete_user(user.id)}
+                                                                title = {t('common.delete')}
                                                             >
                                                                 <FiTrash2 />
                                                             </button>
@@ -451,10 +467,10 @@ export default function AdminDashboard()
                         {activeSection === 'posts' && (
                             <div className = "section-posts">
                                 <div className = "section-header">
-                                    <h1>Управління постами</h1>
+                                    <h1>{t('admin.manage_posts')}</h1>
                                     <input
                                         type = "text"
-                                        placeholder = "Пошук постів..."
+                                        placeholder = {t('admin_dashboard.posts.search_placeholder')}
                                         value = {search_query}
                                         onChange = {(e) => set_search_query(e.target.value)}
                                         className = "search-input"
@@ -465,12 +481,12 @@ export default function AdminDashboard()
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
-                                                <th>Заголовок</th>
-                                                <th>Автор</th>
-                                                <th>Дата</th>
-                                                <th>Лайки</th>
-                                                <th>Коментарі</th>
-                                                <th>Дії</th>
+                                                <th>{t('admin_dashboard.posts.table.title')}</th>
+                                                <th>{t('admin_dashboard.posts.table.author')}</th>
+                                                <th>{t('admin_dashboard.posts.table.date')}</th>
+                                                <th>{t('admin_dashboard.posts.table.likes')}</th>
+                                                <th>{t('admin_dashboard.posts.table.comments')}</th>
+                                                <th>{t('admin_dashboard.posts.table.actions')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -479,14 +495,14 @@ export default function AdminDashboard()
                                                     <td>{post.id}</td>
                                                     <td>{post.title}</td>
                                                     <td>{post.author_login || post.author?.login || post.author_name || '—'}</td>
-                                                    <td>{new Date(post.publish_date).toLocaleDateString('uk-UA')}</td>
+                                                    <td>{new Date(post.publish_date).toLocaleDateString(i18n.language || undefined)}</td>
                                                     <td>{post.likes_count || 0}</td>
                                                     <td>{post.comments_count || 0}</td>
                                                     <td>
                                                         <button
                                                             className = "btn-delete"
-                                                            onClick = {() => handleDeletePost(post.id)}
-                                                            title = "Видалити"
+                                                            onClick = {() => handle_delete_post(post.id)}
+                                                            title = {t('common.delete')}
                                                         >
                                                             <FiTrash2 />
                                                         </button>
@@ -503,10 +519,10 @@ export default function AdminDashboard()
                         {activeSection === 'comments' && (
                             <div className = "section-comments">
                                 <div className = "section-header">
-                                    <h1>Управління коментарями</h1>
+                                    <h1>{t('admin_dashboard.comments.title')}</h1>
                                 </div>
                                 <div className = "no-data-message">
-                                    <p>Коментарії вставляються з постів. Управління можливе через адмін-сторінку постів.</p>
+                                    <p>{t('admin_dashboard.comments.description')}</p>
                                 </div>
                             </div>
                         )}
@@ -515,7 +531,7 @@ export default function AdminDashboard()
                         {activeSection === 'categories' && (
                             <div className = "section-categories">
                                 <div className = "section-header">
-                                    <h1>Управління категоріями</h1>
+                                    <h1>{t('admin_dashboard.categories.title')}</h1>
                                 </div>
                                 <div className = "categories-grid">
                                     {Array.isArray(categories) && categories.map(cat => (
@@ -528,7 +544,7 @@ export default function AdminDashboard()
                                         </div>
                                     ))}
                                     {(!Array.isArray(categories) || categories.length === 0) && (
-                                        <p className = "no-data">Категорії не знайдені</p>
+                                        <p className = "no-data">{t('admin_dashboard.categories.empty')}</p>
                                     )}
                                 </div>
                             </div>
@@ -538,7 +554,7 @@ export default function AdminDashboard()
                         {activeSection === 'reports' && (
                             <div className = "section-reports">
                                 <div className = "section-header">
-                                    <h1>Управління репортами</h1>
+                                    <h1>{t('admin.manage_reports')}</h1>
                                 </div>
                                 <div className = "reports-table-container">
                                     {Array.isArray(reports) && reports.length > 0 ? (
@@ -546,11 +562,11 @@ export default function AdminDashboard()
                                             <thead>
                                                 <tr>
                                                     <th>ID</th>
-                                                    <th>Тип</th>
-                                                    <th>Об'єкт</th>
-                                                    <th>Причина</th>
-                                                    <th>Статус</th>
-                                                    <th>Дія</th>
+                                                    <th>{t('admin_dashboard.reports.table.type')}</th>
+                                                    <th>{t('admin_dashboard.reports.table.target')}</th>
+                                                    <th>{t('admin_dashboard.reports.table.reason')}</th>
+                                                    <th>{t('admin_dashboard.reports.table.status')}</th>
+                                                    <th>{t('admin_dashboard.reports.table.action')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -559,26 +575,22 @@ export default function AdminDashboard()
                                                         <td>#{report.id}</td>
                                                         <td>
                                                             <span className = "report-type-badge">
-                                                                {report.reported_type === 'post' ? '📝 Пост' :
-                                                                 report.reported_type === 'comment' ? '💬 Коментар' :
-                                                                 report.reported_type === 'user' ? '👤 Користувач' : report.reported_type}
+                                                                {get_report_type_label(report.reported_type)}
                                                             </span>
                                                         </td>
                                                         <td>{report.reported_id}</td>
-                                                        <td>{format_report_reason(report.reason)}</td>
+                                                        <td>{get_report_reason_label(report.reason)}</td>
                                                         <td>
                                                             <span className = {`status-badge status-${report.status}`}>
-                                                                {report.status === 'pending' ? '⏳ Очікує' :
-                                                                 report.status === 'resolved' ? '✅ Розв\'язано' :
-                                                                 report.status === 'rejected' ? '❌ Відхилено' : report.status}
+                                                                {get_report_status_label(report.status)}
                                                             </span>
                                                         </td>
                                                         <td>
                                                             <button 
                                                                 className = "action-btn"
-                                                                onClick={() => handleViewReport(report)}
+                                                                onClick={() => handle_view_report(report)}
                                                             >
-                                                                Переглянути
+                                                                {t('admin_dashboard.reports.view_button')}
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -587,7 +599,7 @@ export default function AdminDashboard()
                                         </table>
                                     ) : (
                                         <div className = "no-data-message">
-                                            <p>Репортів не знайдено</p>
+                                            <p>{t('admin_dashboard.reports.empty')}</p>
                                         </div>
                                     )}
                                 </div>
@@ -597,17 +609,17 @@ export default function AdminDashboard()
                         {/* Settings */}
                         {activeSection === 'settings' && (
                             <div className = "section-settings">
-                                <h1>Налаштування системи</h1>
+                                <h1>{t('admin_dashboard.settings.title')}</h1>
                                 <div className = "settings-container">
                                     <div className = "setting-card">
-                                        <h3>Загальні налаштування</h3>
-                                        <p>Версія: 1.0.0</p>
-                                        <p>Статус: 🟢 Активний</p>
+                                        <h3>{t('admin_dashboard.settings.general.title')}</h3>
+                                        <p>{t('admin_dashboard.settings.general.version', { version: '1.0.0' })}</p>
+                                        <p>{t('admin_dashboard.settings.general.status')}</p>
                                     </div>
                                     <div className = "setting-card">
-                                        <h3>База даних</h3>
-                                        <p>Тип: MySQL 8.0.22+</p>
-                                        <p>Статус: 🟢 Підключено</p>
+                                        <h3>{t('admin_dashboard.settings.database.title')}</h3>
+                                        <p>{t('admin_dashboard.settings.database.type', { type: 'MySQL 8.0.22+' })}</p>
+                                        <p>{t('admin_dashboard.settings.database.status')}</p>
                                     </div>
                                 </div>
                             </div>
@@ -621,25 +633,25 @@ export default function AdminDashboard()
                             <div className = "admin-modal-overlay" onClick = {() => { set_show_edit_user_modal(false); set_editing_user(null); }}>
                                 <div className = "admin-modal-content" onClick = {(e) => e.stopPropagation()}>
                                     <div className = "admin-modal-header">
-                                        <h2>Редагувати користувача</h2>
+                                        <h2>{t('admin_dashboard.edit_user.title')}</h2>
                                         <button className = "admin-modal-close" onClick = {() => { set_show_edit_user_modal(false); set_editing_user(null); }}>✕</button>
                                     </div>
                                     <div className = "admin-modal-body">
                                         <div className = "admin-edit-user-form">
                                             <label>
-                                                <span>Логін</span>
+                                                <span>{t('admin_dashboard.edit_user.fields.login')}</span>
                                                 <input
                                                     type = "text"
                                                     value = {edit_user_form.login}
-                                                    onChange = {(e) => handleEditUserChange('login', e.target.value)}
+                                                    onChange = {(e) => handle_edit_user_change('login', e.target.value)}
                                                 />
                                             </label>
                                             <label>
-                                                <span>Повне ім'я</span>
+                                                <span>{t('admin_dashboard.edit_user.fields.full_name')}</span>
                                                 <input
                                                     type = "text"
                                                     value = {edit_user_form.full_name}
-                                                    onChange = {(e) => handleEditUserChange('full_name', e.target.value)}
+                                                    onChange = {(e) => handle_edit_user_change('full_name', e.target.value)}
                                                 />
                                             </label>
                                             <label>
@@ -647,14 +659,14 @@ export default function AdminDashboard()
                                                 <input
                                                     type = "email"
                                                     value = {edit_user_form.email}
-                                                    onChange = {(e) => handleEditUserChange('email', e.target.value)}
+                                                    onChange = {(e) => handle_edit_user_change('email', e.target.value)}
                                                 />
                                             </label>
                                             <label>
-                                                <span>Роль</span>
+                                                <span>{t('admin_dashboard.edit_user.fields.role')}</span>
                                                 <select
                                                     value = {edit_user_form.role}
-                                                    onChange = {(e) => handleEditUserChange('role', e.target.value)}
+                                                    onChange = {(e) => handle_edit_user_change('role', e.target.value)}
                                                 >
                                                     <option value = "user">User</option>
                                                     <option value = "admin">Admin</option>
@@ -663,8 +675,8 @@ export default function AdminDashboard()
                                         </div>
                                     </div>
                                     <div className = "admin-modal-footer">
-                                        <button className = "admin-btn-action admin-btn-cancel" onClick = {() => { set_show_edit_user_modal(false); set_editing_user(null); }}>Скасувати</button>
-                                        <button className = "admin-btn-action admin-btn-approve" onClick = {handleUpdateUser}>Зберегти</button>
+                                        <button className = "admin-btn-action admin-btn-cancel" onClick = {() => { set_show_edit_user_modal(false); set_editing_user(null); }}>{t('common.cancel')}</button>
+                                        <button className = "admin-btn-action admin-btn-approve" onClick = {handle_update_user}>{t('common.save')}</button>
                                     </div>
                                 </div>
                             </div>
@@ -674,7 +686,7 @@ export default function AdminDashboard()
                 <div className = "admin-modal-overlay" onClick = {() => set_show_report_modal(false)}>
                     <div className = "admin-modal-content" onClick = {(e) => e.stopPropagation()}>
                         <div className = "admin-modal-header">
-                            <h2>Деталі репорту #{selected_report.id}</h2>
+                            <h2>{t('admin_dashboard.report_modal.title', { id: selected_report.id })}</h2>
                             <button 
                                 className = "admin-modal-close"
                                 onClick={() => set_show_report_modal(false)}
@@ -684,56 +696,52 @@ export default function AdminDashboard()
                         </div>
                         <div className = "admin-modal-body">
                             <div className = "report-detail-group">
-                                <label>Тип об'єкта:</label>
-                                <span>{selected_report.reported_type === 'post' ? '📝 Пост' :
-                                         selected_report.reported_type === 'comment' ? '💬 Коментар' :
-                                         selected_report.reported_type === 'user' ? '👤 Користувач' : selected_report.reported_type}</span>
+                                <label>{t('admin_dashboard.report_modal.object_type')}</label>
+                                <span>{get_report_type_label(selected_report.reported_type)}</span>
                             </div>
                             <div className = "report-detail-group">
-                                <label>ID об'єкта:</label>
+                                <label>{t('admin_dashboard.report_modal.object_id')}</label>
                                 <span>#{selected_report.reported_id}</span>
                             </div>
                             <div className = "report-detail-group">
-                                <label>Причина:</label>
-                                <span>{format_report_reason(selected_report.reason)}</span>
+                                <label>{t('admin_dashboard.report_modal.reason')}</label>
+                                <span>{get_report_reason_label(selected_report.reason)}</span>
                             </div>
                             <div className = "report-detail-group">
-                                <label>Опис:</label>
-                                <p>{selected_report.description || 'Без опису'}</p>
+                                <label>{t('admin_dashboard.report_modal.description')}</label>
+                                <p>{selected_report.description || t('admin_dashboard.report_modal.no_description')}</p>
                             </div>
                             <div className = "report-detail-group">
-                                <label>Поданий:</label>
-                                <span>{new Date(selected_report.created_at).toLocaleString('uk-UA')}</span>
+                                <label>{t('admin_dashboard.report_modal.submitted_at')}</label>
+                                <span>{new Date(selected_report.created_at).toLocaleString(i18n.language || undefined)}</span>
                             </div>
                             <div className = "report-detail-group">
-                                <label>Статус:</label>
+                                <label>{t('admin_dashboard.report_modal.status')}</label>
                                 <span className = {`status-badge status-${selected_report.status}`}>
-                                    {selected_report.status === 'pending' ? '⏳ Очікує' :
-                                     selected_report.status === 'resolved' ? '✅ Розв\'язано' :
-                                     selected_report.status === 'rejected' ? '❌ Відхилено' : selected_report.status}
+                                    {get_report_status_label(selected_report.status)}
                                 </span>
                             </div>
                         </div>
                         <div className = "admin-modal-footer">
                             <button 
                                 className = "admin-btn-action admin-btn-approve"
-                                onClick={() => handleReportAction(selected_report.id, 'resolved')}
+                                onClick={() => handle_report_action(selected_report.id, 'resolved')}
                                 disabled={selected_report.status !== 'pending'}
                             >
-                                ✅ Розв'язати
+                                ✅ {t('admin_dashboard.report_modal.resolve_button')}
                             </button>
                             <button 
                                 className = "admin-btn-action admin-btn-reject"
-                                onClick={() => handleReportAction(selected_report.id, 'rejected')}
+                                onClick={() => handle_report_action(selected_report.id, 'rejected')}
                                 disabled={selected_report.status !== 'pending'}
                             >
-                                ❌ Відхилити
+                                ❌ {t('admin_dashboard.report_modal.reject_button')}
                             </button>
                             <button 
                                 className = "admin-btn-action admin-btn-cancel"
                                 onClick = {() => set_show_report_modal(false)}
                             >
-                                Закрити
+                                {t('common.close')}
                             </button>
                         </div>
                     </div>

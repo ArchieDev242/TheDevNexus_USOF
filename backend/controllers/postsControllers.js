@@ -53,15 +53,17 @@ class posts_controller
                 filters.status = 'active';
             }
             
-            const posts = await Post.get_all_with_filters(page, limit, sort, filters);
+            const posts_data = await Post.get_all_with_filters(page, limit, sort, filters);
             
             res.json({
                 status: 'success',
-                data: posts,
+                data: posts_data.posts,
                 pagination: 
                 {
                     page: parseInt(page),
-                    limit: parseInt(limit)
+                    limit: parseInt(limit),
+                    total: posts_data.total,
+                    pages: Math.ceil(posts_data.total / parseInt(limit))
                 }
             });
         } catch(error) 
@@ -212,7 +214,6 @@ class posts_controller
                 await post.add_categories(categories);
             }
 
-            // Add blueprints if provided
             if(blueprints && Array.isArray(blueprints) && blueprints.length > 0) 
                 {
                 console.log('Adding blueprints to post...');
@@ -394,7 +395,6 @@ class posts_controller
                 throw error_handler.forbidden_error('You can only edit your own posts');
             }
 
-            // Check if post is closed
             if(post.is_closed) throw error_handler.forbidden_error('This post is closed and cannot be edited');
             
             const update_data = { title, content };

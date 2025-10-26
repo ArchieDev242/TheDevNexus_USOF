@@ -1,4 +1,4 @@
-.admin-reports-page 
+.admin-reports-page
 {
     min-height: 100vh;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -10,7 +10,7 @@
 
 .reports-header { margin-bottom: 40px; }
 
-.header-title 
+.header-title
 {
     display: flex;
     align-items: center;
@@ -18,7 +18,7 @@
     margin-bottom: 12px;
 }
 
-.btn-back 
+.btn-back
 {
     background: transparent;
     border: 2px solid #667eea;
@@ -33,27 +33,27 @@
     transition: all 0.3s;
 }
 
-.btn-back:hover 
+.btn-back:hover
 {
     background: #667eea;
     color: white;
 }
 
-.header-title h1 
+.header-title h1
 {
     font-size: 32px;
     margin: 0;
     color: #fff;
 }
 
-.reports-subtitle 
+.reports-subtitle
 {
     margin: 0;
     color: #b0b0b0;
     font-size: 16px;
 }
 
-.reports-filters 
+.reports-filters
 {
     display: flex;
     align-items: center;
@@ -65,20 +65,20 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.filter-group 
+.filter-group
 {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.filter-group svg 
+.filter-group svg
 {
     color: #667eea;
     size: 20px;
 }
 
-.filter-select 
+.filter-select
 {
     background: transparent;
     border: 1px solid #667eea;
@@ -90,26 +90,26 @@
     transition: all 0.3s;
 }
 
-.filter-select:hover 
+.filter-select:hover
 {
     border-color: #764ba2;
     background: rgba(102, 126, 234, 0.1);
 }
 
-.filter-select option 
+.filter-select option
 {
     background: #1a1a2e;
     color: white;
 }
 
-.reports-count 
+.reports-count
 {
     margin-left: auto;
     color: #b0b0b0;
     font-size: 14px;
 }
 
-.alert 
+.alert
 {
     padding: 16px;
     border-radius: 8px;
@@ -118,14 +118,14 @@
     gap: 12px;
 }
 
-.alert-error 
+.alert-error
 {
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid #ef4444;
     color: #fca5a5;
 }
 
-.reports-loading 
+.reports-loading
 {
     display: flex;
     flex-direction: column;
@@ -134,7 +134,7 @@
     padding: 60px 20px;
 }
 
-.spinner 
+.spinner
 {
     width: 50px;
     height: 50px;
@@ -144,51 +144,51 @@
     animation: spin 1s linear infinite;
 }
 
-@keyframes spin 
+@keyframes spin
 {
     to { transform: rotate(360deg); }
 }
 
-.reports-loading p 
+.reports-loading p
 {
     margin-top: 20px;
     color: #b0b0b0;
 }
 
-.no-reports 
+.no-reports
 {
     text-align: center;
     padding: 60px 20px;
     color: #b0b0b0;
 }
 
-.no-reports svg 
+.no-reports svg
 {
     color: #667eea;
     margin-bottom: 20px;
 }
 
-.no-reports h3 
+.no-reports h3
 {
     font-size: 24px;
     margin: 0 0 10px 0;
     color: white;
 }
 
-.no-reports p 
+.no-reports p
 {
     margin: 0;
     font-size: 14px;
 }
 
-.reports-list 
+.reports-list
 {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-.report-card 
+.report-card
 {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -197,13 +197,13 @@
     transition: all 0.3s;
 }
 
-.report-card:hover 
+.report-card:hover
 {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(102, 126, 234, 0.3);
 }
 
-.report-header 
+.report-header
 {
     display: flex;
     justify-content: space-between;
@@ -212,21 +212,21 @@
     gap: 16px;
 }
 
-.report-info 
+.report-info
 {
     display: flex;
     align-items: center;
     gap: 16px;
 }
 
-.report-info h3 
+.report-info h3
 {
     margin: 0;
     font-size: 18px;
     color: white;
 }
 
-.badge 
+.badge
 {
     display: inline-flex;
     align-items: center;
@@ -237,21 +237,21 @@
     font-weight: 600;
 }
 
-.badge-pending 
+.badge-pending
 {
     background: rgba(251, 191, 36, 0.2);
     color: #fbbf24;
     border: 1px solid #fbbf24;
 }
 
-.badge-resolved 
+.badge-resolved
 {
     background: rgba(34, 197, 94, 0.2);
     color: #86efac;
     border: 1px solid #86efac;
 }
 
-.badge-dismissed 
+.badge-dismissed
 {
     background: rgba(107, 114, 128, 0.2);
     color: #d1d5db;
@@ -260,13 +260,13 @@
 
 .report-meta { text-align: right; }
 
-.report-date 
+.report-date
 {
     color: #b0b0b0;
     font-size: 12px;
 }
 
-.report-content 
+.report-content
 {
     margin-bottom: 20px;
     padding: 12px;
@@ -274,7 +274,7 @@
     border-radius: 6px;
 }
 
-.report-content p 
+.report-content p
 {
     margin: 0 0 10px 0;
     font-size: 14px;
@@ -292,14 +292,14 @@
 
 .report-reporter { color: #d1d5db; }
 
-.report-actions 
+.report-actions
 {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
 }
 
-.btn 
+.btn
 {
     padding: 8px 14px;
     border: none;
@@ -313,49 +313,49 @@
     font-weight: 600;
 }
 
-.btn:disabled 
+.btn:disabled
 {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.btn-delete 
+.btn-delete
 {
     background: #ef4444;
     color: white;
 }
 
-.btn-delete:hover:not(:disabled) 
+.btn-delete:hover:not(:disabled)
 {
     background: #dc2626;
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
-.btn-ban 
+.btn-ban
 {
     background: #f97316;
     color: white;
 }
 
-.btn-ban:hover:not(:disabled) 
+.btn-ban:hover:not(:disabled)
 {
     background: #ea580c;
     box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
 }
 
-.btn-dismiss 
+.btn-dismiss
 {
     background: #6b7280;
     color: white;
 }
 
-.btn-dismiss:hover:not(:disabled) 
+.btn-dismiss:hover:not(:disabled)
 {
     background: #4b5563;
     box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
 }
 
-.report-notes 
+.report-notes
 {
     margin-top: 12px;
     padding: 10px;
@@ -368,7 +368,7 @@
 
 .report-notes strong { color: #667eea; }
 
-.pagination 
+.pagination
 {
     display: flex;
     justify-content: center;
@@ -377,7 +377,7 @@
     margin-top: 40px;
 }
 
-.btn-pagination 
+.btn-pagination
 {
     background: transparent;
     border: 1px solid #667eea;
@@ -389,30 +389,29 @@
     font-size: 14px;
 }
 
-.btn-pagination:hover:not(:disabled) 
+.btn-pagination:hover:not(:disabled)
 {
     background: #667eea;
     color: white;
 }
 
-.btn-pagination:disabled 
+.btn-pagination:disabled
 {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.pagination-info 
+.pagination-info
 {
     color: #b0b0b0;
     font-size: 14px;
 }
 
-/* Responsive */
-@media (max-width: 768px) 
+@media (max-width: 768px)
 {
     .admin-reports-page { padding: 20px 0; }
 
-    .header-title 
+    .header-title
     {
         flex-direction: column;
         align-items: flex-start;
@@ -425,13 +424,13 @@
 
     .report-actions { width: 100%; }
 
-    .btn 
+    .btn
     {
         flex: 1;
         justify-content: center;
     }
 
-    .reports-filters 
+    .reports-filters
     {
         flex-direction: column;
         align-items: flex-start;

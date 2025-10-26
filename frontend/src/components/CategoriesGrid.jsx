@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import 
 { 
     FaUnity,
@@ -28,6 +29,7 @@ export default function CategoriesGrid()
 {
     const { categories, loading } = useSelector(state => state.categories);
     const navigate = useNavigate();
+    const { t } = useTranslation();
     
     const category_icons = {
         'Game Development': FaGamepad,
@@ -51,12 +53,12 @@ export default function CategoriesGrid()
         <section className = "categories-section">
             <div className = "container">
                 <h2 className = "section-title centered">
-                    <span className = "gradient-text">Explore Categories</span>
+                    <span className = "gradient-text">{t('categories.title')}</span>
                 </h2>
                 
                 <div className = "categories-grid">
                     {loading ? (
-                        <p>Loading categories...</p>
+                        <p>{t('common.loading')}</p>
                     ) : categories.length > 0 ? (
                         categories.map((category) => {
                             const IconComponent = category_icons[category.title] || FiFolder;
@@ -72,17 +74,17 @@ export default function CategoriesGrid()
                                     </div>
                                     <h3 className = "category-name">{category.title}</h3>
                                     <p className = "category-description">
-                                        {category.description?.substring(0, 80) || 'Explore topics in this category'}
+                                        {category.description?.substring(0, 80) || t('categories.select_category')}
                                     </p>
                                     <div className = "category-stats">
                                         <FaBook />
-                                        <span>{category.posts_count ?? 0} posts</span>
+                                        <span>{t('categories.posts_count', { count: category.posts_count ?? 0 })}</span>
                                     </div>
                                 </div>
                             );
                         })
                     ) : (
-                        <p>No categories available</p>
+                        <p>{t('categories.no_categories')}</p>
                     )}
                 </div>
             </div>

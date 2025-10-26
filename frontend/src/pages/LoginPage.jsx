@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { login } from '../redux/slices/authSlice';
 import { FiUser, FiLock, FiEye, FiEyeOff, FiLogIn, FiUserPlus } from 'react-icons/fi';
 import Header from '../components/Header';
+import { useLanguage } from '../hooks/useLanguage';
 import '../style/auth.css';
 
 export default function LoginPage() 
@@ -14,10 +16,19 @@ export default function LoginPage()
     });
     const [show_password, set_show_password] = useState(false);
     const [particles, set_particles] = useState([]);
+    const [status_messages, set_status_messages] = useState([]);
     
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { loading, error } = useSelector(state => state.auth);
+    const { t } = useTranslation();
+    const { currentLanguage, changeLanguage, availableLanguages, languageNames } = useLanguage();
+    const [searchParams] = useSearchParams();
+    const languageFlags = {
+        ua: '🇺🇦',
+        en: '🇬🇧',
+        de: '🇩🇪'
+    };
     
     useEffect(() => {
         const particle_array = [];
@@ -33,6 +44,20 @@ export default function LoginPage()
         }
         set_particles(particle_array);
     }, []);
+
+    useEffect(() => {
+        const messages = [];
+
+        if(searchParams.get('verified') === 'true') {
+            messages.push(t('auth_page.login.verified_success'));
+        }
+
+        if(searchParams.get('reset') === 'success') {
+            messages.push(t('auth_page.login.reset_success'));
+        }
+
+        set_status_messages(messages);
+    }, [searchParams, t]);
     
     const handle_change = (e) => {
         set_form_data({
@@ -71,11 +96,31 @@ export default function LoginPage()
                 <div className = "auth-card">
                     <div className = "auth-header">
                         <div className = "pixel-corners"></div>
-                        <h1 className = "auth-title gradient-text">LOGIN</h1>
-                        <p className = "auth-subtitle">ENTER THE NEXUS</p>
+                        <div className = "auth-language-switcher">
+                            {availableLanguages.map(lng => (
+                                <button
+                                    key = {lng}
+                                    type = "button"
+                                    className = {`auth-lang-btn ${currentLanguage === lng ? 'active' : ''}`}
+                                    onClick = {() => changeLanguage(lng)}
+                                    aria-label = {languageNames[lng]}
+                                >
+                                    {languageFlags[lng]}
+                                </button>
+                            ))}
+                        </div>
+                        <h1 className = "auth-title gradient-text">{t('auth_page.login.title')}</h1>
+                        <p className = "auth-subtitle">{t('auth_page.login.subtitle')}</p>
                     </div>
                     
                     <form onSubmit = {handle_submit} className = "auth-form">
+                        {status_messages.length > 0 && (
+                            <div className = "success-message">
+                                {status_messages.map((message, index) => (
+                                    <p key = {index}>{message}</p>
+                                ))}
+                            </div>
+                        )}
                         {error && (
                             <div className = "error-message">
                                 <span className = "error-icon">⚠</span>
@@ -85,7 +130,7 @@ export default function LoginPage()
 
                         <div className = "form-group">
                             <label htmlFor = "login" className = "form-label">
-                                <FiUser /> USERNAME OR EMAIL
+                                <FiUser /> {t('auth_page.login.username_label')}
                             </label>
                             <div className = "input-wrapper">
                                 <input
@@ -95,7 +140,7 @@ export default function LoginPage()
                                     value = {form_data.login}
                                     onChange = {handle_change}
                                     className = "form-input"
-                                    placeholder = "Enter your username"
+                                    placeholder = {t('auth_page.login.username_placeholder')}
                                     required
                                 />
                                 <div className = "input-glow"></div>
@@ -104,7 +149,7 @@ export default function LoginPage()
 
                         <div className = "form-group">
                             <label htmlFor = "password" className = "form-label">
-                                <FiLock /> PASSWORD
+                                <FiLock /> {t('auth_page.login.password_label')}
                             </label>
                             <div className = "input-wrapper">
                                 <input
@@ -114,7 +159,7 @@ export default function LoginPage()
                                     value = {form_data.password}
                                     onChange = {handle_change}
                                     className = "form-input"
-                                    placeholder = "Enter your password"
+                                    placeholder = {t('auth_page.login.password_placeholder')}
                                     required
                                 />
                                 <button
@@ -130,7 +175,7 @@ export default function LoginPage()
 
                         <div className = "form-footer">
                             <a href = "/forgot-password" className = "forgot-link">
-                                Forgot Password?
+                                {t('auth_page.login.forgot_password')}
                             </a>
                         </div>
                         
@@ -142,26 +187,29 @@ export default function LoginPage()
                             {loading ? (
                                 <>
                                     <span className = "loading-spinner"></span>
-                                    LOADING...
+                                    {t('auth_page.login.loading')}
                                 </>
                             ) : (
                                 <>
-                                    <FiLogIn /> LOGIN
+                                    <FiLogIn /> {t('auth_page.login.submit')}
                                 </>
                             )}
                         </button>
 
                         <div className = "auth-divider">
-                            <span>OR</span>
+                            <span>{t('auth_page.common.or')}</span>
                         </div>
 
                         <Link to = "/register" className = "btn btn-game-outline">
-                            <FiUserPlus /> CREATE ACCOUNT
+                            <FiUserPlus /> {t('auth_page.login.create_account')}
                         </Link>
                     </form>
 
                     <div className = "auth-footer">
-                        <p>New to TheDevNexus? <Link to = "/register">Join now!</Link></p>
+                        <p>
+                            {t('auth_page.login.footer_text')}{' '}
+                            <Link to = "/register">{t('auth_page.login.footer_link')}</Link>
+                        </p>
                     </div>
                 </div>
             </div>

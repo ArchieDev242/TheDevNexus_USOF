@@ -1,8 +1,10 @@
 import React from 'react';
 import { FiTwitter, FiGithub, FiYoutube, FiMessageCircle } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
 export default function Footer() 
 {
+    const { t } = useTranslation();
     
     return (
         <footer className = "site-footer">
@@ -11,43 +13,43 @@ export default function Footer()
                     <div className = "footer-col">
                         <h3 className = "footer-logo gradient-text">TheDevNexus</h3>
                         <p className = "footer-description">
-                            The ultimate hub for game developers and tech enthusiasts to connect, learn, and create.
+                            {t('footer.description')}
                         </p>
                     </div>
                     
                     <div className = "footer-col">
-                        <h4 className = "footer-heading">Quick Links</h4>
+                        <h4 className = "footer-heading">{t('footer.quick_links')}</h4>
                         <ul className = "footer-links">
-                            <li><a href = "/">Home</a></li>
-                            <li><a href = "/posts">Forums</a></li>
-                            <li><a href = "/categories">Categories</a></li>
-                            <li><a href = "/about">About</a></li>
+                            <li><a href = "/">{t('header.home')}</a></li>
+                            <li><a href = "/posts">{t('footer.link_forums')}</a></li>
+                            <li><a href = "/categories">{t('categories.title')}</a></li>
+                            <li><a href = "/about">{t('header.about')}</a></li>
                         </ul>
                     </div>
                     
                     <div className = "footer-col">
-                        <h4 className = "footer-heading">Categories</h4>
+                        <h4 className = "footer-heading">{t('footer.categories')}</h4>
                         <ul className = "footer-links">
-                            <li><a href = "/category/gamedev">Game Dev</a></li>
-                            <li><a href = "/category/programming">Programming</a></li>
-                            <li><a href = "/category/design">Art & Design</a></li>
-                            <li><a href = "/category/career">Career</a></li>
+                            <li><a href = "/category/gamedev">{t('footer.category_gamedev')}</a></li>
+                            <li><a href = "/category/programming">{t('footer.category_programming')}</a></li>
+                            <li><a href = "/category/design">{t('footer.category_design')}</a></li>
+                            <li><a href = "/category/career">{t('footer.category_career')}</a></li>
                         </ul>
                     </div>
                     
                     <div className = "footer-col">
-                        <h4 className = "footer-heading">Connect</h4>
+                        <h4 className = "footer-heading">{t('footer.connect')}</h4>
                         <div className = "social-links">
-                            <a href = "#" className = "social-link" aria-label = "Twitter">
+                            <a href = "#" className = "social-link" aria-label = {t('footer.twitter')}>
                                 <FiTwitter />
                             </a>
-                            <a href = "#" className = "social-link" aria-label = "GitHub">
+                            <a href = "#" className = "social-link" aria-label = {t('footer.github')}>
                                 <FiGithub />
                             </a>
-                            <a href = "#" className = "social-link" aria-label = "YouTube">
+                            <a href = "#" className = "social-link" aria-label = {t('footer.youtube')}>
                                 <FiYoutube />
                             </a>
-                            <a href = "#" className = "social-link" aria-label = "Discord">
+                            <a href = "#" className = "social-link" aria-label = {t('footer.discord')}>
                                 <FiMessageCircle />
                             </a>
                         </div>
@@ -55,7 +57,7 @@ export default function Footer()
                 </div>
                 
                 <div className = "footer-bottom">
-                    <p>© 2025 TheDevNexus. All rights reserved.</p>
+                    <p>{t('footer.copyright', { year: '2025' })}</p>
                 </div>
             </div>
         </footer>

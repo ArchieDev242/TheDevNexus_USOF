@@ -52,55 +52,46 @@ class RateLimit
 
     static auth() 
     {
-        if (!this._authLimiter) {
-            this._authLimiter = new RateLimit();
-        }
+        if(!this._authLimiter) this._authLimiter = new RateLimit();
         return this._authLimiter.limit({
-            windowMs: 15 * 60 * 1000, // 15 minutes
-            maxRequests: 50, // from 5 to 50
+            windowMs: 15 * 60 * 1000,
+            maxRequests: 50,
             message: 'Too many authentication attempts, please try again later'
         });
     }
 
     static api() 
     {
-        if (!this._apiLimiter) {
-            this._apiLimiter = new RateLimit();
-        }
+        if(!this._apiLimiter) this._apiLimiter = new RateLimit();
         return this._apiLimiter.limit({
-            windowMs: 15 * 60 * 1000, // 15 minutes
-            maxRequests: 500, // 500 requests per 15 minutes
+            windowMs: 15 * 60 * 1000,
+            maxRequests: 500,
             message: 'Too many API requests, please try again later'
         });
     }
 
     static password_reset() 
     {
-        if (!this._passwordResetLimiter) {
-            this._passwordResetLimiter = new RateLimit();
-        }
+        if(!this._passwordResetLimiter) this._passwordResetLimiter = new RateLimit();
         return this._passwordResetLimiter.limit({
-            windowMs: 60 * 60 * 1000, // 1 hour
-            maxRequests: 3, // 3 password reset attempts per hour
+            windowMs: 60 * 60 * 1000, 
+            maxRequests: 3,
             message: 'Too many password reset attempts, please try again in an hour'
         });
     }
 
-    static execute_code_limit() 
+    static execute_code_limit()
     {
-        if (!this._executeCodeLimiter) {
-            this._executeCodeLimiter = new RateLimit();
-        }
+        if(!this._executeCodeLimiter) this._executeCodeLimiter = new RateLimit();
         return this._executeCodeLimiter.limit({
-            windowMs: 60 * 1000, // 1 minute
-            maxRequests: 10, // 10 code executions per minute
+            windowMs: 60 * 1000,
+            maxRequests: 10,
             message: 'Too many code execution attempts, please wait before trying again'
         });
     }
 
     get_key(req) 
     {
-        // user ID if authenticated, otherwise use IP
         if(req.user) return `user:${req.user.id}`;
         
         return `ip:${req.ip || req.connection.remoteAddress}`;

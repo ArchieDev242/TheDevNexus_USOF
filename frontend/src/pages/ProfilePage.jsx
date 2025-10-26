@@ -36,6 +36,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import { defaultSchema } from 'hast-util-sanitize';
+import { useTranslation } from 'react-i18next';
 
 const BIO_ALLOWED_COLOR_NAMES = new Set([
     'red', 'orange', 'yellow', 'gold', 'amber', 'lime', 'green', 'emerald', 'teal', 'cyan',
@@ -114,69 +115,55 @@ const BIO_EMOJI_LIST = [
     '🔥', '✨', '💡', '🎉', '🎊', '🎈', '🏆', '🥇', '🥈', '🥉'
 ];
 
-const AVAILABLE_ENGINES = [
+const GAME_ENGINE_DEFINITIONS = [
     { 
         id: 'unreal-engine', 
         name: 'Unreal Engine', 
         icon: <SiUnrealengine />, 
         color: '#0E1128',
-        description: 'Потужний AAA движок від Epic Games',
-        audience: 'Для розробки високоякісних 3D ігор, VR/AR проектів',
-        languages: 'C++, Blueprints'
+        translationKey: 'unreal_engine'
     },
     { 
         id: 'unity', 
         name: 'Unity', 
         icon: <SiUnity />, 
-        color: '#000000',
-        description: 'Найпопулярніший кросплатформенний движок',
-        audience: 'Для мобільних, інді та AA ігор',
-        languages: 'C#'
+        color: '#3A3F4B',
+        translationKey: 'unity'
     },
     { 
         id: 'godot', 
         name: 'Godot', 
         icon: <SiGodotengine />, 
-        color: '#478CBF',
-        description: 'Безкоштовний open-source движок',
-        audience: 'Для інді-розробників, 2D/3D ігор',
-        languages: 'GDScript, C#, C++'
+        color: '#3F8FC9',
+        translationKey: 'godot'
     },
     { 
         id: 'renpy', 
         name: "Ren'Py", 
         icon: <SiPython />, 
-        color: '#FF7F7F',
-        description: 'Спеціалізований движок для візуальних новел',
-        audience: 'Для інтерактивних історій та візуальних новел',
-        languages: 'Python, Ren\'Py Script'
+        color: '#FF6B8A',
+        translationKey: 'renpy'
     },
     { 
         id: 'gamemaker', 
         name: 'GameMaker', 
         icon: <SiGamemaker />, 
-        color: '#8BC34A',
-        description: 'Зручний движок для 2D ігор',
-        audience: 'Для початківців та 2D інді-ігор',
-        languages: 'GML (GameMaker Language)'
+        color: '#58B947',
+        translationKey: 'gamemaker'
     },
     { 
         id: 'cryengine', 
         name: 'CryEngine', 
         icon: <SiCryengine />, 
-        color: '#000000',
-        description: 'Високоякісний движок з реалістичною графікою',
-        audience: 'Для AAA проектів з акцентом на графіку',
-        languages: 'C++, Lua'
+        color: '#00B4D8',
+        translationKey: 'cryengine'
     },
     { 
         id: 'custom-engines', 
         name: 'Custom Engines', 
         icon: <SiVulkan />, 
-        color: '#FF6584',
-        description: 'Власні движки на базі OpenGL/Vulkan',
-        audience: 'Для досвідчених програмістів, які хочуть повний контроль',
-        languages: 'C++, OpenGL, Vulkan'
+        color: '#FFB400',
+        translationKey: 'custom_engines'
     }
 ];
 
@@ -184,6 +171,7 @@ export default function ProfilePage() {
     const { user, loading } = useSelector(state => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const [active_tab, set_active_tab] = useState('posts');
     const [show_edit_modal, set_show_edit_modal] = useState(false);
@@ -547,13 +535,13 @@ export default function ProfilePage() {
             // Validate file type
             const allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
             if (!allowed_types.includes(file.type)) {
-                alert('Підтримуються тільки формати: JPG, PNG, GIF, WEBP');
+            alert(t('profile.notifications.avatar_format_error'));
                 return;
             }
 
             // Validate file size (5MB)
             if (file.size > 5 * 1024 * 1024) {
-                alert('Файл занадто великий. Максимум 5MB');
+            alert(t('profile.notifications.avatar_size_error'));
                 return;
             }
 
@@ -585,13 +573,13 @@ export default function ProfilePage() {
                     {
                     const error = await response.json();
 
-                    alert(error.error || 'Failed to upload avatar');
+                    alert(error.error || t('profile.notifications.avatar_upload_error'));
                     set_avatar_preview(null);
                 }
             } catch(error) 
             {
                 console.error('Error uploading avatar:', error);
-                alert('Failed to upload avatar');
+                alert(t('profile.notifications.avatar_upload_error'));
                 set_avatar_preview(null);
             }
         }
@@ -636,24 +624,24 @@ export default function ProfilePage() {
                 console.log('Profile updated successfully:', data);
                 await dispatch(fetch_current_user());
                 set_show_edit_modal(false);
-                alert('Профіль успішно оновлено!');
+                alert(t('profile.notifications.profile_update_success'));
             } else 
                 {
                 const error = await response.json();
                 console.error('Error response:', error);
-                alert(error.error || 'Failed to update profile');
+                alert(error.error || t('profile.notifications.profile_update_error'));
             }
         } catch(error) 
         {
             console.error('Error updating profile:', error);
-            alert('Failed to update profile');
+            alert(t('profile.notifications.profile_update_error'));
         }
     };
 
     const handle_save_password = async () => {
         if(password_data.new_password !== password_data.confirm_password) 
             {
-            alert('Passwords do not match!');
+            alert(t('profile.notifications.password_mismatch'));
             return;
         }
         // TODO: dispatch update password action
@@ -680,19 +668,19 @@ export default function ProfilePage() {
             } else 
                 {
                 const error = await response.json();
-                alert(error.error || 'Failed to delete avatar');
+                alert(error.error || t('profile.notifications.avatar_delete_error'));
             }
         } catch(error) 
         {
             console.error('Error deleting avatar:', error);
-            alert('Failed to delete avatar');
+            alert(t('profile.notifications.avatar_delete_error'));
         }
     };
 
     const handle_delete_account = async () => {
         if(!delete_password) 
             {
-            alert('Please enter your password to confirm');
+            alert(t('profile.notifications.delete_password_required'));
             return;
         }
         // TODO: dispatch delete account action
@@ -732,7 +720,7 @@ export default function ProfilePage() {
                                     <div className = "avatar-wrapper">
                                         <img 
                                             src = {avatar_preview || user?.avatar || '/user/avatar.jpg'} 
-                                            alt = "Avatar" 
+                                            alt = {t('profile.avatar_alt')}
                                             className = "profile-avatar"
                                         />
                                         {avatar_preview && (
@@ -753,11 +741,11 @@ export default function ProfilePage() {
                                     </div>
                                     {!avatar_preview && user?.avatar && (
                                         <button onClick = {handle_delete_avatar} className = "btn-icon danger">
-                                            <FiTrash2 /> Remove Avatar
+                                            <FiTrash2 /> {t('profile.remove_avatar')}
                                         </button>
                                     )}
                                     <p className = "avatar-hint">
-                                        Підтримуються: JPG, PNG, GIF, WEBP (макс. 5MB)
+                                        {t('profile.avatar_hint')}
                                     </p>
                                 </div>
 
@@ -786,10 +774,10 @@ export default function ProfilePage() {
                                     {/* Game Engines */}
                                     {user?.engines && user.engines.length > 0 && (
                                         <div className = "user-engines">
-                                            <p className = "engines-label">Game Engines:</p>
+                                            <p className = "engines-label">{t('profile.game_engines_label')}</p>
                                             <div className = "engines-icons">
                                                 {user.engines.map(engine_id => {
-                                                    const engine = AVAILABLE_ENGINES.find(e => e.id === engine_id);
+                                                    const engine = GAME_ENGINE_DEFINITIONS.find(e => e.id === engine_id);
                                                     if (!engine) return null;
                                                     return (
                                                         <div 
@@ -810,7 +798,7 @@ export default function ProfilePage() {
                                         className = "btn-edit-profile"
                                         onClick = {() => set_show_edit_modal(true)}
                                     >
-                                        <FiEdit2 /> Edit Profile
+                                        <FiEdit2 /> {t('profile.edit_profile')}
                                     </button>
 
                                     {user?.role === 'admin' && (
@@ -818,7 +806,7 @@ export default function ProfilePage() {
                                             className = "btn-admin"
                                             onClick = {() => navigate('/admin-dashboard')}
                                         >
-                                            <FiSettings /> Admin Panel
+                                            <FiSettings /> {t('admin.title')}
                                         </button>
                                     )}
                                 </div>
@@ -827,15 +815,19 @@ export default function ProfilePage() {
                                     <div className = "stat-item">
                                         <FaBrain className = "profile-stat-icon positive" />
                                         <div className = "stat-info">
-                                            <span className = "stat-label">Rating</span>
-                                            <span className = "stat-value positive">+{user?.rating || 0}</span>
+                                            <span className = "stat-label">{t('profile.stats.rating_label')}</span>
+                                            <span className = "stat-value positive">
+                                                {t('profile.stats.rating_value', { value: user?.rating || 0 })}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className = "stat-item">
                                         <GiAchievement className = "profile-stat-icon" />
                                         <div className = "stat-info">
-                                            <span className = "stat-label">Achievements</span>
-                                            <span className = "stat-value">{loaded_achievements?.length || 0} earned</span>
+                                            <span className = "stat-label">{t('profile.stats.achievements_label')}</span>
+                                            <span className = "stat-value">
+                                                {t('profile.stats.achievements_value', { count: loaded_achievements?.length || 0 })}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -845,27 +837,27 @@ export default function ProfilePage() {
                                         className = {`nav-item ${active_tab === 'posts' ? 'active' : ''}`}
                                         onClick = {() => set_active_tab('posts')}
                                     >
-                                        <FiFileText /> My Posts
+                                        <FiFileText /> {t('profile.my_posts')}
                                     </button>
                                     <button 
                                         className = {`nav-item ${active_tab === 'achievements' ? 'active' : ''}`}
                                         onClick = {() => set_active_tab('achievements')}
                                     >
-                                        <GiAchievement /> Achievements
+                                        <GiAchievement /> {t('profile.my_achievements')}
                                     </button>
                                     {user?.role === 'admin' && (
                                         <button 
                                             className = {`nav-item ${active_tab === 'admin' ? 'active' : ''}`}
                                             onClick = {() => navigate('/admin-dashboard')}
                                         >
-                                            <FiSettings /> Admin
+                                            <FiSettings /> {t('admin.title')}
                                         </button>
                                     )}
                                     <button 
                                         className = {`nav-item ${active_tab === 'settings' ? 'active' : ''}`}
                                         onClick = {() => set_active_tab('settings')}
                                     >
-                                        <FiSettings /> Settings
+                                        <FiSettings /> {t('settings.title')}
                                     </button>
                                 </nav>
                             </div>
@@ -877,13 +869,13 @@ export default function ProfilePage() {
                             {active_tab === 'posts' && (
                                 <div className = "content-section">
                                     <div className = "section-header">
-                                        <h2>My Profile</h2>
+                                        <h2>{t('profile.title')}</h2>
                                     </div>
 
                                     {/* Bio Section */}
                                     {user?.bio && user.bio.trim() && (
                                         <div className = "bio-section">
-                                            <h3>About Me</h3>
+                                            <h3>{t('profile.bio')}</h3>
                                             <div className = "bio-text">
                                                 <ReactMarkdown
                                                     remarkPlugins = {[remarkGfm]}
@@ -920,19 +912,19 @@ export default function ProfilePage() {
 
                                     {/* User Posts */}
                                     <div className = "user-posts-section">
-                                        <h3>My Posts ({user_posts.length})</h3>
+                                        <h3>{t('profile.sections.posts.list_title', { count: user_posts.length })}</h3>
                                         {user_posts.length === 0 ? (
                                             <div className = "empty-state">
                                                 <FiFileText size={48} />
-                                                <p>You haven't created any posts yet.</p>
+                                                <p>{t('profile.sections.posts.empty')}</p>
                                             </div>
                                         ) : (
                                             <div className = "posts-grid">
                                                 {user_posts.map(post => {
                                                     const normalized_status = (post.status || '').toLowerCase();
                                                     const is_inactive = normalized_status === 'inactive';
-                                                    let status_label = is_inactive ? 'inactive' : (post.status || 'active');
-                                                    if (post.is_closed) status_label = 'closed';
+                                                    let status_key = is_inactive ? 'inactive' : 'active';
+                                                    if (post.is_closed) status_key = 'closed';
 
                                                     return (
                                                         <div 
@@ -945,12 +937,12 @@ export default function ProfilePage() {
                                                                 <h4>{post.title}</h4>
                                                                 <div className = "post-status-badges">
                                                                     {post.is_closed && (
-                                                                        <span className = "post-status closed" title="Цей пост закритий">
+                                                                        <span className = "post-status closed" title={t('profile.sections.posts.closed_tooltip')}>
                                                                             <GoBlocked size={16} />
                                                                         </span>
                                                                     )}
                                                                     <span className = {`post-status${is_inactive || post.is_closed ? ' inactive' : ''}`}>
-                                                                        {status_label}
+                                                                        {t(`profile.sections.posts.status.${status_key}`)}
                                                                     </span>
                                                                 </div>
                                                             </div>
@@ -982,7 +974,7 @@ export default function ProfilePage() {
                             {active_tab === 'achievements' && (
                                 <div className = "content-section">
                                     <div className = "section-header">
-                                        <h2>Achievements</h2>
+                                        <h2>{t('profile.sections.achievements.title')}</h2>
                                     </div>
 
                                     <div className = "achievements-grid">
@@ -1009,7 +1001,7 @@ export default function ProfilePage() {
                                                             <p>{achievement.description}</p>
                                                             {achievement.points && (
                                                                 <small className = "achievement-points">
-                                                                    +{achievement.points} pts
+                                                                    {t('profile.sections.achievements.points', { points: achievement.points })}
                                                                 </small>
                                                             )}
                                                         </div>
@@ -1021,7 +1013,7 @@ export default function ProfilePage() {
                                             })
                                         ) : (
                                             <p className = "no-achievements">
-                                                No achievements available.
+                                                {t('profile.sections.achievements.empty')}
                                             </p>
                                         )}
                                     </div>
@@ -1032,15 +1024,15 @@ export default function ProfilePage() {
                             {active_tab === 'settings' && (
                                 <div className = "content-section">
                                     <div className = "section-header">
-                                        <h2>Security Settings</h2>
+                                        <h2>{t('profile.sections.settings.title')}</h2>
                                     </div>
 
                                     <div className = "security-section">
-                                        <h3>Change Password</h3>
+                                        <h3>{t('profile.sections.settings.change_password.title')}</h3>
                                         <div className = "form-grid">
                                             <div className = "form-group full-width">
                                                 <label className = "form-label">
-                                                    <FiLock /> Current Password
+                                                    <FiLock /> {t('profile.sections.settings.change_password.current')}
                                                 </label>
                                                 <input
                                                     type = "password"
@@ -1053,7 +1045,7 @@ export default function ProfilePage() {
 
                                             <div className = "form-group">
                                                 <label className = "form-label">
-                                                    <FiLock /> New Password
+                                                    <FiLock /> {t('profile.sections.settings.change_password.new')}
                                                 </label>
                                                 <input
                                                     type = "password"
@@ -1066,7 +1058,7 @@ export default function ProfilePage() {
 
                                             <div className = "form-group">
                                                 <label className = "form-label">
-                                                    <FiLock /> Confirm Password
+                                                    <FiLock /> {t('profile.sections.settings.change_password.confirm')}
                                                 </label>
                                                 <input
                                                     type = "password"
@@ -1080,19 +1072,19 @@ export default function ProfilePage() {
 
                                         <div className = "form-actions">
                                             <button onClick = {handle_save_password} className = "btn btn-game">
-                                                <FiSave /> Update Password
+                                                <FiSave /> {t('profile.sections.settings.change_password.submit')}
                                             </button>
                                         </div>
                                     </div>
 
                                     <div className = "danger-zone">
-                                        <h3>Danger Zone</h3>
-                                        <p>Once you delete your account, there is no going back. Please be certain.</p>
+                                        <h3>{t('profile.sections.settings.danger_zone.title')}</h3>
+                                        <p>{t('profile.sections.settings.danger_zone.description')}</p>
                                         <button 
                                             onClick = {() => set_show_delete_modal(true)}
                                             className = "btn btn-danger"
                                         >
-                                            <FiTrash2 /> Delete Account
+                                            <FiTrash2 /> {t('profile.sections.settings.danger_zone.delete_button')}
                                         </button>
                                     </div>
                                 </div>
@@ -1108,29 +1100,29 @@ export default function ProfilePage() {
                     <div className = "modal-content danger" onClick = {(e) => e.stopPropagation()}>
                         <div className = "modal-header">
                             <FiAlertTriangle className = "modal-icon" />
-                            <h2>Delete Account</h2>
+                            <h2>{t('profile.delete_modal.title')}</h2>
                         </div>
                         <div className = "modal-body">
-                            <p>This action cannot be undone. This will permanently delete your account and remove all your data.</p>
+                            <p>{t('profile.delete_modal.description')}</p>
                             <div className = "form-group">
                                 <label className = "form-label">
-                                    <FiLock /> Enter your password to confirm
+                                    <FiLock /> {t('profile.delete_modal.password_label')}
                                 </label>
                                 <input
                                     type = "password"
                                     value={delete_password}
                                     onChange={(e) => set_delete_password(e.target.value)}
                                     className = "form-input"
-                                    placeholder = "Enter password"
+                                    placeholder = {t('profile.delete_modal.password_placeholder')}
                                 />
                             </div>
                         </div>
                         <div className = "modal-footer">
                             <button onClick = {() => set_show_delete_modal(false)} className = "btn btn-game-outline">
-                                Cancel
+                                {t('common.cancel')}
                             </button>
                             <button onClick = {handle_delete_account} className = "btn btn-danger">
-                                <FiTrash2 /> Delete Account
+                                <FiTrash2 /> {t('profile.delete_modal.delete_button')}
                             </button>
                         </div>
                     </div>
@@ -1142,7 +1134,7 @@ export default function ProfilePage() {
                 <div className = "modal-overlay" onClick = {() => set_show_edit_modal(false)}>
                     <div className = "modal-content edit-modal" onClick = {(e) => e.stopPropagation()}>
                         <div className = "modal-header">
-                            <h2>Edit Profile</h2>
+                            <h2>{t('profile.edit_modal.title')}</h2>
                             <button className = "btn-icon" onClick = {() => set_show_edit_modal(false)}>
                                 <FiX />
                             </button>
@@ -1151,7 +1143,7 @@ export default function ProfilePage() {
                             <div className = "form-grid">
                                 <div className = "form-group">
                                     <label className = "form-label">
-                                        <FiUser /> Username
+                                        <FiUser /> {t('profile.edit_modal.username')}
                                     </label>
                                     <input
                                         type = "text"
@@ -1164,7 +1156,7 @@ export default function ProfilePage() {
 
                                 <div className = "form-group">
                                     <label className = "form-label">
-                                        <FiUser /> Full Name
+                                        <FiUser /> {t('profile.edit_modal.full_name')}
                                     </label>
                                     <input
                                         type = "text"
@@ -1177,7 +1169,7 @@ export default function ProfilePage() {
 
                                 <div className = "form-group full-width">
                                     <label className = "form-label">
-                                        <FiMail /> Email
+                                        <FiMail /> {t('profile.edit_modal.email')}
                                     </label>
                                     <input
                                         type = "email"
@@ -1190,7 +1182,7 @@ export default function ProfilePage() {
 
                                 <div className = "form-group full-width">
                                     <label className = "form-label">
-                                        <FiEdit2 /> Bio
+                                        <FiEdit2 /> {t('profile.edit_modal.bio')}
                                     </label>
                                     <div className = "bio-field-wrapper" ref = {bio_toolbar_ref}>
                                         <div className = "bio-markdown-toolbar">
@@ -1198,7 +1190,7 @@ export default function ProfilePage() {
                                                 type = "button"
                                                 className = "bio-toolbar-btn"
                                                 onClick = {() => insert_bio_markdown('bold')}
-                                                title = "Bold"
+                                                title = {t('profile.edit_modal.toolbar.bold')}
                                             >
                                                 <strong>B</strong>
                                             </button>
@@ -1206,7 +1198,7 @@ export default function ProfilePage() {
                                                 type = "button"
                                                 className = "bio-toolbar-btn"
                                                 onClick = {() => insert_bio_markdown('italic')}
-                                                title = "Italic"
+                                                title = {t('profile.edit_modal.toolbar.italic')}
                                             >
                                                 <em>I</em>
                                             </button>
@@ -1214,7 +1206,7 @@ export default function ProfilePage() {
                                                 type = "button"
                                                 className = "bio-toolbar-btn"
                                                 onClick = {() => insert_bio_markdown('code')}
-                                                title = "Inline code"
+                                                title = {t('profile.edit_modal.toolbar.inline_code')}
                                             >
                                                 <FiCode />
                                             </button>
@@ -1222,7 +1214,7 @@ export default function ProfilePage() {
                                                 type = "button"
                                                 className = "bio-toolbar-btn"
                                                 onClick = {() => insert_bio_markdown('code-block')}
-                                                title = "Code block"
+                                                title = {t('profile.edit_modal.toolbar.code_block')}
                                             >
                                                 <code>{'{ }'}</code>
                                             </button>
@@ -1230,7 +1222,7 @@ export default function ProfilePage() {
                                                 type = "button"
                                                 className = "bio-toolbar-btn"
                                                 onClick = {() => insert_bio_markdown('link')}
-                                                title = "Insert link"
+                                                title = {t('profile.edit_modal.toolbar.link')}
                                             >
                                                 <FiLink />
                                             </button>
@@ -1238,7 +1230,7 @@ export default function ProfilePage() {
                                                 type = "button"
                                                 className = "bio-toolbar-btn"
                                                 onClick = {() => insert_bio_markdown('heading')}
-                                                title = "Heading"
+                                                title = {t('profile.edit_modal.toolbar.heading')}
                                             >
                                                 H2
                                             </button>
@@ -1246,7 +1238,7 @@ export default function ProfilePage() {
                                                 type = "button"
                                                 className = "bio-toolbar-btn"
                                                 onClick = {() => insert_bio_markdown('list')}
-                                                title = "Bullet list"
+                                                title = {t('profile.edit_modal.toolbar.list')}
                                             >
                                                 ☰
                                             </button>
@@ -1254,7 +1246,7 @@ export default function ProfilePage() {
                                                 type = "button"
                                                 className = "bio-toolbar-btn"
                                                 onClick = {() => insert_bio_markdown('color')}
-                                                title = "Colored text"
+                                                title = {t('profile.edit_modal.toolbar.color')}
                                             >
                                                 <span className = "bio-toolbar-swatch" style = {{ background: '#ff6b6b' }}></span>
                                             </button>
@@ -1262,7 +1254,7 @@ export default function ProfilePage() {
                                                 type = "button"
                                                 className = "bio-toolbar-btn"
                                                 onClick = {() => insert_bio_markdown('background')}
-                                                title = "Highlight background"
+                                                title = {t('profile.edit_modal.toolbar.background')}
                                             >
                                                 <span className = "bio-toolbar-swatch gradient"></span>
                                             </button>
@@ -1270,7 +1262,7 @@ export default function ProfilePage() {
                                                 type = "button"
                                                 className = "bio-toolbar-btn"
                                                 onClick = {() => insert_bio_markdown('mark')}
-                                                title = "Mark text"
+                                                title = {t('profile.edit_modal.toolbar.mark')}
                                             >
                                                 <mark>MK</mark>
                                             </button>
@@ -1279,7 +1271,7 @@ export default function ProfilePage() {
                                                     type = "button"
                                                     className = {`bio-toolbar-btn${show_bio_emoji_picker ? ' active' : ''}`}
                                                     onClick = {() => set_show_bio_emoji_picker(prev => !prev)}
-                                                    title = "Emoji"
+                                                    title = {t('profile.edit_modal.toolbar.emoji')}
                                                 >
                                                     <FiSmile />
                                                 </button>
@@ -1306,17 +1298,17 @@ export default function ProfilePage() {
                                             onChange = {handle_input_change}
                                             className = "form-textarea bio-textarea"
                                             rows = "5"
-                                            placeholder = "Tell us about yourself... Markdown is supported!"
+                                            placeholder = {t('profile.edit_modal.bio_placeholder')}
                                         />
                                         <p className = "bio-markdown-hint">
-                                            Підтримується Markdown. Спробуйте **жирний**, *курсив*, `код`, [color=#ff6b6b]колір[/color] або [bg=yellow]фон[/bg].
+                                            {t('profile.edit_modal.bio_hint')}
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className = "form-group">
                                     <label className = "form-label">
-                                        <FiGlobe /> Website
+                                        <FiGlobe /> {t('profile.edit_modal.website')}
                                     </label>
                                     <input
                                         type = "url"
@@ -1324,13 +1316,13 @@ export default function ProfilePage() {
                                         value = {profile_data.website}
                                         onChange = {handle_input_change}
                                         className = "form-input"
-                                        placeholder = "https://yourwebsite.com"
+                                        placeholder = {t('profile.edit_modal.website_placeholder')}
                                     />
                                 </div>
 
                                 <div className = "form-group">
                                     <label className = "form-label">
-                                        <FaXTwitter /> Twitter
+                                        <FaXTwitter /> {t('profile.edit_modal.twitter')}
                                     </label>
                                     <input
                                         type = "text"
@@ -1338,13 +1330,13 @@ export default function ProfilePage() {
                                         value = {profile_data.twitter}
                                         onChange = {handle_input_change}
                                         className = "form-input"
-                                        placeholder = "@username"
+                                        placeholder = {t('profile.edit_modal.twitter_placeholder')}
                                     />
                                 </div>
 
                                 <div className = "form-group">
                                     <label className = "form-label">
-                                        <FiGithub /> GitHub
+                                        <FiGithub /> {t('profile.edit_modal.github')}
                                     </label>
                                     <input
                                         type = "text"
@@ -1352,13 +1344,13 @@ export default function ProfilePage() {
                                         value = {profile_data.github}
                                         onChange = {handle_input_change}
                                         className = "form-input"
-                                        placeholder = "username"
+                                        placeholder = {t('profile.edit_modal.github_placeholder')}
                                     />
                                 </div>
 
                                 <div className = "form-group">
                                     <label className = "form-label">
-                                        <FiLinkedin /> LinkedIn
+                                        <FiLinkedin /> {t('profile.edit_modal.linkedin')}
                                     </label>
                                     <input
                                         type = "text"
@@ -1366,13 +1358,13 @@ export default function ProfilePage() {
                                         value = {profile_data.linkedin}
                                         onChange = {handle_input_change}
                                         className = "form-input"
-                                        placeholder = "username"
+                                        placeholder = {t('profile.edit_modal.linkedin_placeholder')}
                                     />
                                 </div>
 
                                 <div className = "form-group">
                                     <label className = "form-label">
-                                        <SiItchdotio /> Itch.io
+                                        <SiItchdotio /> {t('profile.edit_modal.itch')}
                                     </label>
                                     <input
                                         type = "text"
@@ -1380,13 +1372,13 @@ export default function ProfilePage() {
                                         value = {profile_data.itch}
                                         onChange = {handle_input_change}
                                         className = "form-input"
-                                        placeholder = "username or URL"
+                                        placeholder = {t('profile.edit_modal.itch_placeholder')}
                                     />
                                 </div>
 
                                 <div className = "form-group">
                                     <label className = "form-label">
-                                        <SiGamebanana /> GameBanana
+                                        <SiGamebanana /> {t('profile.edit_modal.gamebanana')}
                                     </label>
                                     <input
                                         type = "text"
@@ -1394,13 +1386,13 @@ export default function ProfilePage() {
                                         value = {profile_data.gamebanana}
                                         onChange = {handle_input_change}
                                         className = "form-input"
-                                        placeholder = "username or URL"
+                                        placeholder = {t('profile.edit_modal.gamebanana_placeholder')}
                                     />
                                 </div>
 
                                 <div className = "form-group">
                                     <label className = "form-label">
-                                        <SiGamejolt /> GameJolt
+                                        <SiGamejolt /> {t('profile.edit_modal.gamejolt')}
                                     </label>
                                     <input
                                         type = "text"
@@ -1408,13 +1400,13 @@ export default function ProfilePage() {
                                         value = {profile_data.gamejolt}
                                         onChange = {handle_input_change}
                                         className = "form-input"
-                                        placeholder = "username or URL"
+                                        placeholder = {t('profile.edit_modal.gamejolt_placeholder')}
                                     />
                                 </div>
 
                                 <div className = "form-group">
                                     <label className = "form-label">
-                                        <FaTwitch /> Twitch
+                                        <FaTwitch /> {t('profile.edit_modal.twitch')}
                                     </label>
                                     <input
                                         type = "text"
@@ -1422,16 +1414,16 @@ export default function ProfilePage() {
                                         value = {profile_data.twitch}
                                         onChange = {handle_input_change}
                                         className = "form-input"
-                                        placeholder = "username or URL"
+                                        placeholder = {t('profile.edit_modal.twitch_placeholder')}
                                     />
                                 </div>
 
                                 <div className = "form-group full-width">
                                     <label className = "form-label">
-                                        <FiZap /> Game Engines
+                                        <FiZap /> {t('profile.edit_modal.engines')}
                                     </label>
                                     <div className = "engines-selector">
-                                        {AVAILABLE_ENGINES.map(engine => {
+                                        {GAME_ENGINE_DEFINITIONS.map(engine => {
                                             const is_selected = profile_data.engines.includes(engine.id);
                                             return (
                                                 <button
@@ -1462,10 +1454,10 @@ export default function ProfilePage() {
                         </div>
                         <div className = "modal-footer">
                             <button onClick = {() => set_show_edit_modal(false)} className = "btn btn-game-outline">
-                                Cancel
+                                {t('common.cancel')}
                             </button>
                             <button onClick = {handle_save_profile} className = "btn btn-gradient">
-                                <FiSave /> Save Changes
+                                <FiSave /> {t('common.save')}
                             </button>
                         </div>
                     </div>
@@ -1489,16 +1481,16 @@ export default function ProfilePage() {
                         </div>
                         <div className = "modal-body">
                             <div className = "engine-info-section">
-                                <h4>Опис</h4>
-                                <p>{engine_popup.description}</p>
+                                <h4>{t('profile.engine_modal.description_title')}</h4>
+                                <p>{t(`profile.engines.${engine_popup.translationKey}.description`)}</p>
                             </div>
                             <div className = "engine-info-section">
-                                <h4>Для кого</h4>
-                                <p>{engine_popup.audience}</p>
+                                <h4>{t('profile.engine_modal.audience_title')}</h4>
+                                <p>{t(`profile.engines.${engine_popup.translationKey}.audience`)}</p>
                             </div>
                             <div className = "engine-info-section">
-                                <h4>Мови програмування</h4>
-                                <p className = "engine-languages">{engine_popup.languages}</p>
+                                <h4>{t('profile.engine_modal.languages_title')}</h4>
+                                <p className = "engine-languages">{t(`profile.engines.${engine_popup.translationKey}.languages`)}</p>
                             </div>
                         </div>
                     </div>

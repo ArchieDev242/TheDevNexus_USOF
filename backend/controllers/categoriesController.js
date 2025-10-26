@@ -64,11 +64,11 @@ class categories_controller
             const category = await Category.find_by_id(category_id);
             if(!category) throw error_handler.not_found_error('Category');
             
-            // Reuse unified filtering/sorting pipeline
             const filters = {
                 categories: [category_id],
                 status: 'active'
             };
+            
             const posts = await Post.get_all_with_filters(parseInt(page), parseInt(limit), sort, filters);
             
             res.json({

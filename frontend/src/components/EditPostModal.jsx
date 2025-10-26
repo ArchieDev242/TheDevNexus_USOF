@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import 
@@ -28,6 +29,7 @@ const EMOJI_LIST = [
 
 export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
     const { user } = useSelector(state => state.auth);
+    const { t } = useTranslation();
     const [active_tab, set_active_tab] = useState('write');
     const [show_emoji_picker, set_show_emoji_picker] = useState(false);
     const [categories_list, set_categories_list] = useState([]);
@@ -157,19 +159,19 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
 
         if(!post_data.title.trim()) 
             {
-            alert('Будь ласка, введіть заголовок поста');
+            alert(t('post_form.validation.title_required'));
             return;
         }
 
         if(!post_data.content.trim()) 
             {
-            alert('Будь ласка, введіть вміст поста');
+            alert(t('post_form.validation.content_required'));
             return;
         }
 
         if(!post_data.categories || post_data.categories.length === 0) 
             {
-            alert('Будь ласка, виберіть хоча б одну категорію');
+            alert(t('post_form.validation.categories_required'));
             return;
         }
 
@@ -197,17 +199,17 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
 
             if(data.status === 'success') 
                 {
-                alert('Пост успішно оновлено!');
+                alert(t('post_form.notifications.post_updated'));
                 onPostUpdated(data.data);
                 onClose();
             } else 
                 {
-                alert(data.message || 'Помилка оновлення поста');
+                alert(data.message || t('post_form.errors.post_update'));
             }
         } catch(error) 
         {
             console.error('Error updating post:', error);
-            alert('Помилка оновлення поста');
+            alert(t('post_form.errors.post_update'));
         } finally 
         {
             set_loading(false);
@@ -220,7 +222,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
         <div className = "modal-overlay" onClick = {onClose}>
             <div className = "create-post-modal" onClick = {(e) => e.stopPropagation()}>
                 <div className = "modal-header">
-                    <h2>✨ Редагувати пост</h2>
+                    <h2>✨ {t('post_form.edit.title')}</h2>
                     <button className = "close-btn" onClick = {onClose}>
                         <FiX />
                     </button>
@@ -229,13 +231,13 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                 <div className = "modal-body">
                     <form onSubmit = {handle_submit}>
                         <div className = "form-group">
-                            <label htmlFor = "title">Назва поста</label>
+                            <label htmlFor = "title">{t('post_form.fields.title_label')}</label>
                             <input
                                 type = "text"
                                 id = "title"
                                 name = "title"
                                 className = "form-input"
-                                placeholder = "Введіть назву вашого поста..."
+                                placeholder = {t('post_form.fields.title_placeholder')}
                                 value = {post_data.title}
                                 onChange = {handle_input_change}
                                 maxLength = {200}
@@ -249,7 +251,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                 onClick = {() => set_active_tab('write')}
                             >
                                 <FiEdit3 />
-                                <span>Write</span>
+                                <span>{t('post_form.tabs.write')}</span>
                             </button>
                             <button
                                 type = "button"
@@ -257,7 +259,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                 onClick = {() => set_active_tab('preview')}
                             >
                                 <FiEye />
-                                <span>Preview</span>
+                                <span>{t('post_form.tabs.preview')}</span>
                             </button>
                         </div>
 
@@ -268,7 +270,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('bold')}
-                                        title = "Bold"
+                                        title = {t('post_form.toolbar.bold')}
                                     >
                                         <strong>B</strong>
                                     </button>
@@ -276,7 +278,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('italic')}
-                                        title = "Italic"
+                                        title = {t('post_form.toolbar.italic')}
                                     >
                                         <em>I</em>
                                     </button>
@@ -284,7 +286,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('code')}
-                                        title = "Inline code"
+                                        title = {t('post_form.toolbar.inline_code')}
                                     >
                                         <FiCode />
                                     </button>
@@ -292,7 +294,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('code-block')}
-                                        title = "Code block"
+                                        title = {t('post_form.toolbar.code_block')}
                                     >
                                         <code>{'{ }'}</code>
                                     </button>
@@ -300,7 +302,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('link')}
-                                        title = "Link"
+                                        title = {t('post_form.toolbar.link')}
                                     >
                                         <FiLink />
                                     </button>
@@ -308,7 +310,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('heading')}
-                                        title = "Heading"
+                                        title = {t('post_form.toolbar.heading')}
                                     >
                                         H
                                     </button>
@@ -316,7 +318,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                         type = "button"
                                         className = "toolbar-btn"
                                         onClick = {() => insert_markdown('list')}
-                                        title = "List"
+                                        title = {t('post_form.toolbar.list')}
                                     >
                                         ☰
                                     </button>
@@ -325,7 +327,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                             type = "button"
                                             className = "toolbar-btn"
                                             onClick = {() => set_show_emoji_picker(!show_emoji_picker)}
-                                            title = "Emoji"
+                                            title = {t('post_form.toolbar.emoji')}
                                         >
                                             <FiSmile />
                                         </button>
@@ -349,7 +351,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                 <textarea
                                     name = "content"
                                     className = "form-input post-content-textarea"
-                                    placeholder = "Напишіть ваш пост тут... Підтримується Markdown!"
+                                    placeholder = {t('post_form.fields.content_placeholder')}
                                     value = {post_data.content}
                                     onChange = {handle_input_change}
                                     rows = {15}
@@ -381,7 +383,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                         {post_data.content}
                                     </ReactMarkdown>
                                 ) : (
-                                    <p className = "preview-placeholder">Нічого для попереднього перегляду...</p>
+                                    <p className = "preview-placeholder">{t('post_form.preview.empty')}</p>
                                 )}
                             </div>
                         )}
@@ -389,7 +391,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                         <div className = "form-group">
                             <label>
                                 <FiTag />
-                                <span>Категорії</span>
+                                <span>{t('post_form.categories.label')}</span>
                             </label>
                             <div className = "categories-grid">
                                 {Array.isArray(categories_list) && categories_list.map(category => (
@@ -407,7 +409,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
 
                         {user?.role === 'admin' && (
                             <div className = "form-group">
-                                <label htmlFor = "status">Статус</label>
+                                <label htmlFor = "status">{t('post_form.status.label')}</label>
                                 <select
                                     id = "status"
                                     name = "status"
@@ -415,8 +417,8 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                     value = {post_data.status}
                                     onChange = {handle_input_change}
                                 >
-                                    <option value = "active">Опублікувати зараз</option>
-                                    <option value = "inactive">Зберегти як чернетку</option>
+                                    <option value = "active">{t('post_form.status.publish_now')}</option>
+                                    <option value = "inactive">{t('post_form.status.save_draft')}</option>
                                 </select>
                             </div>
                         )}
@@ -428,7 +430,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                 onClick = {onClose}
                                 disabled = {loading}
                             >
-                                Скасувати
+                                {t('common.cancel')}
                             </button>
                             <button 
                                 type = "submit" 
@@ -436,7 +438,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                 disabled = {loading}
                             >
                                 <FiSave />
-                                <span>{loading ? 'Збереження...' : 'Зберегти зміни'}</span>
+                                <span>{loading ? t('post_form.buttons.saving') : t('post_form.buttons.update')}</span>
                             </button>
                         </div>
                     </form>

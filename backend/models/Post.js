@@ -396,6 +396,34 @@ class Post
                         blueprint_url = VALUES(blueprint_url)
                     `;
                     await DB_connect.make_request(query, flat_values);
+
+                    const unique_blueprints = [];
+                    const seen_ids = new Set();
+
+                    for(const [, blueprintId, title, author, url] of values)
+                    {
+                        if(!seen_ids.has(blueprintId))
+                        {
+                            seen_ids.add(blueprintId);
+                            unique_blueprints.push([blueprintId, title, author, url]);
+                        }
+                    }
+
+                    if(unique_blueprints.length > 0)
+                    {
+                        const library_placeholders = unique_blueprints.map(() => '(?, ?, ?, ?)').join(', ');
+                        const library_values = unique_blueprints.flat();
+
+                        const library_query = `
+                            INSERT INTO blueprint_library (blueprint_id, blueprint_title, blueprint_author, blueprint_url)
+                            VALUES ${library_placeholders}
+                            ON DUPLICATE KEY UPDATE 
+                                blueprint_title = VALUES(blueprint_title),
+                                blueprint_author = VALUES(blueprint_author),
+                                blueprint_url = VALUES(blueprint_url)
+                        `;
+                        await DB_connect.make_request(library_query, library_values);
+                    }
                     console.log('Blueprints added successfully');
                 }
             }
@@ -547,7 +575,14 @@ class Post
         {
             const offset = (page - 1) * limit;
             
-            // Build base query with subqueries for aggregated metrics
+            let count_query = `
+                SELECT COUNT(DISTINCT p.id) as total
+                FROM posts p
+                JOIN users u ON p.author_id = u.id
+                LEFT JOIN post_categories pc ON p.id = pc.post_id
+                LEFT JOIN categories c ON pc.category_id = c.id
+            `;
+            
             let query = `
                 SELECT 
                     p.id,
@@ -564,6 +599,8 @@ class Post
                     u.login as author_login,
                     u.full_name as author_name,
                     u.profile_picture as author_avatar,
+                    GROUP_CONCAT(DISTINCT c.title SEPARATOR ',') as categories,
+                    GROUP_CONCAT(DISTINCT c.title LIMIT 1) as category_title,
                     COALESCE(likes_data.likes_count, 0) as likes_count,
                     COALESCE(likes_data.dislikes_count, 0) as dislikes_count,
                     COALESCE(likes_data.likes_count, 0) - COALESCE(likes_data.dislikes_count, 0) as like_score,
@@ -571,6 +608,8 @@ class Post
                     COALESCE(views_data.view_count, 0) as view_count
                 FROM posts p
                 JOIN users u ON p.author_id = u.id
+                LEFT JOIN post_categories pc ON p.id = pc.post_id
+                LEFT JOIN categories c ON pc.category_id = c.id
                 LEFT JOIN (
                     SELECT post_id,
                            SUM(CASE WHEN type = 'like' THEN 1 ELSE 0 END) as likes_count,
@@ -631,15 +670,23 @@ class Post
                 queryParams.push(filters.date_to);
             }
             
-            // Append dynamic joins before WHERE block
-            if(joins.length > 0) {
+            if(joins.length > 0) 
+                {
                 query += ' ' + joins.join(' ') + ' ';
+                count_query += ' ' + joins.join(' ') + ' ';
             }
 
             // WHERE block
-            if(whereConditions.length > 0) {
+            if(whereConditions.length > 0) 
+                {
                 query += ' WHERE ' + whereConditions.join(' AND ');
+                count_query += ' WHERE ' + whereConditions.join(' AND ');
             }
+            
+            const count_result = await DB_connect.make_request(count_query, queryParams);
+            const total = count_result[0][0].total || 0;
+            
+            query += ' GROUP BY p.id';
             
             // sorting
             if(sort === 'likes') 
@@ -658,11 +705,12 @@ class Post
             const result = await DB_connect.make_request(query, queryParams);
             const rows = result[0];
             
-            return rows.map(row => {
+            const posts = rows.map(row => {
                 const post = new Post(row);
                 post.author_login = row.author_login;
                 post.author_name = row.author_name;
                 post.author_avatar = normalize_avatar(row.author_avatar);
+                post.category_title = row.category_title;
                 post.likes_count = parseInt(row.likes_count) || 0;
                 post.dislikes_count = parseInt(row.dislikes_count) || 0;
                 post.like_score = parseInt(row.like_score) || 0;
@@ -670,6 +718,8 @@ class Post
                 post.view_count = parseInt(row.view_count) || 0;
                 return post;
             });
+            
+            return { posts, total };
         } 
         catch(error) 
         {
@@ -740,7 +790,6 @@ class Post
             
             const post = rows[0];
             
-            // Get blueprints if post has Unreal Engine category
             let blueprints = [];
             const blueprints_query = `
                 SELECT id, blueprint_id, blueprint_title, blueprint_author, blueprint_url 
@@ -797,7 +846,6 @@ class Post
         }
     }
 
-    // Static method for controller compatibility
     static async get_post_categories(post_id) 
     {
         try 
@@ -819,7 +867,6 @@ class Post
         }
     }
 
-    // Record post view (authenticated users only)
     static async record_view(user_id, post_id) 
     {
         try 
@@ -861,7 +908,7 @@ class Post
         }
     }
 
-    // Close post (prevent comments/edits)
+    // close post
     static async close_post(post_id, reason = 'closed') 
     {
         try 
@@ -881,7 +928,6 @@ class Post
         }
     }
 
-    // Reopen closed post
     static async reopen_post(post_id) 
     {
         try 

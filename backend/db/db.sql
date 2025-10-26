@@ -75,14 +75,24 @@ CREATE TABLE IF NOT EXISTS posts(
 
 CREATE TABLE IF NOT EXISTS post_blueprints(
     id INT PRIMARY KEY AUTO_INCREMENT,
-    post_id INT NOT NULL,
-    blueprint_id VARCHAR(255) NOT NULL,
+    post_id INT NULL DEFAULT NULL,
+    blueprint_id VARCHAR(255) NOT NULL UNIQUE,
     blueprint_title VARCHAR(255) NOT NULL,
     blueprint_author VARCHAR(255),
     blueprint_url VARCHAR(500),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_post_blueprint (post_id, blueprint_id)
+    INDEX idx_blueprint_id (blueprint_id),
+    INDEX idx_post_id (post_id)
+);
+
+CREATE TABLE IF NOT EXISTS blueprint_library(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    blueprint_id VARCHAR(255) NOT NULL UNIQUE,
+    blueprint_title VARCHAR(255) NOT NULL,
+    blueprint_author VARCHAR(255),
+    blueprint_url VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS categories(

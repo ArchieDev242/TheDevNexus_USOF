@@ -8,29 +8,29 @@ const router = express.Router();
 
 router.use(auth_middleware.identify_user);
 
-// GET /api/categories - get all categories
+// GET /api/categories 
 router.get('/', error_handler.async_handler(categories_controller.get_all));
 
-// GET /api/categories/:category_id - get specified category data
+// GET /api/categories/:category_id
 router.get('/:category_id', 
     Validator.validate_id('category_id'),
     error_handler.async_handler(categories_controller.get_by_id)
 );
 
-// GET /api/categories/:category_id/posts - get all posts associated with the specified category
+// GET /api/categories/:category_id/posts
 router.get('/:category_id/posts', 
     Validator.validate_id('category_id'),
     error_handler.async_handler(categories_controller.get_posts_by_category)
 );
 
-// POST /api/categories - create a new category (admin only)
+// POST /api/categories
 router.post('/', 
     auth_middleware.require_admin,
     Validator.validate_category,
     error_handler.async_handler(categories_controller.admin_create)
 );
 
-// PATCH /api/categories/:category_id - update specified category data (admin only)
+// PATCH /api/categories/:category_id
 router.patch('/:category_id', 
     auth_middleware.require_admin,
     Validator.validate_id('category_id'),
@@ -38,7 +38,7 @@ router.patch('/:category_id',
     error_handler.async_handler(categories_controller.admin_update)
 );
 
-// DELETE /api/categories/:category_id - delete a category (admin only)
+// DELETE /api/categories/:category_id
 router.delete('/:category_id', 
     auth_middleware.require_admin,
     Validator.validate_id('category_id'),

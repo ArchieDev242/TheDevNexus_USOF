@@ -1,10 +1,12 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function Hero({ isAuthenticated }) 
 {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     return (
         <section className = "hero-section">
@@ -13,7 +15,7 @@ export default function Hero({ isAuthenticated })
                     <span className = "gradient-text">TheDevNexus</span>
                 </h1>
                 <p className = "hero-subtitle">
-                    Where game developers and tech enthusiasts unite to create, share, and learn together.
+                    {t('home.subtitle')}
                 </p>
                 <div className = "hero-buttons">
                     {!isAuthenticated ? (
@@ -22,13 +24,13 @@ export default function Hero({ isAuthenticated })
                                 className = "btn btn-gradient"
                                 onClick = {() => navigate('/register')}
                             >
-                                Join the Community
+                                {t('header.register')}
                             </button>
                             <button 
                                 className = "btn btn-outline"
                                 onClick = {() => navigate('/posts')}
                             >
-                                Explore Forums
+                                {t('header.posts')}
                             </button>
                         </>
                     ) : (
@@ -37,13 +39,13 @@ export default function Hero({ isAuthenticated })
                                 className = "btn btn-gradient"
                                 onClick = {() => navigate('/posts')}
                             >
-                                Create New Post
+                                {t('posts.create_post')}
                             </button>
                             <button 
                                 className = "btn btn-outline"
                                 onClick = {() => navigate('/posts')}
                             >
-                                Browse Categories
+                                {t('categories.all_categories')}
                             </button>
                         </>
                     )}

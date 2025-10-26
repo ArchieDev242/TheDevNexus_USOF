@@ -5,42 +5,32 @@ import RateLimit from '../middleware/rateLimit.js';
 
 const router = Router();
 
-// Rate limiting для виконання коду (більш строгий)
-const codeExecutionLimiter = new RateLimit().limit({
-    windowMs: 15 * 60 * 1000, // 15 хвилин
-    maxRequests: 50, // максимум 50 виконань на 15 хвилин
+const code_execution_limiter = new RateLimit().limit({
+    windowMs: 15 * 60 * 1000,
+    maxRequests: 50,
     message: 'Too many code execution requests. Please try again later.'
 });
 
-// Rate limiting для інших операцій
-const generalLimiter = new RateLimit().limit({
-    windowMs: 15 * 60 * 1000, // 15 хвилин
-    maxRequests: 100, // максимум 100 запитів на 15 хвилин
+const general_limiter = new RateLimit().limit({
+    windowMs: 15 * 60 * 1000,
+    maxRequests: 100,
     message: 'Too many requests. Please try again later.'
 });
 
-// Виконання коду (потребує аутентифікації та rate limiting)
-router.post('/execute', auth_middleware.require_auth, codeExecutionLimiter, code_execution_controller.execute_code);
+router.post('/execute', auth_middleware.require_auth, code_execution_limiter, code_execution_controller.execute_code);
 
-// Отримання підтримуваних мов
-router.get('/languages', generalLimiter, code_execution_controller.get_supported_langs);
+router.get('/languages', general_limiter, code_execution_controller.get_supported_langs);
 
-// Отримання доступних сервісів для мови
-router.get('/languages/:language/services', generalLimiter, code_execution_controller.get_available_services);
+router.get('/languages/:language/services', general_limiter, code_execution_controller.get_available_services);
 
-// Перевірка статусу сервісів
-router.get('/services/status', auth_middleware.require_auth, generalLimiter, code_execution_controller.get_services_status);
+router.get('/services/status', auth_middleware.require_auth, general_limiter, code_execution_controller.get_services_status);
 
-// Тестування конкретного сервісу
-router.post('/services/:service/test', auth_middleware.require_auth, generalLimiter, code_execution_controller.test_service);
+router.post('/services/:service/test', auth_middleware.require_auth, general_limiter, code_execution_controller.test_service);
 
-// Підсвічування синтаксису
-router.post('/highlight', generalLimiter, code_execution_controller.syntax_highlight);
+router.post('/highlight', general_limiter, code_execution_controller.syntax_highlight);
 
-// Форматування коду
-router.post('/format', generalLimiter, code_execution_controller.code_formatting);
+router.post('/format', general_limiter, code_execution_controller.code_formatting);
 
-// Валідація коду
-router.post('/validate', generalLimiter, code_execution_controller.code_validation);
+router.post('/validate', general_limiter, code_execution_controller.code_validation);
 
 export default router;

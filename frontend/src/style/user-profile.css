@@ -1,4 +1,4 @@
-.profile-loading-state, .profile-error-state 
+.profile-loading-state, .profile-error-state
 {
     display: flex;
     justify-content: center;
@@ -10,14 +10,14 @@
     padding: 40px 20px;
 }
 
-.profile-wrapper 
+.profile-wrapper
 {
     background: var(--darker);
     padding: 100px 20px 60px;
     min-height: calc(100vh - 200px);
 }
 
-.profile-container 
+.profile-container
 {
     max-width: 1200px;
     margin: 0 auto;
@@ -26,15 +26,14 @@
     gap: 40px;
 }
 
-/* Sidebar */
-.profile-sidebar 
+.profile-sidebar
 {
     position: sticky;
     top: 100px;
     height: fit-content;
 }
 
-.profile-card 
+.profile-card
 {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
@@ -46,7 +45,7 @@
 
 .avatar-container { margin-bottom: 20px; }
 
-.avatar 
+.avatar
 {
     width: 140px;
     height: 140px;
@@ -57,7 +56,7 @@
     margin: 0 auto;
 }
 
-.user-login 
+.user-login
 {
     font-size: 24px;
     font-weight: 700;
@@ -65,14 +64,14 @@
     color: var(--text-primary);
 }
 
-.user-fullname 
+.user-fullname
 {
     font-size: 14px;
     color: var(--text-secondary);
     margin-bottom: 20px;
 }
 
-.stats-grid 
+.stats-grid
 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -80,7 +79,7 @@
     margin-bottom: 20px;
 }
 
-.stat-box 
+.stat-box
 {
     display: flex;
     flex-direction: column;
@@ -90,14 +89,14 @@
     border-radius: 8px;
 }
 
-.stat-num 
+.stat-num
 {
     font-size: 20px;
     font-weight: 700;
     color: var(--primary-color);
 }
 
-.stat-name 
+.stat-name
 {
     font-size: 11px;
     color: var(--text-secondary);
@@ -105,33 +104,33 @@
     text-align: center;
 }
 
-.divider 
+.divider
 {
     height: 1px;
     background: var(--border);
     margin: 20px 0;
 }
 
-.info-section 
+.info-section
 {
     text-align: left;
     margin-bottom: 16px;
 }
 
-.info-label 
+.info-label
 {
     font-size: 12px;
     color: var(--text-secondary);
     margin-bottom: 4px;
 }
 
-.info-value 
+.info-value
 {
     font-size: 14px;
     color: var(--text-primary);
 }
 
-.bio-section 
+.bio-section
 {
     text-align: left;
     margin-bottom: 16px;
@@ -140,7 +139,7 @@
     border-radius: 8px;
 }
 
-.bio-text 
+.bio-text
 {
     font-size: 13px;
     color: var(--text-secondary);
@@ -149,20 +148,20 @@
 
 .rating-panel { text-align: left; }
 
-.rating-title 
+.rating-title
 {
     font-size: 12px;
     color: var(--text-secondary);
     margin-bottom: 8px;
 }
 
-.rating-controls 
+.rating-controls
 {
     display: flex;
     gap: 8px;
 }
 
-.rate-btn 
+.rate-btn
 {
     flex: 1;
     padding: 10px;
@@ -175,14 +174,14 @@
     transition: all 0.2s ease;
 }
 
-.rate-btn:hover 
+.rate-btn:hover
 {
     background: var(--primary-color);
     border-color: var(--primary-color);
     color: white;
 }
 
-.rate-btn.active 
+.rate-btn.active
 {
     background: var(--primary-color);
     border-color: var(--primary-color);
@@ -190,7 +189,7 @@
     font-weight: 600;
 }
 
-.report-user-btn 
+.report-user-btn
 {
     width: 100%;
     margin-top: 12px;
@@ -209,14 +208,13 @@
     font-weight: 500;
 }
 
-.report-user-btn:hover 
+.report-user-btn:hover
 {
     background: rgba(245, 87, 108, 0.2);
     border-color: #f5576c;
 }
 
-/* Main Content Area */
-.profile-content-section 
+.profile-content-section
 {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
@@ -225,7 +223,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.tab-navigation 
+.tab-navigation
 {
     display: flex;
     border-bottom: 2px solid var(--border);
@@ -233,7 +231,7 @@
     gap: 0;
 }
 
-.nav-tab 
+.nav-tab
 {
     padding: 12px 20px;
     background: none;
@@ -249,7 +247,7 @@
 
 .nav-tab:hover { color: var(--text-primary); }
 
-.nav-tab.active 
+.nav-tab.active
 {
     color: var(--primary-color);
     border-bottom-color: var(--primary-color);
@@ -257,8 +255,7 @@
 
 .tab-content { min-height: 300px; }
 
-/* Posts Section */
-.posts-section .no-content, .achievements-section .no-content 
+.posts-section .no-content, .achievements-section .no-content
 {
     display: flex;
     justify-content: center;
@@ -268,14 +265,14 @@
     font-size: 16px;
 }
 
-.posts-grid 
+.posts-grid
 {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-.post-item 
+.post-item
 {
     padding: 16px;
     background: var(--bg-primary);
@@ -285,14 +282,14 @@
     transition: all 0.2s ease;
 }
 
-.post-item:hover 
+.post-item:hover
 {
     border-color: var(--primary-color);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
 }
 
-.post-title-section 
+.post-title-section
 {
     display: flex;
     justify-content: space-between;
@@ -301,7 +298,7 @@
     margin-bottom: 12px;
 }
 
-.post-title-section h3 
+.post-title-section h3
 {
     margin: 0;
     font-size: 16px;
@@ -310,14 +307,14 @@
     flex: 1;
 }
 
-.post-time 
+.post-time
 {
     font-size: 12px;
     color: var(--text-secondary);
     white-space: nowrap;
 }
 
-.post-text 
+.post-text
 {
     font-size: 14px;
     color: var(--text-secondary);
@@ -325,7 +322,7 @@
     margin: 0 0 12px 0;
 }
 
-.tags-section 
+.tags-section
 {
     display: flex;
     flex-wrap: wrap;
@@ -333,7 +330,7 @@
     margin-bottom: 12px;
 }
 
-.tag 
+.tag
 {
     display: inline-block;
     padding: 4px 12px;
@@ -344,7 +341,7 @@
     font-weight: 500;
 }
 
-.post-meta 
+.post-meta
 {
     display: flex;
     gap: 16px;
@@ -352,22 +349,21 @@
     color: var(--text-secondary);
 }
 
-.post-meta span 
+.post-meta span
 {
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-/* Achievements Section */
-.achievements-list 
+.achievements-list
 {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.achievement-row 
+.achievement-row
 {
     display: flex;
     gap: 16px;
@@ -378,7 +374,7 @@
     transition: all 0.2s ease;
 }
 
-.achievement-row:hover 
+.achievement-row:hover
 {
     border-color: var(--primary-color);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -386,7 +382,7 @@
 
 .ach-icon { flex-shrink: 0; }
 
-.ach-icon img 
+.ach-icon img
 {
     width: 64px;
     height: 64px;
@@ -396,7 +392,7 @@
 
 .ach-content { flex: 1; }
 
-.ach-content h4 
+.ach-content h4
 {
     margin: 0 0 4px 0;
     font-size: 15px;
@@ -404,7 +400,7 @@
     color: var(--text-primary);
 }
 
-.ach-content p 
+.ach-content p
 {
     margin: 0 0 8px 0;
     font-size: 13px;
@@ -412,7 +408,7 @@
     line-height: 1.4;
 }
 
-.ach-footer 
+.ach-footer
 {
     display: flex;
     justify-content: space-between;
@@ -420,7 +416,7 @@
     font-size: 12px;
 }
 
-.points 
+.points
 {
     color: var(--primary-color);
     font-weight: 600;
@@ -428,10 +424,9 @@
 
 .earned-date { color: var(--text-secondary); }
 
-/* Responsive Design */
-@media (max-width: 1024px) 
+@media (max-width: 1024px)
 {
-    .profile-container 
+    .profile-container
     {
         grid-template-columns: 280px 1fr;
         gap: 30px;
@@ -440,23 +435,23 @@
     .profile-card { padding: 20px; }
 }
 
-@media (max-width: 768px) 
+@media (max-width: 768px)
 {
     .profile-wrapper { padding: 80px 16px 40px; }
 
-    .profile-container 
+    .profile-container
     {
         grid-template-columns: 1fr;
         gap: 24px;
     }
 
-    .profile-sidebar 
+    .profile-sidebar
     {
         position: static;
         top: auto;
     }
 
-    .avatar 
+    .avatar
     {
         width: 120px;
         height: 120px;
@@ -468,14 +463,14 @@
 
     .profile-content-section { padding: 20px; }
 
-    .tab-navigation 
+    .tab-navigation
     {
         flex-direction: row;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
 
-    .nav-tab 
+    .nav-tab
     {
         padding: 10px 16px;
         font-size: 14px;
@@ -487,13 +482,13 @@
     .post-time { white-space: normal; }
 }
 
-@media (max-width: 480px) 
+@media (max-width: 480px)
 {
     .profile-wrapper { padding: 70px 12px 30px; }
 
     .profile-card { padding: 16px; }
 
-    .avatar 
+    .avatar
     {
         width: 100px;
         height: 100px;
@@ -503,7 +498,7 @@
 
     .user-fullname { font-size: 13px; }
 
-    .stats-grid 
+    .stats-grid
     {
         grid-template-columns: 1fr 1fr 1fr;
         gap: 8px;
@@ -517,19 +512,19 @@
 
     .rating-controls { flex-direction: column; }
 
-    .rate-btn 
+    .rate-btn
     {
         padding: 8px;
         font-size: 12px;
     }
 
-    .profile-content-section 
+    .profile-content-section
     {
         padding: 16px;
         border-radius: 8px;
     }
 
-    .nav-tab 
+    .nav-tab
     {
         padding: 8px 12px;
         font-size: 13px;
@@ -537,13 +532,13 @@
 
     .post-item { padding: 12px; }
 
-    .achievement-row 
+    .achievement-row
     {
         gap: 12px;
         padding: 12px;
     }
 
-    .ach-icon img 
+    .ach-icon img
     {
         width: 56px;
         height: 56px;

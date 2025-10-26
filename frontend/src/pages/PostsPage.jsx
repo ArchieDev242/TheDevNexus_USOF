@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import 
@@ -14,7 +14,9 @@ import
     FiFolder,
     FiPlus,
     FiLock,
-    FiFlag
+    FiFlag,
+    FiChevronLeft,
+    FiChevronRight
 } from 'react-icons/fi';
 import { GoBlocked } from 'react-icons/go';
 import 
@@ -31,14 +33,17 @@ import Header from '../components/Header';
 import CreatePostModal from '../components/CreatePostModal';
 import ReportModal from '../components/ReportModal';
 import '../style/posts.css';
+import { useTranslation } from 'react-i18next';
 
 export default function PostsPage() {
     const { user, isAuthenticated } = useSelector(state => state.auth);
     const location = useLocation();
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [posts, set_posts] = useState([]);
     const [categories, set_categories] = useState([]);
     const [total_active_posts, set_total_active_posts] = useState(0);
+    const [total_posts, set_total_posts] = useState(0);
     const [selected_category, set_selected_category] = useState(() => {
         const params = new URLSearchParams(location.search);
         return params.get('category') || 'all';
@@ -52,6 +57,9 @@ export default function PostsPage() {
     const [show_create_modal, set_show_create_modal] = useState(false);
     const [show_report_modal, set_show_report_modal] = useState(false);
     const [report_target, set_report_target] = useState(null);
+    const [current_page, set_current_page] = useState(1);
+
+    const PAGE_SIZE = 10;
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -64,13 +72,17 @@ export default function PostsPage() {
     useEffect(() => {
         fetch_categories();
         fetch_posts();
-    }, [selected_category, sort_by]);
+    }, [selected_category, sort_by, current_page]);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const query_from_url = params.get('search') || '';
         set_search_query(prev_query => prev_query === query_from_url ? prev_query : query_from_url);
     }, [location.search]);
+
+    useEffect(() => {
+        set_current_page(1);
+    }, [selected_category, sort_by, search_query]);
 
     const fetch_categories = async () => {
         try 
@@ -123,7 +135,7 @@ export default function PostsPage() {
         try 
         {
             const params = new URLSearchParams();
-            params.append('page', '1');
+            params.append('page', String(current_page));
             params.append('limit', '10');
 
             if(selected_category !== 'all') {
@@ -147,6 +159,9 @@ export default function PostsPage() {
             if(data.status === 'success') 
                 {
                 set_posts(data.data || []);
+                if(data.pagination) {
+                    set_total_posts(data.pagination.total || 0);
+                }
             }
         } catch(error) 
         {
@@ -181,10 +196,26 @@ export default function PostsPage() {
         }
     };
 
-    const filtered_posts = posts.filter(post => 
-        post.title?.toLowerCase().includes(search_query.toLowerCase()) ||
-        post.content?.toLowerCase().includes(search_query.toLowerCase())
-    );
+    const filtered_posts = useMemo(() => {
+        const query = search_query.toLowerCase();
+        return posts.filter(post => 
+            post.title?.toLowerCase().includes(query) ||
+            post.content?.toLowerCase().includes(query)
+        );
+    }, [posts, search_query]);
+
+    const total_pages = Math.max(1, Math.ceil(total_posts / PAGE_SIZE));
+
+    useEffect(() => {
+        if (current_page > total_pages) {
+            set_current_page(total_pages || 1);
+        }
+    }, [current_page, total_pages]);
+
+    const handle_page_change = (page) => {
+        if (page < 1 || page > total_pages) return;
+        set_current_page(page);
+    };
 
     const get_category_icon = (category_title) => {
         const icon_map = {
@@ -202,7 +233,7 @@ export default function PostsPage() {
     const handle_report_click = (e, post) => {
         e.stopPropagation();
         if (!isAuthenticated) {
-            alert('Please log in to report content');
+            alert(t('posts_page.login_to_report'));
             return;
         }
         set_report_target({
@@ -221,9 +252,9 @@ export default function PostsPage() {
                 <div className = "container">
                     <div className = "posts-header">
                         <div>
-                            <h1 className = "gradient-text">Forum Posts</h1>
+                            <h1 className = "gradient-text">{t('posts_page.title')}</h1>
                             <p className = "posts-subtitle">
-                                Explore discussions and share your knowledge
+                                {t('posts_page.subtitle')}
                             </p>
                         </div>
                         {isAuthenticated && (
@@ -232,7 +263,7 @@ export default function PostsPage() {
                                 onClick = {() => set_show_create_modal(true)}
                             >
                                 <FiPlus />
-                                <span>Create Post</span>
+                                <span>{t('posts.create_post')}</span>
                             </button>
                         )}
                     </div>
@@ -242,7 +273,7 @@ export default function PostsPage() {
                             <FiSearch />
                             <input 
                                 type = "text" 
-                                placeholder = "Search posts..."
+                                placeholder = {t('posts_page.search_placeholder')}
                                 value = {search_query}
                                 onChange = {(e) => set_search_query(e.target.value)}
                             />
@@ -256,7 +287,7 @@ export default function PostsPage() {
                                     onChange = {(e) => handle_category_change(e.target.value)}
                                     className = "filter-select"
                                 >
-                                    <option value = "all">All Categories</option>
+                                    <option value = "all">{t('categories.all_categories')}</option>
                                     {categories.map(cat => (
                                         <option key = {cat.id} value = {cat.id}>
                                             {cat.title}
@@ -272,8 +303,8 @@ export default function PostsPage() {
                                     onChange = {(e) => set_sort_by(e.target.value)}
                                     className = "filter-select"
                                 >
-                                    <option value = "latest">Latest</option>
-                                    <option value = "popular">Most Popular</option>
+                                    <option value = "latest">{t('posts_page.filter_latest')}</option>
+                                    <option value = "popular">{t('posts_page.filter_popular')}</option>
                                 </select>
                             </div>
                         </div>
@@ -283,7 +314,7 @@ export default function PostsPage() {
                         <aside className = "categories-sidebar">
                             <div className = "sidebar-card">
                                 <h3 className = "sidebar-title">
-                                    <span className = "gradient-text">Categories</span>
+                                    <span className = "gradient-text">{t('posts_page.sidebar_title')}</span>
                                 </h3>
                                 <ul className = "categories-list">
                                     <li 
@@ -291,7 +322,7 @@ export default function PostsPage() {
                                         onClick = {() => handle_category_change('all')}
                                     >
                                         <span className = "category-icon"><FiGrid /></span>
-                                        <span>All Posts</span>
+                                        <span>{t('posts_page.sidebar_all_posts')}</span>
                                         <span className = "category-count">{total_active_posts}</span>
                                     </li>
                                     {categories.map(category => (
@@ -315,17 +346,17 @@ export default function PostsPage() {
                             {loading ? (
                                 <div className = "posts-loading">
                                     <div className = "spinner"></div>
-                                    <p>Loading posts...</p>
+                                    <p>{t('posts.loading')}</p>
                                 </div>
                             ) : filtered_posts.length === 0 ? (
                                 <div className = "no-posts">
                                     <FiMessageSquare size={64} />
-                                    <h3>No posts found</h3>
-                                    <p>Be the first to start a discussion!</p>
+                                    <h3>{t('posts_page.no_posts_title')}</h3>
+                                    <p>{t('posts_page.no_posts_description')}</p>
                                 </div>
                             ) : (
                                 <div className = "posts-grid">
-                                    {filtered_posts.map(post => (
+                                    {posts.map(post => (
                                         <div 
                                             key = {post.id} 
                                             className = "forum-post-card"
@@ -348,7 +379,7 @@ export default function PostsPage() {
                                                         )}
                                                     </div>
                                                     <div className = "author-info">
-                                                        <span className = "author-name">{post.author_login || 'Anonymous'}</span>
+                                                        <span className = "author-name">{post.author_login || t('common.anonymous')}</span>
                                                         <span className = "post-time">
                                                             <FiClock size = {12} />
                                                             {new Date(post.publish_date).toLocaleDateString()}
@@ -357,7 +388,7 @@ export default function PostsPage() {
                                                 </div>
                                                 <div className = "post-badges">
                                                     {post.is_closed && (
-                                                        <span className = "closed-badge" title="Цей пост закритий">
+                                                        <span className = "closed-badge" title={t('posts_page.closed_tooltip')}>
                                                             <GoBlocked size={18} />
                                                         </span>
                                                     )}
@@ -387,7 +418,7 @@ export default function PostsPage() {
                                                     </span>
                                                     <span className = "stat">
                                                         <FiUser />
-                                                        {post.view_count || 0} views
+                                                        {t('posts.views', { count: post.view_count || 0 })}
                                                     </span>
                                                 </div>
                                                 <div className = "post-actions">
@@ -398,12 +429,12 @@ export default function PostsPage() {
                                                             navigate(`/posts/${post.id}`);
                                                         }}
                                                     >
-                                                        Read More →
+                                                        {t('posts_page.read_more')}
                                                     </button>
                                                     <button 
                                                         className = "btn-report"
                                                         onClick = {(e) => handle_report_click(e, post)}
-                                                        title = "Подати звіт про цей пост"
+                                                        title = {t('posts_page.report_tooltip')}
                                                     >
                                                         <FiFlag size={16} />
                                                     </button>
@@ -412,6 +443,43 @@ export default function PostsPage() {
                                         </div>
                                     ))}
                                 </div>
+                            )}
+
+                            {!loading && posts.length > 0 && total_pages > 1 && (
+                                <nav className = "posts-pagination" aria-label = "Pagination">
+                                    <button
+                                        type = "button"
+                                        className = "pagination-button"
+                                        onClick = {() => handle_page_change(current_page - 1)}
+                                        disabled = {current_page === 1}
+                                        aria-label = {t('common.back')}
+                                    >
+                                        <FiChevronLeft />
+                                    </button>
+                                    {Array.from({ length: total_pages }, (_, index) => {
+                                        const page_number = index + 1;
+                                        return (
+                                            <button
+                                                key = {page_number}
+                                                type = "button"
+                                                className = {`pagination-button${page_number === current_page ? ' active' : ''}`}
+                                                onClick = {() => handle_page_change(page_number)}
+                                                aria-current = {page_number === current_page ? 'page' : undefined}
+                                            >
+                                                {page_number}
+                                            </button>
+                                        );
+                                    })}
+                                    <button
+                                        type = "button"
+                                        className = "pagination-button"
+                                        onClick = {() => handle_page_change(current_page + 1)}
+                                        disabled = {current_page === total_pages}
+                                        aria-label = {t('common.next')}
+                                    >
+                                        <FiChevronRight />
+                                    </button>
+                                </nav>
                             )}
                         </main>
                     </div>
@@ -423,7 +491,7 @@ export default function PostsPage() {
                 <button 
                     className = "floating-create-btn"
                     onClick = {() => set_show_create_modal(true)}
-                    title = "Створити пост"
+                    title = {t('posts.create_post')}
                 >
                     <FiPlus size={28} />
                 </button>
@@ -444,7 +512,7 @@ export default function PostsPage() {
                 targetId = {report_target?.id}
                 targetTitle = {report_target?.title}
                 onSubmit = {() => {
-                    alert('Спасибо! Ваш звіт була успішно подана.');
+                    alert(t('posts_page.report_success'));
                     fetch_posts();
                 }}
             />

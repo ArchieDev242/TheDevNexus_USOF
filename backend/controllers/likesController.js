@@ -13,7 +13,6 @@ class likes_controller
             const { id } = req.params;
             const user_id = req.user?.id;
             
-            // Get total likes/dislikes count
             const count_query = `
                 SELECT 
                     COUNT(CASE WHEN type = 'like' THEN 1 END) as likes_count,
@@ -25,7 +24,6 @@ class likes_controller
             const count_result = await DB_connect.make_request(count_query, [id]);
             const counts = count_result[0][0];
             
-            // Check if user liked/disliked this post
             let user_reaction = { liked: false, disliked: false };
             
             if(user_id) 
@@ -72,7 +70,6 @@ class likes_controller
             const { id } = req.params;
             const user_id = req.user?.id;
             
-            // Get total likes/dislikes count
             const count_query = `
                 SELECT 
                     COUNT(CASE WHEN type = 'like' THEN 1 END) as likes_count,
@@ -84,7 +81,6 @@ class likes_controller
             const count_result = await DB_connect.make_request(count_query, [id]);
             const counts = count_result[0][0];
             
-            // Check if user liked/disliked this comment
             let user_reaction = { liked: false, disliked: false };
             
             if(user_id) 
@@ -175,14 +171,12 @@ class likes_controller
                 
                 if(current_type === 'like') 
                 {
-                    // Remove like
                     await DB_connect.make_request(
                         'DELETE FROM likes WHERE author_id = ? AND post_id = ?',
                         [author_id, id]
                     );
                 } else 
                 {
-                    // Change dislike to like
                     await DB_connect.make_request(
                         'UPDATE likes SET type = "like" WHERE author_id = ? AND post_id = ?',
                         [author_id, id]
@@ -190,14 +184,12 @@ class likes_controller
                 }
             } else 
             {
-                // Add new like
                 await DB_connect.make_request(
                     'INSERT INTO likes (author_id, post_id, type) VALUES (?, ?, "like")',
                     [author_id, id]
                 );
             }
             
-            // Get updated counts and user reaction
             const count_query = `
                 SELECT 
                     COUNT(CASE WHEN type = 'like' THEN 1 END) as likes_count,
@@ -234,7 +226,7 @@ class likes_controller
                     disliked: user_reaction.disliked
                 }
             });
-        } catch (error) 
+        } catch(error) 
         {
             console.error('Error liking post:', error);
             res.status(500).json({ 
@@ -283,14 +275,12 @@ class likes_controller
                 
                 if(current_type === 'dislike') 
                 {
-                    // Remove dislike
                     await DB_connect.make_request(
                         'DELETE FROM likes WHERE author_id = ? AND post_id = ?',
                         [author_id, id]
                     );
                 } else 
                 {
-                    // Change like to dislike
                     await DB_connect.make_request(
                         'UPDATE likes SET type = "dislike" WHERE author_id = ? AND post_id = ?',
                         [author_id, id]
@@ -298,14 +288,12 @@ class likes_controller
                 }
             } else 
             {
-                // Add new dislike
                 await DB_connect.make_request(
                     'INSERT INTO likes (author_id, post_id, type) VALUES (?, ?, "dislike")',
                     [author_id, id]
                 );
             }
             
-            // Get updated counts and user reaction
             const count_query = `
                 SELECT 
                     COUNT(CASE WHEN type = 'like' THEN 1 END) as likes_count,
@@ -392,14 +380,12 @@ class likes_controller
                 
                 if(current_type === 'like') 
                 {
-                    // Remove like
                     await DB_connect.make_request(
                         'DELETE FROM likes WHERE author_id = ? AND comment_id = ?',
                         [author_id, id]
                     );
                 } else 
                 {
-                    // Change dislike to like
                     await DB_connect.make_request(
                         'UPDATE likes SET type = "like" WHERE author_id = ? AND comment_id = ?',
                         [author_id, id]
@@ -407,14 +393,12 @@ class likes_controller
                 }
             } else 
             {
-                // Add new like (post_id is NULL for comments)
                 await DB_connect.make_request(
                     'INSERT INTO likes (author_id, post_id, comment_id, type) VALUES (?, NULL, ?, "like")',
                     [author_id, id]
                 );
             }
             
-            // Get updated counts and user reaction
             const count_query = `
                 SELECT 
                     COUNT(CASE WHEN type = 'like' THEN 1 END) as likes_count,
@@ -501,14 +485,12 @@ class likes_controller
                 
                 if(current_type === 'dislike') 
                 {
-                    // Remove dislike
                     await DB_connect.make_request(
                         'DELETE FROM likes WHERE author_id = ? AND comment_id = ?',
                         [author_id, id]
                     );
                 } else 
                 {
-                    // Change like to dislike
                     await DB_connect.make_request(
                         'UPDATE likes SET type = "dislike" WHERE author_id = ? AND comment_id = ?',
                         [author_id, id]
@@ -516,14 +498,12 @@ class likes_controller
                 }
             } else 
             {
-                // Add new dislike (post_id is NULL for comments)
                 await DB_connect.make_request(
                     'INSERT INTO likes (author_id, post_id, comment_id, type) VALUES (?, NULL, ?, "dislike")',
                     [author_id, id]
                 );
             }
             
-            // Get updated counts and user reaction
             const count_query = `
                 SELECT 
                     COUNT(CASE WHEN type = 'like' THEN 1 END) as likes_count,
@@ -621,7 +601,6 @@ class likes_controller
             
             if(value !== 1 && value !== -1) return res.status(400).json({ error: 'Value must be 1 or -1' });
 
-            // Check if user exists
             const user_check = await DB_connect.make_request(
                 'SELECT id FROM users WHERE id = ?',
                 [userId]
@@ -629,7 +608,6 @@ class likes_controller
             
             if(user_check[0].length === 0) return res.status(404).json({ error: 'User not found' });
 
-            // Check if rating already exists
             const existing_rating = await DB_connect.make_request(
                 'SELECT * FROM user_reputations WHERE giver_id = ? AND receiver_id = ?',
                 [giver_id, userId]
@@ -641,7 +619,6 @@ class likes_controller
                 
                 if(current_value === value) 
                 {
-                    // Remove rating
                     await DB_connect.make_request(
                         'DELETE FROM user_reputations WHERE giver_id = ? AND receiver_id = ?',
                         [giver_id, userId]
@@ -656,14 +633,12 @@ class likes_controller
                     return res.json({ success: true, message: 'Rating removed', action: 'removed' });
                 } else 
                 {
-                    // Change rating
                     await DB_connect.make_request(
                         'UPDATE user_reputations SET value = ? WHERE giver_id = ? AND receiver_id = ?',
                         [value, giver_id, userId]
                     );
                     
-                    // Update user rating (remove old, add new)
-                    const delta = value - current_value; // Will be +2 or -2
+                    const delta = value - current_value;
                     await DB_connect.make_request(
                         'UPDATE users SET rating = rating + ? WHERE id = ?',
                         [delta, userId]
@@ -673,13 +648,11 @@ class likes_controller
                 }
             } else 
             {
-                // Create new rating
                 await DB_connect.make_request(
                     'INSERT INTO user_reputations (giver_id, receiver_id, value) VALUES (?, ?, ?)',
                     [giver_id, userId, value]
                 );
                 
-                // Update user rating
                 await DB_connect.make_request(
                     'UPDATE users SET rating = rating + ? WHERE id = ?',
                     [value, userId]
@@ -701,7 +674,6 @@ class likes_controller
             const { userId } = req.params;
             const current_user_id = req.user?.id;
 
-            // Get user rating and reputation
             const query = `
                 SELECT 
                     u.rating,
@@ -718,7 +690,6 @@ class likes_controller
 
             const user_rating = result[0][0];
 
-            // Check if current user rated this user
             let user_vote = null;
             if(current_user_id) 
             {

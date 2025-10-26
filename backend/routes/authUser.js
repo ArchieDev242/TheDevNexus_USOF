@@ -39,7 +39,19 @@ router.post('/password-reset',
     error_handler.async_handler(forgotPassword)
 );
 
+router.post('/forgot-password', 
+    RateLimit.password_reset(),
+    Validator.validate_password_reset,
+    error_handler.async_handler(forgotPassword)
+);
+
 router.post('/password-reset/confirm', 
+    RateLimit.password_reset(),
+    Validator.validate_new_password,
+    error_handler.async_handler(resetPassword)
+);
+
+router.post('/reset-password', 
     RateLimit.password_reset(),
     Validator.validate_new_password,
     error_handler.async_handler(resetPassword)
@@ -48,5 +60,6 @@ router.post('/password-reset/confirm',
 // email verification (additional endpoint)
 router.get('/verify', error_handler.async_handler(verifyEmail));
 router.post('/password/verify', error_handler.async_handler(verifyResetToken));
+router.post('/verify-reset-token', error_handler.async_handler(verifyResetToken));
 
 export default router;

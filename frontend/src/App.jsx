@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import ProfilePage from './pages/ProfilePage';
 import PostsPage from './pages/PostsPage';
 import PostDetailPage from './pages/PostDetailPage';
@@ -35,6 +37,16 @@ export default function App()
                 <Route path = "/register" element = {
                     <PublicRoute>
                         <RegisterPage />
+                    </PublicRoute>
+                } />
+                <Route path = "/forgot-password" element = {
+                    <PublicRoute>
+                        <ForgotPasswordPage />
+                    </PublicRoute>
+                } />
+                <Route path = "/reset-password" element = {
+                    <PublicRoute>
+                        <ResetPasswordPage />
                     </PublicRoute>
                 } />
                 <Route path = "/profile" element = {

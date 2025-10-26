@@ -102,21 +102,21 @@ router.post('/:post_id/save',
     error_handler.async_handler(posts_controller.save_post)
 );
 
-// POST /api/posts/:post_id/close - Close post
+// POST /api/posts/:post_id/close
 router.post('/:post_id/close',
     auth_middleware.require_auth,
     Validator.validate_id('post_id'),
     error_handler.async_handler(posts_controller.close_post)
 );
 
-// POST /api/posts/:post_id/reopen - Reopen closed post
+// POST /api/posts/:post_id/reopen
 router.post('/:post_id/reopen',
     auth_middleware.require_auth,
     Validator.validate_id('post_id'),
     error_handler.async_handler(posts_controller.reopen_post)
 );
 
-// POST /api/posts/:post_id/view - Record post view (authenticated users only)
+// POST /api/posts/:post_id/view
 router.post('/:post_id/view',
     auth_middleware.require_auth,
     Validator.validate_id('post_id'),

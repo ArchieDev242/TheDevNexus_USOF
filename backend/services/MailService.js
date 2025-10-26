@@ -2,6 +2,15 @@ import nodemailer from 'nodemailer';
 import config from '../config.js';
 import error_handler from '../middleware/errorHandler.js';
 
+const buildFrontendLink = (path, params = {}) => {
+    const base = config.frontend?.baseUrl || config.server.baseUrl || 'http://localhost:5173';
+    const url = new URL(path, base);
+    Object.entries(params).forEach(([key, value]) => {
+        if(value !== undefined && value !== null) url.searchParams.set(key, value);
+    });
+    return url.toString();
+};
+
 class MailService 
 {
     constructor() 
@@ -65,7 +74,7 @@ class MailService
         try 
         {
             const mail_options = {
-                from: `USOF <${config.email.user}>`,
+                from: `TheDevNexus <${config.email.user}>`,
                 to: to,
                 subject: subject,
                 html: html,
@@ -103,9 +112,12 @@ class MailService
 
     async sending_verification(userEmail, userName, verificationToken) 
     {
-        const verification_link = `http://127.0.0.1:3000/api/auth/verify?token=${encodeURIComponent(verificationToken)}&email=${encodeURIComponent(userEmail)}`;
+        const verification_link = buildFrontendLink('/email-verification', {
+            token: verificationToken,
+            email: userEmail
+        });
         
-        const subject = 'Email Verification - USOF';
+        const subject = 'Email Verification - TheDevNexus';
         const html = `
             <!DOCTYPE html>
             <html lang = "en">
@@ -118,15 +130,15 @@ class MailService
                 <div style = "max-width: 600px; margin: 0 auto; background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden;">
 
                 <div style = "background: linear-gradient(135deg, #238636 0%, #2ea043 100%); padding: 40px 30px; text-align: center;">
-                        <h1 style = "color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">USOF</h1>
-                        <p style = "color: rgba(255,255,255,0.8); margin: 8px 0 0 0; font-size: 16px; font-weight: 400;">Ukrainian Stack Overflow Forum</p>
+                        <h1 style = "color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">TheDevNexus</h1>
+                        <p style = "color: rgba(255,255,255,0.8); margin: 8px 0 0 0; font-size: 16px; font-weight: 400;">Developer Community Platform</p>
                     </div>
                     
                     <div style = "padding: 40px 30px;">
                         <h2 style = "color: #f0f6fc; margin: 0 0 20px 0; font-size: 24px; font-weight: 600;">Welcome, ${userName}!</h2>
                         
                         <p style = "color: #8b949e; line-height: 1.6; font-size: 16px; margin: 0 0 30px 0;">
-                            Thank you for registering on our platform! To complete your registration and activate your account, 
+                            Thank you for registering on TheDevNexus! To complete your registration and activate your account, 
                             please verify your email address by clicking the button below.
                         </p>
 
@@ -157,16 +169,16 @@ class MailService
                         <hr style = "border: none; border-top: 1px solid #30363d; margin: 40px 0;">
                         
                         <p style = "color: #6e7681; font-size: 13px; line-height: 1.4; margin: 0;">
-                            This is an automated message. If you didn't register on USOF, please ignore this email.
+                            This is an automated message. If you didn't register on TheDevNexus, please ignore this email.
                             <br><br>
                             <strong style = "color: #8b949e;">Best regards,</strong><br>
-                            <span style = "color: #f0f6fc;">The USOF Team</span>
+                            <span style = "color: #f0f6fc;">The TheDevNexus Team</span>
                         </p>
                     </div>
                     
                     <div style = "background-color: #0d1117; padding: 20px 30px; text-align: center; border-top: 1px solid #30363d;">
                         <p style = "color: #6e7681; font-size: 12px; margin: 0;">
-                            © 2025 USOF
+                            © 2025 TheDevNexus
                         </p>
                     </div>
                 </div>
@@ -179,9 +191,12 @@ class MailService
 
     async send_pass_reset(userEmail, resetToken) 
     {
-        const reset_link = `http://127.0.0.1:3000/reset-password#token=${encodeURIComponent(resetToken)}&email=${encodeURIComponent(userEmail)}`;
+        const reset_link = buildFrontendLink('/reset-password', {
+            token: resetToken,
+            email: userEmail
+        });
         
-        const subject = 'Password Reset Request - USOF';
+        const subject = 'Password Reset Request - TheDevNexus';
         const html = `
             <!DOCTYPE html>
             <html lang = "en">
@@ -194,7 +209,7 @@ class MailService
                 <div style = "max-width: 600px; margin: 0 auto; background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden;">
 
                 <div style = "background: linear-gradient(135deg, #da3633 0%, #f85149 100%); padding: 40px 30px; text-align: center;">
-                        <h1 style = "color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">USOF</h1>
+                        <h1 style = "color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">TheDevNexus</h1>
                         <p style = "color: rgba(255,255,255,0.8); margin: 8px 0 0 0; font-size: 16px; font-weight: 400;">Password Reset Request</p>
                     </div>
                     
@@ -243,13 +258,13 @@ class MailService
                             Your password will remain unchanged.
                             <br><br>
                             <strong style = "color: #8b949e;">Best regards,</strong><br>
-                            <span style = "color: #f0f6fc;">The USOF Team</span>
+                            <span style = "color: #f0f6fc;">The TheDevNexus Team</span>
                         </p>
                     </div>
                     
                     <div style = "background-color: #0d1117; padding: 20px 30px; text-align: center; border-top: 1px solid #30363d;">
                         <p style = "color: #6e7681; font-size: 12px; margin: 0;">
-                            © 2025 USOF
+                            © 2025 TheDevNexus
                         </p>
                     </div>
                 </div>
@@ -276,7 +291,7 @@ class MailService
 
     async send_pass_change_confirmation(userEmail, userName) 
     {
-        const subject = 'Password Successfully Changed - USOF';
+        const subject = 'Password Successfully Changed - TheDevNexus';
         const html = `
             <!DOCTYPE html>
             <html lang = "en">
@@ -289,7 +304,7 @@ class MailService
                 <div style = "max-width: 600px; margin: 0 auto; background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden;">
 
                 <div style = "background: linear-gradient(135deg, #238636 0%, #2ea043 100%); padding: 40px 30px; text-align: center;">
-                        <h1 style = "color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">USOF</h1>
+                        <h1 style = "color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">TheDevNexus</h1>
                         <p style = "color: rgba(255,255,255,0.8); margin: 8px 0 0 0; font-size: 16px; font-weight: 400;">Password Successfully Changed</p>
                     </div>
                     
@@ -303,7 +318,7 @@ class MailService
                         </div>
                         
                         <p style = "color: #8b949e; line-height: 1.6; font-size: 16px; margin: 0 0 30px 0;">
-                            This is a confirmation that the password for your USOF account was successfully updated.
+                            This is a confirmation that the password for your TheDevNexus account was successfully updated.
                         </p>
                         
                         <div style = "background-color: #21262d; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin: 30px 0;">
@@ -317,13 +332,13 @@ class MailService
                         
                         <p style = "color: #6e7681; font-size: 13px; line-height: 1.4; margin: 0;">
                             <strong style = "color: #8b949e;">Best regards,</strong><br>
-                            <span style = "color: #f0f6fc;">The USOF Team</span>
+                            <span style = "color: #f0f6fc;">The TheDevNexus Team</span>
                         </p>
                     </div>
                     
                     <div style = "background-color: #0d1117; padding: 20px 30px; text-align: center; border-top: 1px solid #30363d;">
                         <p style = "color: #6e7681; font-size: 12px; margin: 0;">
-                            © 2025 USOF
+                            © 2025 TheDevNexus
                         </p>
                     </div>
                 </div>
