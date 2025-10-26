@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { FiUsers, FiFileText, FiMessageSquare, FiTag, FiSettings, FiHome, FiMoreVertical, FiEdit2, FiTrash2, FiPlus, FiFlag } from 'react-icons/fi';
+import { FiSettings, FiHome, FiMoreVertical, FiEdit2, FiTrash2, FiPlus, FiFlag } from 'react-icons/fi';
+import { FaUsers, FaComments } from 'react-icons/fa';
+import { BsFileEarmarkPost } from 'react-icons/bs';
+import { BiCategory } from 'react-icons/bi';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../style/admin-dashboard.css';
@@ -33,6 +36,14 @@ export default function AdminDashboard()
     const [show_menu, set_whow_menu] = useState(null);
     const [selected_report, set_selected_report] = useState(null);
     const [show_report_modal, set_show_report_modal] = useState(false);
+    const [show_edit_user_modal, set_show_edit_user_modal] = useState(false);
+    const [editing_user, set_editing_user] = useState(null);
+    const [edit_user_form, set_edit_user_form] = useState({
+        login: '',
+        full_name: '',
+        email: '',
+        role: 'user'
+    });
 
     useEffect(() => {
         if(!isAuthenticated || user?.role !== 'admin') return;
@@ -51,7 +62,14 @@ export default function AdminDashboard()
 
             const users_res = await fetch('/api/users?limit=20', { credentials: 'include' });
             const users_data = await users_res.json();
-            if(users_data.status === 'success') set_users(users_data.data || []);
+            if(users_data.status === 'success') 
+                {
+                const normalized_users = (users_data.data || []).map(u => ({
+                    ...u,
+                    role: u.role === 'guest' ? 'user' : u.role
+                }));
+                set_users(normalized_users);
+            }
 
             const posts_res = await fetch('/api/posts?limit=20', { credentials: 'include' });
             const posts_data = await posts_res.json();
@@ -100,6 +118,64 @@ export default function AdminDashboard()
         } catch(error) 
         {
             console.error('Error deleting user:', error);
+        }
+    };
+
+    const openEditUserModal = (user) => {
+        set_editing_user(user);
+        set_edit_user_form({
+            login: user.login || '',
+            full_name: user.full_name || '',
+            email: user.email || '',
+            role: user.role || 'user'
+        });
+        set_show_edit_user_modal(true);
+    };
+
+    const handleEditUserChange = (field, value) => {
+        set_edit_user_form(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleUpdateUser = async () => {
+        if(!editing_user) return;
+
+        try 
+        {
+            const response = await fetch(`/api/users/${editing_user.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    login: edit_user_form.login,
+                    full_name: edit_user_form.full_name,
+                    email: edit_user_form.email,
+                    role: edit_user_form.role
+                })
+            });
+
+            const data = await response.json();
+
+            if(!response.ok) 
+                {
+                throw new Error(data?.message || 'Не вдалося оновити користувача');
+            }
+
+            if(data?.data) 
+                {
+                const updated = data.data;
+                set_users(prev => prev.map(u => u.id === updated.id ? { ...u, ...updated } : u));
+            }
+
+            set_show_edit_user_modal(false);
+            set_editing_user(null);
+        } catch(error) 
+        {
+            alert(error.message || 'Помилка оновлення користувача');
         }
     };
 
@@ -230,25 +306,25 @@ export default function AdminDashboard()
                                 className = {`menu-item ${activeSection === 'users' ? 'active' : ''}`}
                                 onClick = {() => set_active_section('users')}
                             >
-                                <FiUsers /> Користувачі
+                                <FaUsers /> Користувачі
                             </button>
                             <button
                                 className = {`menu-item ${activeSection === 'posts' ? 'active' : ''}`}
                                 onClick = {() => set_active_section('posts')}
                             >
-                                <FiFileText /> Пости
+                                <BsFileEarmarkPost /> Пости
                             </button>
                             <button
                                 className = {`menu-item ${activeSection === 'comments' ? 'active' : ''}`}
                                 onClick = {() => set_active_section('comments')}
                             >
-                                <FiMessageSquare /> Коментарі
+                                <FaComments /> Коментарі
                             </button>
                             <button
                                 className = {`menu-item ${activeSection === 'categories' ? 'active' : ''}`}
                                 onClick = {() => set_active_section('categories')}
                             >
-                                <FiTag /> Категорії
+                                <BiCategory /> Категорії
                             </button>
                             <button
                                 className={`menu-item ${activeSection === 'reports' ? 'active' : ''}`}
@@ -274,7 +350,7 @@ export default function AdminDashboard()
                                 <div className = "stats-grid">
                                     <div className = "stat-card users">
                                         <div className = "stat-icon">
-                                            <FiUsers />
+                                            <FaUsers />
                                         </div>
                                         <div className = "stat-info">
                                             <h3>{stats.totalUsers}</h3>
@@ -283,7 +359,7 @@ export default function AdminDashboard()
                                     </div>
                                     <div className = "stat-card posts">
                                         <div className = "stat-icon">
-                                            <FiFileText />
+                                            <BsFileEarmarkPost />
                                         </div>
                                         <div className = "stat-info">
                                             <h3>{stats.totalPosts}</h3>
@@ -292,7 +368,7 @@ export default function AdminDashboard()
                                     </div>
                                     <div className = "stat-card comments">
                                         <div className = "stat-icon">
-                                            <FiMessageSquare />
+                                            <FaComments />
                                         </div>
                                         <div className = "stat-info">
                                             <h3>{stats.totalComments}</h3>
@@ -301,7 +377,7 @@ export default function AdminDashboard()
                                     </div>
                                     <div className = "stat-card categories">
                                         <div className = "stat-icon">
-                                            <FiTag />
+                                            <BiCategory />
                                         </div>
                                         <div className = "stat-info">
                                             <h3>{stats.totalCategories}</h3>
@@ -346,13 +422,22 @@ export default function AdminDashboard()
                                                     <td>{user.email}</td>
                                                     <td><span className = {`role-badge ${user.role}`}>{user.role}</span></td>
                                                     <td>
-                                                        <button
-                                                            className = "btn-delete"
-                                                            onClick = {() => handleDeleteUser(user.id)}
-                                                            title = "Видалити"
-                                                        >
-                                                            <FiTrash2 />
-                                                        </button>
+                                                        <div className = "table-actions">
+                                                            <button
+                                                                className = "admin-btn-edit"
+                                                                onClick = {() => openEditUserModal(user)}
+                                                                title = "Редагувати"
+                                                            >
+                                                                <FiEdit2 />
+                                                            </button>
+                                                            <button
+                                                                className = "btn-delete"
+                                                                onClick = {() => handleDeleteUser(user.id)}
+                                                                title = "Видалити"
+                                                            >
+                                                                <FiTrash2 />
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -393,7 +478,7 @@ export default function AdminDashboard()
                                                 <tr key = {post.id}>
                                                     <td>{post.id}</td>
                                                     <td>{post.title}</td>
-                                                    <td>{post.author?.login || 'Anonymous'}</td>
+                                                    <td>{post.author_login || post.author?.login || post.author_name || '—'}</td>
                                                     <td>{new Date(post.publish_date).toLocaleDateString('uk-UA')}</td>
                                                     <td>{post.likes_count || 0}</td>
                                                     <td>{post.comments_count || 0}</td>
@@ -532,19 +617,72 @@ export default function AdminDashboard()
             </main>
 
             {/* Report Details Modal */}
-            {show_report_modal && selected_report && (
-                <div className = "modal-overlay" onClick = {() => set_show_report_modal(false)}>
-                    <div className = "modal-content" onClick = {(e) => e.stopPropagation()}>
-                        <div className = "modal-header">
+                        {show_edit_user_modal && (
+                            <div className = "admin-modal-overlay" onClick = {() => { set_show_edit_user_modal(false); set_editing_user(null); }}>
+                                <div className = "admin-modal-content" onClick = {(e) => e.stopPropagation()}>
+                                    <div className = "admin-modal-header">
+                                        <h2>Редагувати користувача</h2>
+                                        <button className = "admin-modal-close" onClick = {() => { set_show_edit_user_modal(false); set_editing_user(null); }}>✕</button>
+                                    </div>
+                                    <div className = "admin-modal-body">
+                                        <div className = "admin-edit-user-form">
+                                            <label>
+                                                <span>Логін</span>
+                                                <input
+                                                    type = "text"
+                                                    value = {edit_user_form.login}
+                                                    onChange = {(e) => handleEditUserChange('login', e.target.value)}
+                                                />
+                                            </label>
+                                            <label>
+                                                <span>Повне ім'я</span>
+                                                <input
+                                                    type = "text"
+                                                    value = {edit_user_form.full_name}
+                                                    onChange = {(e) => handleEditUserChange('full_name', e.target.value)}
+                                                />
+                                            </label>
+                                            <label>
+                                                <span>Email</span>
+                                                <input
+                                                    type = "email"
+                                                    value = {edit_user_form.email}
+                                                    onChange = {(e) => handleEditUserChange('email', e.target.value)}
+                                                />
+                                            </label>
+                                            <label>
+                                                <span>Роль</span>
+                                                <select
+                                                    value = {edit_user_form.role}
+                                                    onChange = {(e) => handleEditUserChange('role', e.target.value)}
+                                                >
+                                                    <option value = "user">User</option>
+                                                    <option value = "admin">Admin</option>
+                                                </select>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div className = "admin-modal-footer">
+                                        <button className = "admin-btn-action admin-btn-cancel" onClick = {() => { set_show_edit_user_modal(false); set_editing_user(null); }}>Скасувати</button>
+                                        <button className = "admin-btn-action admin-btn-approve" onClick = {handleUpdateUser}>Зберегти</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {show_report_modal && selected_report && (
+                <div className = "admin-modal-overlay" onClick = {() => set_show_report_modal(false)}>
+                    <div className = "admin-modal-content" onClick = {(e) => e.stopPropagation()}>
+                        <div className = "admin-modal-header">
                             <h2>Деталі репорту #{selected_report.id}</h2>
                             <button 
-                                className = "modal-close"
+                                className = "admin-modal-close"
                                 onClick={() => set_show_report_modal(false)}
                             >
                                 ✕
                             </button>
                         </div>
-                        <div className = "modal-body">
+                        <div className = "admin-modal-body">
                             <div className = "report-detail-group">
                                 <label>Тип об'єкта:</label>
                                 <span>{selected_report.reported_type === 'post' ? '📝 Пост' :
@@ -576,23 +714,23 @@ export default function AdminDashboard()
                                 </span>
                             </div>
                         </div>
-                        <div className = "modal-footer">
+                        <div className = "admin-modal-footer">
                             <button 
-                                className = "btn-action btn-approve"
+                                className = "admin-btn-action admin-btn-approve"
                                 onClick={() => handleReportAction(selected_report.id, 'resolved')}
                                 disabled={selected_report.status !== 'pending'}
                             >
                                 ✅ Розв'язати
                             </button>
                             <button 
-                                className = "btn-action btn-reject"
+                                className = "admin-btn-action admin-btn-reject"
                                 onClick={() => handleReportAction(selected_report.id, 'rejected')}
                                 disabled={selected_report.status !== 'pending'}
                             >
                                 ❌ Відхилити
                             </button>
                             <button 
-                                className = "btn-action btn-cancel"
+                                className = "admin-btn-action admin-btn-cancel"
                                 onClick = {() => set_show_report_modal(false)}
                             >
                                 Закрити

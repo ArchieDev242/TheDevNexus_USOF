@@ -2,6 +2,7 @@ import Report from '../models/Report.js';
 import User from '../models/User.js';
 import Post from '../models/Post.js';
 import Comment from '../models/Comment.js';
+import notification_service from '../services/NotificationService.js';
 
 // Submit a report
 const submit_report = async (req, res) => {
@@ -89,6 +90,18 @@ const submit_report = async (req, res) => {
 
         // create report
         const report = await Report.create(reporter_id, reported_type, reported_id, reason);
+
+        await notification_service.notify_admins_about_report({
+            reportId: report.id,
+            reportedType: reported_type,
+            reportedId: reported_id,
+            reason,
+            reporter: {
+                id: reporter_id,
+                login: req.user?.login,
+                full_name: req.user?.full_name
+            }
+        });
 
         res.status(201).json({
             status: 'success',

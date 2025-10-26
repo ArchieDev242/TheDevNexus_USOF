@@ -213,6 +213,7 @@ class Notification
                         WHEN n.related_type = 'comment' THEN CONCAT('Comment on: ', pc.title)
                         WHEN n.related_type = 'user' THEN u.login
                         WHEN n.related_type = 'achievement' THEN a.title
+                        WHEN n.related_type = 'report' THEN CONCAT('Report #', r.id)
                         ELSE NULL 
                     END as related_title,
                     CASE 
@@ -221,6 +222,7 @@ class Notification
                     END as related_avatar,
                     CASE 
                         WHEN n.related_type = 'achievement' THEN a.icon
+                        WHEN n.related_type = 'report' THEN NULL
                         WHEN n.type = 'like' THEN '/user/achievements/HeroOfTheDay.jpg'
                         WHEN n.type = 'comment' THEN '/user/achievements/Chatterbox.jpg'
                         WHEN n.type = 'reply' THEN '/user/achievements/Chatterbox.jpg'
@@ -234,6 +236,7 @@ class Notification
                 LEFT JOIN posts pc ON c.post_id = pc.id
                 LEFT JOIN users u ON n.related_type = 'user' AND n.related_id = u.id
                 LEFT JOIN achievements a ON n.related_type = 'achievement' AND n.related_id = a.id
+                LEFT JOIN reports r ON n.related_type = 'report' AND n.related_id = r.id
                 WHERE n.user_id = ?
                 ORDER BY n.created_at DESC
                 LIMIT ${limit_int} OFFSET ${offset_int}

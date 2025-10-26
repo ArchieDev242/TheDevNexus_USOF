@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetch_current_user } from '../redux/slices/authSlice';
@@ -13,6 +13,9 @@ import
     FiGlobe,
     FiGithub,
     FiLinkedin,
+    FiCode,
+    FiLink,
+    FiSmile,
     FiAlertTriangle,
     FiEdit2,
     FiX,
@@ -21,13 +24,95 @@ import
     FiZap
 } from 'react-icons/fi';
 import { FaXTwitter } from 'react-icons/fa6';
-import { FaBrain } from 'react-icons/fa';
+import { FaBrain, FaTwitch } from 'react-icons/fa';
 import { GiAchievement } from 'react-icons/gi';
 import { GoBlocked } from 'react-icons/go';
-import { SiUnrealengine, SiUnity, SiGodotengine, SiPython, SiVulkan, SiCryengine, SiGamemaker } from 'react-icons/si';
+import { SiUnrealengine, SiUnity, SiGodotengine, SiPython, SiVulkan, SiCryengine, SiGamemaker, SiItchdotio, SiGamebanana, SiGamejolt } from 'react-icons/si';
 
 import Header from '../components/Header';
 import '../style/profile.css';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import { defaultSchema } from 'hast-util-sanitize';
+
+const BIO_ALLOWED_COLOR_NAMES = new Set([
+    'red', 'orange', 'yellow', 'gold', 'amber', 'lime', 'green', 'emerald', 'teal', 'cyan',
+    'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose', 'magenta',
+    'brown', 'maroon', 'crimson', 'white', 'black', 'gray', 'grey', 'silver'
+]);
+
+const HEX_COLOR_REGEX = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+const NAMED_COLOR_REGEX = /^[a-zA-Z]+$/;
+const BIO_CLASS_REGEX = /^bio-[a-z0-9_-]+$/;
+const COLOR_VALUE_REGEX = /^(#[0-9a-fA-F]{3,6}|[a-zA-Z]+)$/;
+
+const bio_sanitize_schema = {
+    ...defaultSchema,
+    tagNames: Array.from(new Set([...(defaultSchema.tagNames || []), 'span', 'mark'])),
+    attributes: {
+        ...defaultSchema.attributes,
+        span: [
+            ...(defaultSchema.attributes?.span || []),
+            ['className', value => BIO_CLASS_REGEX.test(value)],
+            'style'
+        ],
+        mark: [
+            ...(defaultSchema.attributes?.mark || []),
+            ['className', value => BIO_CLASS_REGEX.test(value)]
+        ],
+        a: [
+            ...(defaultSchema.attributes?.a || []),
+            'href',
+            'title',
+            'target',
+            'rel'
+        ]
+    }
+};
+
+const normalize_bio_color = (value) => {
+    if(!value) return null;
+    const trimmed = value.trim();
+    if(HEX_COLOR_REGEX.test(trimmed)) return trimmed.toLowerCase();
+    if(NAMED_COLOR_REGEX.test(trimmed)) 
+        {
+        const lower = trimmed.toLowerCase();
+        if(BIO_ALLOWED_COLOR_NAMES.has(lower)) return lower;
+    }
+    return null;
+};
+
+const transform_bio_markup = (value) => {
+    if(!value) return '';
+    let result = value;
+
+    result = result.replace(/\[color=([^\]]+)\]([\s\S]*?)\[\/color\]/gi, (match, colorToken, inner) => {
+        const normalized = normalize_bio_color(colorToken);
+        if(!normalized) return inner;
+        return `<span class="bio-color" style="color: ${normalized};">${inner}</span>`;
+    });
+
+    result = result.replace(/\[bg=([^\]]+)\]([\s\S]*?)\[\/bg\]/gi, (match, colorToken, inner) => {
+        const normalized = normalize_bio_color(colorToken);
+        if(!normalized) return inner;
+        return `<span class="bio-bg-chip" style="background-color: ${normalized};">${inner}</span>`;
+    });
+
+    result = result.replace(/\[mark\]([\s\S]*?)\[\/mark\]/gi, '<mark class="bio-mark">$1</mark>');
+
+    return result;
+};
+
+const BIO_EMOJI_LIST = [
+    '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃',
+    '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙',
+    '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉',
+    '👆', '👇', '☝️', '✋', '🤚', '🖐️', '🖖', '👋', '🤝', '🙏',
+    '💻', '🖥️', '⌨️', '🖱️', '💾', '💿', '🧮', '🎮', '🕹️', '🚀',
+    '🔥', '✨', '💡', '🎉', '🎊', '🎈', '🏆', '🥇', '🥈', '🥉'
+];
 
 const AVAILABLE_ENGINES = [
     { 
@@ -108,6 +193,9 @@ export default function ProfilePage() {
     const [loaded_achievements, set_loaded_achievements] = useState([]);
     const [all_achievements, set_all_achievements] = useState([]);
     const [engine_popup, set_engine_popup] = useState(null);
+    const bio_textarea_ref = useRef(null);
+    const bio_toolbar_ref = useRef(null);
+    const [show_bio_emoji_picker, set_show_bio_emoji_picker] = useState(false);
 
     const [profile_data, set_profile_data] = useState({
         login: '',
@@ -118,6 +206,10 @@ export default function ProfilePage() {
         twitter: '',
         github: '',
         linkedin: '',
+        itch: '',
+        gamebanana: '',
+        gamejolt: '',
+        twitch: '',
         engines: []
     });
 
@@ -150,6 +242,46 @@ export default function ProfilePage() {
         return cleaned;
     };
 
+    const format_social_url = (type, value) => {
+        if(!value) return null;
+        const trimmed = value.trim();
+        if(!trimmed) return null;
+        if(/^https?:\/\//i.test(trimmed)) return trimmed;
+
+        const sanitized = trimmed.replace(/^@/, '');
+
+        switch(type) 
+        {
+            case 'website':
+                return sanitized.startsWith('www.') ? `https://${sanitized}` : `https://${sanitized}`;
+            case 'twitter':
+                return `https://twitter.com/${sanitized}`;
+            case 'github':
+                return `https://github.com/${sanitized}`;
+            case 'linkedin':
+                return `https://linkedin.com/in/${sanitized}`;
+            case 'itch':
+                if(sanitized.includes('itch.io') || sanitized.includes('/')) {
+                    return sanitized.startsWith('www.') ? `https://${sanitized}` : `https://${sanitized}`;
+                }
+                return `https://${sanitized}.itch.io`;
+            case 'gamebanana':
+                if(sanitized.includes('gamebanana.com')) {
+                    return sanitized.startsWith('www.') ? `https://${sanitized}` : `https://${sanitized}`;
+                }
+                return `https://gamebanana.com/members/${sanitized}`;
+            case 'gamejolt':
+                if(sanitized.toLowerCase().includes('gamejolt.com')) {
+                    return sanitized.startsWith('www.') ? `https://${sanitized}` : `https://${sanitized}`;
+                }
+                return `https://gamejolt.com/@${sanitized}`;
+            case 'twitch':
+                return `https://twitch.tv/${sanitized}`;
+            default:
+                return trimmed.startsWith('www.') ? `https://${trimmed}` : `https://${trimmed}`;
+        }
+    };
+
     useEffect(() => {
         if(user) 
             {
@@ -163,6 +295,10 @@ export default function ProfilePage() {
                 twitter: user.twitter || '',
                 github: user.github || '',
                 linkedin: user.linkedin || '',
+                itch: user.itch || '',
+                gamebanana: user.gamebanana || '',
+                gamejolt: user.gamejolt || '',
+                twitch: user.twitch || '',
                 engines: user.engines || []
             });
 
@@ -171,6 +307,24 @@ export default function ProfilePage() {
             fetch_all_achievements();
         }
     }, [user]);
+
+    useEffect(() => {
+        if(!show_edit_modal) set_show_bio_emoji_picker(false);
+    }, [show_edit_modal]);
+
+    useEffect(() => {
+        if(!show_bio_emoji_picker) return;
+
+        const handle_click_outside = (event) => {
+            if(bio_toolbar_ref.current && !bio_toolbar_ref.current.contains(event.target)) 
+                {
+                set_show_bio_emoji_picker(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handle_click_outside);
+        return () => document.removeEventListener('mousedown', handle_click_outside);
+    }, [show_bio_emoji_picker]);
 
     const fetch_user_achievements = async () => {
         try 
@@ -223,6 +377,158 @@ export default function ProfilePage() {
             ...prev,
             [name]: value
         }));
+    };
+
+    const insert_bio_markdown = (type) => {
+        const textarea = bio_textarea_ref.current;
+        if(!textarea) return;
+
+        textarea.focus();
+        const start = textarea.selectionStart ?? 0;
+        const end = textarea.selectionEnd ?? start;
+        const current_bio = profile_data.bio || '';
+        const selected_text = current_bio.slice(start, end);
+
+        let snippet = '';
+        let highlightStartOffset = 0;
+        let highlightEndOffset = 0;
+
+        const setHighlightFor = (inner) => {
+            if(!inner)
+                {
+                highlightStartOffset = snippet.length;
+                highlightEndOffset = snippet.length;
+                return;
+            }
+
+            const index = snippet.indexOf(inner);
+            if(index !== -1) 
+                {
+                highlightStartOffset = index;
+                highlightEndOffset = index + inner.length;
+            } else 
+                {
+                highlightStartOffset = snippet.length;
+                highlightEndOffset = snippet.length;
+            }
+        };
+
+        switch(type) 
+        {
+            case 'bold': {
+                const placeholder = selected_text || 'bold text';
+                snippet = `**${placeholder}**`;
+                setHighlightFor(placeholder);
+                break;
+            }
+            case 'italic': {
+                const placeholder = selected_text || 'italic text';
+                snippet = `*${placeholder}*`;
+                setHighlightFor(placeholder);
+                break;
+            }
+            case 'code': {
+                const placeholder = selected_text || 'code';
+                snippet = `\`${placeholder}\``;
+                setHighlightFor(placeholder);
+                break;
+            }
+            case 'code-block': {
+                const placeholder = selected_text || '// code snippet';
+                snippet = `\n\`\`\`\n${placeholder}\n\`\`\`\n`;
+                setHighlightFor(placeholder);
+                break;
+            }
+            case 'link': {
+                const label = selected_text || 'link text';
+                snippet = `[${label}](url)`;
+                const urlPlaceholder = 'url';
+                const idx = snippet.indexOf(urlPlaceholder);
+                if(idx !== -1) 
+                    {
+                    highlightStartOffset = idx;
+                    highlightEndOffset = idx + urlPlaceholder.length;
+                } else 
+                    {
+                    highlightStartOffset = snippet.length;
+                    highlightEndOffset = snippet.length;
+                }
+                break;
+            }
+            case 'heading': {
+                const placeholder = selected_text || 'Heading';
+                snippet = `\n## ${placeholder}\n`;
+                setHighlightFor(placeholder);
+                break;
+            }
+            case 'list': {
+                const placeholder = selected_text || 'List item';
+                snippet = `\n- ${placeholder}\n`;
+                setHighlightFor(placeholder);
+                break;
+            }
+            case 'color': {
+                const placeholder = selected_text || 'кольоровий текст';
+                snippet = `[color=#ff6b6b]${placeholder}[/color]`;
+                setHighlightFor(placeholder);
+                break;
+            }
+            case 'background': {
+                const placeholder = selected_text || 'фонований текст';
+                snippet = `[bg=yellow]${placeholder}[/bg]`;
+                setHighlightFor(placeholder);
+                break;
+            }
+            case 'mark': {
+                const placeholder = selected_text || 'виділення';
+                snippet = `[mark]${placeholder}[/mark]`;
+                setHighlightFor(placeholder);
+                break;
+            }
+            default:
+                return;
+        }
+
+        if(!snippet) return;
+
+        const new_bio = `${current_bio.substring(0, start)}${snippet}${current_bio.substring(end)}`;
+        const selection_start = start + Math.min(highlightStartOffset, snippet.length);
+        const selection_end = start + Math.min(highlightEndOffset, snippet.length);
+
+        set_profile_data(prev => ({ ...prev, bio: new_bio }));
+        set_show_bio_emoji_picker(false);
+
+        requestAnimationFrame(() => {
+            if(bio_textarea_ref.current) 
+                {
+                bio_textarea_ref.current.focus();
+                bio_textarea_ref.current.setSelectionRange(selection_start, selection_end);
+            }
+        });
+    };
+
+    const insert_bio_emoji = (emoji) => {
+        const textarea = bio_textarea_ref.current;
+        if(!textarea) return;
+
+        textarea.focus();
+        const start = textarea.selectionStart ?? 0;
+        const end = textarea.selectionEnd ?? start;
+        const current_bio = profile_data.bio || '';
+
+        const new_bio = `${current_bio.substring(0, start)}${emoji}${current_bio.substring(end)}`;
+        const new_cursor = start + emoji.length;
+
+        set_profile_data(prev => ({ ...prev, bio: new_bio }));
+        set_show_bio_emoji_picker(false);
+
+        requestAnimationFrame(() => {
+            if(bio_textarea_ref.current) 
+                {
+                bio_textarea_ref.current.focus();
+                bio_textarea_ref.current.setSelectionRange(new_cursor, new_cursor);
+            }
+        });
     };
 
     const handle_password_change = (e) => {
@@ -313,6 +619,10 @@ export default function ProfilePage() {
                     twitter: profile_data.twitter,
                     github: profile_data.github,
                     linkedin: profile_data.linkedin,
+                    itch: profile_data.itch,
+                    gamebanana: profile_data.gamebanana,
+                    gamejolt: profile_data.gamejolt,
+                    twitch: profile_data.twitch,
                     engines: profile_data.engines
                 })
             });
@@ -390,6 +700,21 @@ export default function ProfilePage() {
         set_show_delete_modal(false);
     };
 
+    const social_links_config = [
+        { key: 'website', type: 'website', value: user?.website, icon: <FiGlobe /> },
+        { key: 'twitter', type: 'twitter', value: user?.twitter, icon: <FaXTwitter /> },
+        { key: 'github', type: 'github', value: user?.github, icon: <FiGithub /> },
+        { key: 'linkedin', type: 'linkedin', value: user?.linkedin, icon: <FiLinkedin /> },
+        { key: 'itch', type: 'itch', value: user?.itch, icon: <SiItchdotio /> },
+        { key: 'gamebanana', type: 'gamebanana', value: user?.gamebanana, icon: <SiGamebanana /> },
+        { key: 'gamejolt', type: 'gamejolt', value: user?.gamejolt, icon: <SiGamejolt /> },
+        { key: 'twitch', type: 'twitch', value: user?.twitch, icon: <FaTwitch /> }
+    ];
+
+    const active_social_links = social_links_config
+        .map((link) => ({ ...link, href: format_social_url(link.type, link.value) }))
+        .filter(link => !!link.href);
+
 
 
     if(loading) return null;
@@ -442,28 +767,19 @@ export default function ProfilePage() {
                                     <p className = "user-role">{user?.role?.toUpperCase()}</p>
 
                                     {/* Social Links */}
-                                    {(user?.twitter || user?.github || user?.linkedin || user?.website) && (
+                                    {active_social_links.length > 0 && (
                                         <div className = "social-links">
-                                            {user?.website && (
-                                                <a href = {user.website} target = "_blank" rel = "noopener noreferrer" className = "social-link">
-                                                    <FiGlobe />
+                                            {active_social_links.map(link => (
+                                                <a
+                                                    key = {link.key}
+                                                    href = {link.href}
+                                                    target = "_blank"
+                                                    rel = "noopener noreferrer"
+                                                    className = "social-link"
+                                                >
+                                                    {link.icon}
                                                 </a>
-                                            )}
-                                            {user?.twitter && (
-                                                <a href = {`https://twitter.com/${user.twitter}`} target = "_blank" rel = "noopener noreferrer" className = "social-link">
-                                                    <FaXTwitter />
-                                                </a>
-                                            )}
-                                            {user?.github && (
-                                                <a href = {`https://github.com/${user.github}`} target = "_blank" rel = "noopener noreferrer" className = "social-link">
-                                                    <FiGithub />
-                                                </a>
-                                            )}
-                                            {user?.linkedin && (
-                                                <a href = {`https://linkedin.com/in/${user.linkedin}`} target = "_blank" rel = "noopener noreferrer" className = "social-link">
-                                                    <FiLinkedin />
-                                                </a>
-                                            )}
+                                            ))}
                                         </div>
                                     )}
 
@@ -491,9 +807,8 @@ export default function ProfilePage() {
                                     )}
 
                                     <button 
-                                        className = "btn-edit"
+                                        className = "btn-edit-profile"
                                         onClick = {() => set_show_edit_modal(true)}
-                                        style = {{ marginTop: '15px', display: 'flex', margin: '15px auto 0', justifyContent: 'center' }}
                                     >
                                         <FiEdit2 /> Edit Profile
                                     </button>
@@ -566,10 +881,40 @@ export default function ProfilePage() {
                                     </div>
 
                                     {/* Bio Section */}
-                                    {user?.bio && (
+                                    {user?.bio && user.bio.trim() && (
                                         <div className = "bio-section">
                                             <h3>About Me</h3>
-                                            <p className = "bio-text">{user.bio}</p>
+                                            <div className = "bio-text">
+                                                <ReactMarkdown
+                                                    remarkPlugins = {[remarkGfm]}
+                                                    rehypePlugins = {[
+                                                        rehypeRaw,
+                                                        [rehypeSanitize, bio_sanitize_schema]
+                                                    ]}
+                                                    components = {{
+                                                        a: ({ node, ...props }) => (
+                                                            <a
+                                                                {...props}
+                                                                target = "_blank"
+                                                                rel = "noopener noreferrer"
+                                                            />
+                                                        ),
+                                                        span: ({ node, ...props }) => {
+                                                            const className = props.className || '';
+                                                            const style = { ...(props.style || {}) };
+
+                                                            if(className.split(' ').includes('bio-bg-chip')) 
+                                                                {
+                                                                if(!style.color) style.color = '#0b1120';
+                                                            }
+
+                                                            return <span {...props} style = {style} />;
+                                                        }
+                                                    }}
+                                                >
+                                                    {transform_bio_markup(user.bio)}
+                                                </ReactMarkdown>
+                                            </div>
                                         </div>
                                     )}
 
@@ -847,14 +1192,126 @@ export default function ProfilePage() {
                                     <label className = "form-label">
                                         <FiEdit2 /> Bio
                                     </label>
-                                    <textarea
-                                        name = "bio"
-                                        value = {profile_data.bio}
-                                        onChange = {handle_input_change}
-                                        className = "form-textarea"
-                                        rows = "4"
-                                        placeholder = "Tell us about yourself..."
-                                    />
+                                    <div className = "bio-field-wrapper" ref = {bio_toolbar_ref}>
+                                        <div className = "bio-markdown-toolbar">
+                                            <button
+                                                type = "button"
+                                                className = "bio-toolbar-btn"
+                                                onClick = {() => insert_bio_markdown('bold')}
+                                                title = "Bold"
+                                            >
+                                                <strong>B</strong>
+                                            </button>
+                                            <button
+                                                type = "button"
+                                                className = "bio-toolbar-btn"
+                                                onClick = {() => insert_bio_markdown('italic')}
+                                                title = "Italic"
+                                            >
+                                                <em>I</em>
+                                            </button>
+                                            <button
+                                                type = "button"
+                                                className = "bio-toolbar-btn"
+                                                onClick = {() => insert_bio_markdown('code')}
+                                                title = "Inline code"
+                                            >
+                                                <FiCode />
+                                            </button>
+                                            <button
+                                                type = "button"
+                                                className = "bio-toolbar-btn"
+                                                onClick = {() => insert_bio_markdown('code-block')}
+                                                title = "Code block"
+                                            >
+                                                <code>{'{ }'}</code>
+                                            </button>
+                                            <button
+                                                type = "button"
+                                                className = "bio-toolbar-btn"
+                                                onClick = {() => insert_bio_markdown('link')}
+                                                title = "Insert link"
+                                            >
+                                                <FiLink />
+                                            </button>
+                                            <button
+                                                type = "button"
+                                                className = "bio-toolbar-btn"
+                                                onClick = {() => insert_bio_markdown('heading')}
+                                                title = "Heading"
+                                            >
+                                                H2
+                                            </button>
+                                            <button
+                                                type = "button"
+                                                className = "bio-toolbar-btn"
+                                                onClick = {() => insert_bio_markdown('list')}
+                                                title = "Bullet list"
+                                            >
+                                                ☰
+                                            </button>
+                                            <button
+                                                type = "button"
+                                                className = "bio-toolbar-btn"
+                                                onClick = {() => insert_bio_markdown('color')}
+                                                title = "Colored text"
+                                            >
+                                                <span className = "bio-toolbar-swatch" style = {{ background: '#ff6b6b' }}></span>
+                                            </button>
+                                            <button
+                                                type = "button"
+                                                className = "bio-toolbar-btn"
+                                                onClick = {() => insert_bio_markdown('background')}
+                                                title = "Highlight background"
+                                            >
+                                                <span className = "bio-toolbar-swatch gradient"></span>
+                                            </button>
+                                            <button
+                                                type = "button"
+                                                className = "bio-toolbar-btn"
+                                                onClick = {() => insert_bio_markdown('mark')}
+                                                title = "Mark text"
+                                            >
+                                                <mark>MK</mark>
+                                            </button>
+                                            <div className = "bio-emoji-picker-wrapper">
+                                                <button
+                                                    type = "button"
+                                                    className = {`bio-toolbar-btn${show_bio_emoji_picker ? ' active' : ''}`}
+                                                    onClick = {() => set_show_bio_emoji_picker(prev => !prev)}
+                                                    title = "Emoji"
+                                                >
+                                                    <FiSmile />
+                                                </button>
+                                                {show_bio_emoji_picker && (
+                                                    <div className = "bio-emoji-dropdown">
+                                                        {BIO_EMOJI_LIST.map((emoji, index) => (
+                                                            <button
+                                                                key = {`${emoji}-${index}`}
+                                                                type = "button"
+                                                                className = "bio-emoji-btn"
+                                                                onClick = {() => insert_bio_emoji(emoji)}
+                                                            >
+                                                                {emoji}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <textarea
+                                            ref = {bio_textarea_ref}
+                                            name = "bio"
+                                            value = {profile_data.bio}
+                                            onChange = {handle_input_change}
+                                            className = "form-textarea bio-textarea"
+                                            rows = "5"
+                                            placeholder = "Tell us about yourself... Markdown is supported!"
+                                        />
+                                        <p className = "bio-markdown-hint">
+                                            Підтримується Markdown. Спробуйте **жирний**, *курсив*, `код`, [color=#ff6b6b]колір[/color] або [bg=yellow]фон[/bg].
+                                        </p>
+                                    </div>
                                 </div>
 
                                 <div className = "form-group">
@@ -910,6 +1367,62 @@ export default function ProfilePage() {
                                         onChange = {handle_input_change}
                                         className = "form-input"
                                         placeholder = "username"
+                                    />
+                                </div>
+
+                                <div className = "form-group">
+                                    <label className = "form-label">
+                                        <SiItchdotio /> Itch.io
+                                    </label>
+                                    <input
+                                        type = "text"
+                                        name = "itch"
+                                        value = {profile_data.itch}
+                                        onChange = {handle_input_change}
+                                        className = "form-input"
+                                        placeholder = "username or URL"
+                                    />
+                                </div>
+
+                                <div className = "form-group">
+                                    <label className = "form-label">
+                                        <SiGamebanana /> GameBanana
+                                    </label>
+                                    <input
+                                        type = "text"
+                                        name = "gamebanana"
+                                        value = {profile_data.gamebanana}
+                                        onChange = {handle_input_change}
+                                        className = "form-input"
+                                        placeholder = "username or URL"
+                                    />
+                                </div>
+
+                                <div className = "form-group">
+                                    <label className = "form-label">
+                                        <SiGamejolt /> GameJolt
+                                    </label>
+                                    <input
+                                        type = "text"
+                                        name = "gamejolt"
+                                        value = {profile_data.gamejolt}
+                                        onChange = {handle_input_change}
+                                        className = "form-input"
+                                        placeholder = "username or URL"
+                                    />
+                                </div>
+
+                                <div className = "form-group">
+                                    <label className = "form-label">
+                                        <FaTwitch /> Twitch
+                                    </label>
+                                    <input
+                                        type = "text"
+                                        name = "twitch"
+                                        value = {profile_data.twitch}
+                                        onChange = {handle_input_change}
+                                        className = "form-input"
+                                        placeholder = "username or URL"
                                     />
                                 </div>
 

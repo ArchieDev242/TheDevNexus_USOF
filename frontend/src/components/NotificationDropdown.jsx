@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FiBell, FiX, FiTrash2 } from 'react-icons/fi';
 import '../style/notification-dropdown.css';
 
-const NotificationDropdown = ({ isOpen, onClose }) => {
+const NotificationDropdown = ({ isOpen, onClose, onUnreadChange }) => {
     const [notifications, set_notifications] = useState([]);
     const [loading, set_loading] = useState(false);
     const [unread_count, set_unread_count] = useState(0);
@@ -24,20 +24,29 @@ const NotificationDropdown = ({ isOpen, onClose }) => {
 
                 if(data.status === 'success') 
                     {
-                    set_notifications(data.data?.notifications || []);
-                    set_unread_count(data.data?.unread_count || 0);
+                    const notifications = data.data?.notifications || [];
+                    const unread = data.data?.unread_count || 0;
+                    set_notifications(notifications);
+                    set_unread_count(unread);
+                    if(typeof onUnreadChange === 'function') onUnreadChange(unread);
                 } else 
                     {
                     set_notifications([]);
+                    set_unread_count(0);
+                    if(typeof onUnreadChange === 'function') onUnreadChange(0);
                 }
             } else 
                 {
                 set_notifications([]);
+                set_unread_count(0);
+                if(typeof onUnreadChange === 'function') onUnreadChange(0);
             }
         } catch(error) 
         {
             console.error('Error fetching notifications:', error);
             set_notifications([]);
+            set_unread_count(0);
+            if(typeof onUnreadChange === 'function') onUnreadChange(0);
         } finally 
         {
             set_loading(false);
@@ -93,6 +102,8 @@ const NotificationDropdown = ({ isOpen, onClose }) => {
                 return '❤️';
             case 'reply':
                 return '↩️';
+            case 'report':
+                return '🚨';
             default:
                 return '📢';
         }

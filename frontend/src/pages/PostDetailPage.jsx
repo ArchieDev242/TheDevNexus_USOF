@@ -21,6 +21,7 @@ export default function PostDetailPage() {
     const [post, set_post] = useState(null);
     const [comments, set_comments] = useState([]);
     const [categories, set_categories] = useState([]);
+    const [blueprints, set_blueprints] = useState([]);
     const [loading, set_loading] = useState(true);
     const [new_comment, set_new_comment] = useState('');
     const [reply_to, set_reply_to] = useState(null);
@@ -98,7 +99,16 @@ export default function PostDetailPage() {
 
             const post_data = await post_response.json();
             
-            if(post_data.status === 'success') set_post(post_data.data);
+            if(post_data.status === 'success') 
+            {
+                set_post(post_data.data);
+                
+                // Extract blueprints from post data if available
+                if(post_data.data.blueprints && Array.isArray(post_data.data.blueprints))
+                {
+                    set_blueprints(post_data.data.blueprints);
+                }
+            }
 
             // Record view if user is authenticated
             if(isAuthenticated) 
@@ -594,6 +604,30 @@ export default function PostDetailPage() {
                                         {cat.title}
                                     </span>
                                 ))}
+                            </div>
+                        )}
+
+                        {blueprints && blueprints.length > 0 && (
+                            <div className = "post-blueprints">
+                                <h3>📐 Blueprints UE</h3>
+                                <div className = "blueprints-list">
+                                    {blueprints.map(bp => (
+                                        <a 
+                                            key = {bp.blueprint_id}
+                                            href = {bp.blueprint_url}
+                                            target = "_blank"
+                                            rel = "noopener noreferrer"
+                                            className = "blueprint-link"
+                                        >
+                                            <div className = "blueprint-item">
+                                                <span className = "blueprint-title">{bp.blueprint_title}</span>
+                                                {bp.blueprint_author && (
+                                                    <span className = "blueprint-author">by {bp.blueprint_author}</span>
+                                                )}
+                                            </div>
+                                        </a>
+                                    ))}
+                                </div>
                             </div>
                         )}
 

@@ -19,11 +19,15 @@ CREATE TABLE IF NOT EXISTS users(
     twitter VARCHAR(100),
     github VARCHAR(100),
     linkedin VARCHAR(100),
+    itch VARCHAR(150),
+    gamebanana VARCHAR(150),
+    gamejolt VARCHAR(150),
+    twitch VARCHAR(150),
     engines JSON DEFAULT NULL,
     rating INT DEFAULT 0,
     reputation_score INT DEFAULT 0,
     is_toxic BOOLEAN DEFAULT FALSE,
-    role ENUM('user', 'admin', 'guest') DEFAULT 'guest',
+    role ENUM('user', 'admin', 'guest') DEFAULT 'user',
     email_verified BOOLEAN DEFAULT FALSE,
     verification_token VARCHAR(255),
     reset_token_hash VARCHAR(255),
@@ -67,6 +71,18 @@ CREATE TABLE IF NOT EXISTS posts(
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS post_blueprints(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    post_id INT NOT NULL,
+    blueprint_id VARCHAR(255) NOT NULL,
+    blueprint_title VARCHAR(255) NOT NULL,
+    blueprint_author VARCHAR(255),
+    blueprint_url VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_post_blueprint (post_id, blueprint_id)
 );
 
 CREATE TABLE IF NOT EXISTS categories(
@@ -155,16 +171,22 @@ CREATE TABLE IF NOT EXISTS post_views(
 CREATE TABLE IF NOT EXISTS notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    type ENUM('like', 'comment', 'reply', 'follow', 'system') NOT NULL,
+    type ENUM('like', 'comment', 'reply', 'follow', 'system', 'report') NOT NULL,
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
     is_read BOOLEAN DEFAULT FALSE,
     related_id INT NULL,
-    related_type ENUM('post', 'comment', 'user', 'achievement') NULL,
+    related_type ENUM('post', 'comment', 'user', 'achievement', 'report') NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+ALTER TABLE notifications 
+MODIFY type ENUM('like', 'comment', 'reply', 'follow', 'system', 'report') NOT NULL;
+
+ALTER TABLE notifications
+MODIFY related_type ENUM('post', 'comment', 'user', 'achievement', 'report') NULL;
 
 -- reports table for content moderation
 CREATE TABLE IF NOT EXISTS reports (
@@ -195,14 +217,20 @@ INSERT IGNORE INTO categories (title, description) VALUES
 
 -- test admin user
 INSERT IGNORE INTO users (login, password, full_name, email, role, email_verified) VALUES
-('admin', 'ZJKQ4DGx8Z0k38Eu934r9NDhTCQ21m7NFUJlYE4kM81ySsrEhs', 'Admin User', 'admin@devnexus.org', 'admin', TRUE);
+('admin', '$2b$10$LRiDS.SoEr2/4aCIbMOCGOk34HiILED3WqrnFcTV.f/mDMgrJ6HZ6', 'Admin User', 'admin@devnexus.org', 'admin', TRUE);
+
+UPDATE users 
+SET password = '$2b$10$LRiDS.SoEr2/4aCIbMOCGOk34HiILED3WqrnFcTV.f/mDMgrJ6HZ6'
+WHERE email = 'admin@devnexus.org';
 
 -- test users
-INSERT IGNORE INTO users (login, password, full_name, email, email_verified) VALUES
-('gamedev_ukr', 'bNtqeaGMsrMW5Ehfn2Z7Vxs0Fhe3o83oy53', 'Олександр Петренко', 'alex@example.com', TRUE),
-('unity_master', 'Mh3j4V2Iks7m02kx4ikea9I0Lm898ZAO4t4', 'Марія Іваненко', 'maria@example.com', TRUE),
-('indie_dev', 'qOk07w63u7C282l5ImL055PP0JnMzE1Y42I67WF6', 'Дмитро Коваленко', 'dmytro@example.com', TRUE),
-('artist_2d', 'rwwOysP13rvF2M5mG5l2w7Q3FCOITWQgpe', 'Анна Сидоренко', 'anna@example.com', TRUE);
+INSERT IGNORE INTO users (login, password, full_name, email, email_verified, role) VALUES
+('gamedev_ukr', 'bNtqeaGMsrMW5Ehfn2Z7Vxs0Fhe3o83oy53', 'Олександр Петренко', 'alex@example.com', TRUE, 'user'),
+('unity_master', 'Mh3j4V2Iks7m02kx4ikea9I0Lm898ZAO4t4', 'Марія Іваненко', 'maria@example.com', TRUE, 'user'),
+('indie_dev', 'qOk07w63u7C282l5ImL055PP0JnMzE1Y42I67WF6', 'Дмитро Коваленко', 'dmytro@example.com', TRUE, 'user'),
+('artist_2d', 'rwwOysP13rvF2M5mG5l2w7Q3FCOITWQgpe', 'Анна Сидоренко', 'anna@example.com', TRUE, 'user');
+
+UPDATE users SET role = 'user' WHERE role = 'guest';
 
 -- test posts
 INSERT IGNORE INTO posts (author_id, title, content, status) VALUES

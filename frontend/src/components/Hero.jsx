@@ -1,8 +1,11 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 export default function Hero({ isAuthenticated }) 
 {
+    const navigate = useNavigate();
+
     return (
         <section className = "hero-section">
             <div className = "hero-content">
@@ -15,19 +18,31 @@ export default function Hero({ isAuthenticated })
                 <div className = "hero-buttons">
                     {!isAuthenticated ? (
                         <>
-                            <button className = "btn btn-primary">
+                            <button 
+                                className = "btn btn-gradient"
+                                onClick = {() => navigate('/register')}
+                            >
                                 Join the Community
                             </button>
-                            <button className = "btn btn-outline">
+                            <button 
+                                className = "btn btn-outline"
+                                onClick = {() => navigate('/posts')}
+                            >
                                 Explore Forums
                             </button>
                         </>
                     ) : (
                         <>
-                            <button className = "btn btn-primary">
+                            <button 
+                                className = "btn btn-gradient"
+                                onClick = {() => navigate('/posts')}
+                            >
                                 Create New Post
                             </button>
-                            <button className = "btn btn-outline">
+                            <button 
+                                className = "btn btn-outline"
+                                onClick = {() => navigate('/posts')}
+                            >
                                 Browse Categories
                             </button>
                         </>

@@ -217,6 +217,7 @@ export default function PostsPage() {
         <>
             <Header />
             <div className = "posts-page">
+                <div className = "animated-background"></div>
                 <div className = "container">
                     <div className = "posts-header">
                         <div>

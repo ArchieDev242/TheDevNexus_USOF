@@ -181,7 +181,7 @@ class posts_controller
     {
         try 
         {
-            const { title, content, categories, author_id: provided_author_id, code_snippets } = req.body;
+            const { title, content, categories, blueprints, author_id: provided_author_id, code_snippets } = req.body;
             
             let author_id;
 
@@ -210,6 +210,14 @@ class posts_controller
                 console.log('Adding categories to post...');
 
                 await post.add_categories(categories);
+            }
+
+            // Add blueprints if provided
+            if(blueprints && Array.isArray(blueprints) && blueprints.length > 0) 
+                {
+                console.log('Adding blueprints to post...');
+
+                await post.add_blueprints(blueprints);
             }
             
             if(req.files && req.files.length > 0) 

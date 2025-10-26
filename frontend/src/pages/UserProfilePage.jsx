@@ -319,13 +319,13 @@ const UserProfilePage = () => {
             </div>
             {show_report_modal && (
                 <ReportModal 
-                    isOpen={true}
-                    targetType="user"
-                    targetId={parseInt(userId)}
-                    targetTitle={user?.login}
-                    onClose={() => set_show_report_modal(false)}
-                    onSubmit={() => {
-                        alert('✅ Спасибо! Ваш звіт была успішно подана.');
+                    isOpen = {true}
+                    targetType = "user"
+                    targetId = {parseInt(userId)}
+                    targetTitle = {user?.login}
+                    onClose = {() => set_show_report_modal(false)}
+                    onSubmit = {() => {
+                        alert('✅ Дякуємо! Ваш звіт був успішно поданий.');
                         set_show_report_modal(false);
                     }}
                 />

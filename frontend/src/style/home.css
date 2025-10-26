@@ -68,6 +68,7 @@ body
     background: linear-gradient(-45deg, #0a0a0a, #1a1a2e, #16213e, #0f0f23);
     background-size: 400% 400%;
     animation: gradientShift 15s ease infinite;
+    overflow: hidden;
 }
 
 .animated-background::before 
@@ -76,8 +77,33 @@ body
     position: absolute;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at 20% 50%, rgba(108, 99, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255, 101, 132, 0.1) 0%, transparent 50%);
+    background: radial-gradient(circle at 20% 50%, rgba(108, 99, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 101, 132, 0.15) 0%, transparent 50%);
+    animation: floatGlow 8s ease-in-out infinite;
+}
+
+.animated-background::after 
+{
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle 800px at 20% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+        radial-gradient(circle 600px at 80% 20%, rgba(30, 144, 255, 0.1) 0%, transparent 50%);
+    animation: floatGlow2 12s ease-in-out infinite;
+}
+
+@keyframes floatGlow 
+{
+    0%, 100% { transform: translate(0, 0); opacity: 0.8; }
+    50% { transform: translate(30px, -30px); opacity: 1; }
+}
+
+@keyframes floatGlow2 
+{
+    0%, 100% { transform: translate(0, 0); opacity: 0.6; }
+    50% { transform: translate(-40px, 40px); opacity: 0.9; }
 }
 
 @keyframes gradientShift 

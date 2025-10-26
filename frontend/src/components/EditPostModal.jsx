@@ -64,11 +64,21 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                 credentials: 'include'
             });
             const data = await response.json();
-           
-            if(data.status === 'success') set_categories_list(data.data || []);
+
+            if(data.status === 'success') 
+                {
+                const categories = Array.isArray(data.data?.categories)
+                    ? data.data.categories
+                    : (Array.isArray(data.data) ? data.data : []);
+                set_categories_list(categories);
+            } else 
+                {
+                set_categories_list([]);
+            }
         } catch(error) 
         {
             console.error('Error fetching categories:', error);
+            set_categories_list([]);
         }
     };
 
@@ -382,7 +392,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
                                 <span>Категорії</span>
                             </label>
                             <div className = "categories-grid">
-                                {categories_list.map(category => (
+                                {Array.isArray(categories_list) && categories_list.map(category => (
                                     <label key = {category.id} className = "category-checkbox">
                                         <input
                                             type = "checkbox"

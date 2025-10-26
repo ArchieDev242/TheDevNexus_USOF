@@ -1,5 +1,6 @@
 import DB_connect from '../utils/dbConnect.js';
 import MailService from './MailService.js';
+import User from '../models/User.js';
 
 class notification_service 
 {
@@ -265,6 +266,35 @@ class notification_service
         catch(error) 
         {
             return { success: false, error: error.message, count: 0 };
+        }
+    }
+
+    static async notify_admins_about_report({ reportId, reportedType, reportedId, reason, reporter }) 
+    {
+        try 
+        {
+            const admins = await User.find_by_role('admin');
+            if(!admins || admins.length === 0) return;
+
+            const reporter_display = reporter?.full_name || reporter?.login || `User #${reporter?.id ?? ''}`;
+            const title = 'Новий репорт на модерацію';
+            const message = `${reporter_display} пожалівся на ${reportedType} #${reportedId}. Причина: ${reason}`;
+
+            await Promise.all(
+                admins
+                    .filter(admin => admin.id !== reporter?.id)
+                    .map(admin => this.create_notification({
+                        userId: admin.id,
+                        type: 'report',
+                        title,
+                        message,
+                        relatedEntityType: 'report',
+                        relatedEntityId: reportId
+                    }))
+            );
+        } catch(error) 
+        {
+            console.error('Failed to notify admins about report:', error.message);
         }
     }
 }

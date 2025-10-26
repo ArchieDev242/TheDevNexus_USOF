@@ -33,6 +33,10 @@ const build_user_response = (user, includeSensitive = false) => {
             twitter: user.twitter,
             github: user.github,
             linkedin: user.linkedin,
+            itch: user.itch,
+            gamebanana: user.gamebanana,
+            gamejolt: user.gamejolt,
+            twitch: user.twitch,
             engines: user.engines || [],
             updated_at: user.updated_at
         };
@@ -305,9 +309,9 @@ class users_controller
         try 
         {
             const { user_id } = req.params;
-            const { login, full_name, email, role, email_verified, password, bio, website, twitter, github, linkedin, engines } = req.body;
+            const { login, full_name, email, role, email_verified, password, bio, website, twitter, github, linkedin, itch, gamebanana, gamejolt, twitch, engines } = req.body;
 
-            console.log('Update profile request body:', { login, full_name, email, bio, website, twitter, github, linkedin, engines });
+            console.log('Update profile request body:', { login, full_name, email, bio, website, twitter, github, linkedin, itch, gamebanana, gamejolt, twitch, engines });
 
             const user = await User.find_by_id(user_id);
             if(!user) throw error_handler.not_found_error('User');
@@ -324,6 +328,10 @@ class users_controller
             if(twitter !== undefined) update_data.twitter = twitter;
             if(github !== undefined) update_data.github = github;
             if(linkedin !== undefined) update_data.linkedin = linkedin;
+            if(itch !== undefined) update_data.itch = itch;
+            if(gamebanana !== undefined) update_data.gamebanana = gamebanana;
+            if(gamejolt !== undefined) update_data.gamejolt = gamejolt;
+            if(twitch !== undefined) update_data.twitch = twitch;
             
             if(engines !== undefined) update_data.engines = JSON.stringify(Array.isArray(engines) ? engines : []);
             

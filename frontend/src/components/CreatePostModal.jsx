@@ -9,7 +9,9 @@ import
     FiLink, 
     FiSmile,
     FiTag,
-    FiSend
+    FiSend,
+    FiPlus,
+    FiTrash2
 } from 'react-icons/fi';
 
 import ReactMarkdown from 'react-markdown';
@@ -37,11 +39,23 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
         title: '',
         content: '',
         categories: [],
-        status: 'active'
+        status: 'active',
+        blueprints: []
     });
 
     const [categories_list, set_categories_list] = useState([]);
     const [loading, set_loading] = useState(false);
+    const [blueprint_url, set_blueprint_url] = useState('');
+    const [blueprint_search, set_blueprint_search] = useState('');
+    const [blueprint_results, set_blueprint_results] = useState([]);
+    const [searching_blueprints, set_searching_blueprints] = useState(false);
+    const [show_create_blueprint, set_show_create_blueprint] = useState(false);
+    const [creating_blueprint, set_creating_blueprint] = useState(false);
+    const [blueprint_form, set_blueprint_form] = useState({
+        title: '',
+        author: '',
+        url: ''
+    });
 
     useEffect(() => {
         if(show) fetch_categories();
@@ -74,6 +88,106 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
         {
             console.error('Error fetching categories:', error);
             set_categories_list([]);
+        }
+    };
+
+    const search_blueprints = async (query) => {
+        if(!query.trim()) 
+        {
+            set_blueprint_results([]);
+            return;
+        }
+
+        set_searching_blueprints(true);
+        try 
+        {
+            // Try backend API first (for custom blueprints)
+            const response = await fetch(`/api/blueprints/search?query=${encodeURIComponent(query)}&limit=8`, {
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+            
+            if(data.status === 'success' && data.data) 
+            {
+                set_blueprint_results(data.data);
+            } else 
+            {
+                console.error('Blueprint search failed:', data.error);
+                set_blueprint_results([]);
+            }
+        } catch(error) 
+        {
+            console.error('Error searching blueprints:', error);
+            set_blueprint_results([]);
+        } finally 
+        {
+            set_searching_blueprints(false);
+        }
+    };
+
+    const add_blueprint = (blueprint) => {
+        if(!post_data.blueprints.find(b => b.id === blueprint.id))
+        {
+            set_post_data(prev => ({
+                ...prev,
+                blueprints: [...prev.blueprints, blueprint]
+            }));
+            set_blueprint_search('');
+            set_blueprint_results([]);
+        }
+    };
+
+    const remove_blueprint = (blueprint_id) => {
+        set_post_data(prev => ({
+            ...prev,
+            blueprints: prev.blueprints.filter(b => b.id !== blueprint_id)
+        }));
+    };
+
+    const handle_create_blueprint = async () => {
+        if(!blueprint_form.title.trim())
+        {
+            alert('Введіть назву blueprint');
+            return;
+        }
+
+        set_creating_blueprint(true);
+        try 
+        {
+            const response = await fetch('/api/blueprints', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    title: blueprint_form.title,
+                    author: blueprint_form.author || user?.login,
+                    url: blueprint_form.url
+                })
+            });
+
+            const data = await response.json();
+            
+            if(response.ok && data.status === 'success')
+            {
+                // Add newly created blueprint to selection
+                add_blueprint(data.data);
+                
+                // Reset form
+                set_blueprint_form({ title: '', author: '', url: '' });
+                set_show_create_blueprint(false);
+                alert('Blueprint створено! ✅');
+            } else 
+            {
+                alert(data.error || 'Помилка при створенні blueprint');
+            }
+        } catch(error)
+        {
+            console.error('Error creating blueprint:', error);
+            alert('Помилка при створенні blueprint');
+        } finally 
+        {
+            set_creating_blueprint(false);
         }
     };
 
@@ -188,7 +302,13 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                     title: post_data.title,
                     content: post_data.content,
                     status: post_data.status,
-                    categories: post_data.categories
+                    categories: post_data.categories,
+                    blueprints: post_data.blueprints.map(b => ({
+                        id: b.id,
+                        title: b.title,
+                        author: b.author,
+                        url: b.url
+                    }))
                 })
             });
 
@@ -202,7 +322,8 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                     title: '',
                     content: '',
                     categories: [],
-                    status: 'active'
+                    status: 'active',
+                    blueprints: []
                 });
                 if(onPostCreated) onPostCreated(data.data);
                 onClose();
@@ -410,6 +531,125 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                 ))}
                             </div>
                         </div>
+
+                        {post_data.categories.some(cat_id => 
+                            categories_list.find(c => c.id === cat_id && c.title?.includes('Unreal'))
+                        ) && (
+                            <div className = "form-group">
+                                <label>
+                                    <FiCode />
+                                    <span>📘 Blueprints (Unreal Engine)</span>
+                                </label>
+                                <div className = "blueprint-search-box">
+                                    <input
+                                        type = "text"
+                                        className = "form-input"
+                                        placeholder = "Пошук Blueprints (наприклад: AI, Movement, Inventory)..."
+                                        value = {blueprint_search}
+                                        onChange = {(e) => {
+                                            set_blueprint_search(e.target.value);
+                                            search_blueprints(e.target.value);
+                                        }}
+                                    />
+                                    {searching_blueprints && (
+                                        <div className = "blueprint-loading">Пошук...</div>
+                                    )}
+                                    <button
+                                        type = "button"
+                                        className = "btn-create-blueprint"
+                                        onClick = {() => set_show_create_blueprint(!show_create_blueprint)}
+                                        title = "Створити новий blueprint"
+                                    >
+                                        <FiPlus />
+                                    </button>
+                                </div>
+
+                                {show_create_blueprint && (
+                                    <div className = "blueprint-create-form">
+                                        <h4>Створити новий Blueprint</h4>
+                                        <input
+                                            type = "text"
+                                            className = "form-input"
+                                            placeholder = "Назва blueprint"
+                                            value = {blueprint_form.title}
+                                            onChange = {(e) => set_blueprint_form({...blueprint_form, title: e.target.value})}
+                                        />
+                                        <input
+                                            type = "text"
+                                            className = "form-input"
+                                            placeholder = "Автор (опційно)"
+                                            value = {blueprint_form.author}
+                                            onChange = {(e) => set_blueprint_form({...blueprint_form, author: e.target.value})}
+                                        />
+                                        <input
+                                            type = "text"
+                                            className = "form-input"
+                                            placeholder = "Посилання на blueprint (опційно)"
+                                            value = {blueprint_form.url}
+                                            onChange = {(e) => set_blueprint_form({...blueprint_form, url: e.target.value})}
+                                        />
+                                        <div className = "blueprint-form-actions">
+                                            <button
+                                                type = "button"
+                                                className = "btn btn-gradient"
+                                                onClick = {handle_create_blueprint}
+                                                disabled = {creating_blueprint}
+                                            >
+                                                {creating_blueprint ? 'Створення...' : 'Створити'}
+                                            </button>
+                                            <button
+                                                type = "button"
+                                                className = "btn btn-outline"
+                                                onClick = {() => {
+                                                    set_show_create_blueprint(false);
+                                                    set_blueprint_form({title: '', author: '', url: ''});
+                                                }}
+                                            >
+                                                Скасувати
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {blueprint_results.length > 0 && (
+                                    <div className = "blueprint-results">
+                                        {blueprint_results.map(blueprint => (
+                                            <div key = {blueprint.id} className = "blueprint-result-item">
+                                                <div className = "blueprint-info">
+                                                    <div className = "blueprint-name">{blueprint.title}</div>
+                                                    <div className = "blueprint-author">by {blueprint.author || 'Unknown'}</div>
+                                                </div>
+                                                <button
+                                                    type = "button"
+                                                    className = "btn-add-blueprint"
+                                                    onClick = {() => add_blueprint(blueprint)}
+                                                >
+                                                    <FiPlus /> Додати
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {post_data.blueprints.length > 0 && (
+                                    <div className = "blueprints-list">
+                                        <label>Вибрані Blueprints:</label>
+                                        {post_data.blueprints.map(blueprint => (
+                                            <div key = {blueprint.id} className = "blueprint-tag">
+                                                <span>{blueprint.title}</span>
+                                                <button
+                                                    type = "button"
+                                                    className = "remove-blueprint"
+                                                    onClick = {() => remove_blueprint(blueprint.id)}
+                                                >
+                                                    <FiTrash2 />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         <div className = "form-group">
                             <label htmlFor = "status">Статус</label>

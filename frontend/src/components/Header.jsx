@@ -183,6 +183,7 @@ export default function Header()
                                     <NotificationDropdown 
                                         isOpen={is_notifications_open}
                                         onClose={() => set_is_notifications_open(false)}
+                                        onUnreadChange={set_unread_count}
                                     />
                                     <div className = "user-menu-wrapper">
                                         <button 

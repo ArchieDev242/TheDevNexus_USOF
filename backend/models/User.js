@@ -20,6 +20,10 @@ class User
         this.twitter = userData?.twitter || null;
         this.github = userData?.github || null;
         this.linkedin = userData?.linkedin || null;
+        this.itch = userData?.itch || null;
+        this.gamebanana = userData?.gamebanana || null;
+        this.gamejolt = userData?.gamejolt || null;
+        this.twitch = userData?.twitch || null;
         
         if(userData?.engines) 
             {
@@ -40,7 +44,8 @@ class User
         this.rating = userData?.rating || 0;
         this.reputation_score = userData?.reputation_score ?? 0;
         this.is_toxic = userData?.is_toxic ?? false;
-        this.role = userData?.role || 'user';
+        const raw_role = userData?.role || 'user';
+        this.role = raw_role === 'guest' ? 'user' : raw_role;
         this.email_verified = userData?.email_verified || false;
         this.verification_token = userData?.verification_token;
         this.reset_token_hash = userData?.reset_token_hash;
@@ -173,6 +178,21 @@ class User
         }
     }
 
+    static async find_by_role(role) 
+    {
+        try 
+        {
+            const query = 'SELECT * FROM users WHERE role = ?';
+            const result = await DB_connect.make_request(query, [role]);
+            const rows = result[0];
+
+            return rows.map(row => new User(row));
+        } catch(error) 
+        {
+            throw new Error(`Error finding users by role: ${error.message}`);
+        }
+    }
+
     async update(updateData) 
     {
         try 
@@ -196,6 +216,21 @@ class User
             await DB_connect.make_request(query, values);
             
             Object.assign(this, updateData);
+
+            if(updateData.engines !== undefined) 
+                {
+                try 
+                {
+                    this.engines = typeof updateData.engines === 'string'
+                        ? JSON.parse(updateData.engines)
+                        : Array.isArray(updateData.engines)
+                            ? updateData.engines
+                            : [];
+                } catch 
+                {
+                    this.engines = [];
+                }
+            }
             
             return this;
         } 

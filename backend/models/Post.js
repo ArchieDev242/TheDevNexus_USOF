@@ -360,6 +360,74 @@ class Post
         }
     }
 
+    async add_blueprints(blueprints) 
+    {
+        try 
+        {
+            console.log('add_blueprints called with post.id:', this.id);
+            console.log('add_blueprints called with blueprints:', blueprints);
+            
+            if(!this.id) throw new Error('Post ID is not set');
+            
+            if(blueprints && Array.isArray(blueprints) && blueprints.length > 0) 
+            {
+                const values = blueprints
+                    .filter(bp => bp && bp.id)
+                    .map(bp => [
+                        this.id,
+                        bp.id,
+                        bp.title || '',
+                        bp.author || null,
+                        bp.url || null
+                    ]);
+                
+                if(values.length > 0) 
+                {
+                    const placeholders = values.map(() => '(?, ?, ?, ?, ?)').join(', ');
+                    const flat_values = values.flat();
+                    
+                    const query = `
+                        INSERT INTO post_blueprints 
+                        (post_id, blueprint_id, blueprint_title, blueprint_author, blueprint_url) 
+                        VALUES ${placeholders}
+                        ON DUPLICATE KEY UPDATE 
+                        blueprint_title = VALUES(blueprint_title),
+                        blueprint_author = VALUES(blueprint_author),
+                        blueprint_url = VALUES(blueprint_url)
+                    `;
+                    await DB_connect.make_request(query, flat_values);
+                    console.log('Blueprints added successfully');
+                }
+            }
+            
+            return true;
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error adding blueprints to post: ${error.message}`);
+        }
+    }
+
+    async get_blueprints() 
+    {
+        try 
+        {
+            const query = `
+                SELECT id, blueprint_id, blueprint_title, blueprint_author, blueprint_url, created_at
+                FROM post_blueprints
+                WHERE post_id = ?
+                ORDER BY created_at DESC
+            `;
+            
+            const result = await DB_connect.make_request(query, [this.id]);
+            return result || [];
+        } 
+        catch(error) 
+        {
+            throw new Error(`Error getting blueprints: ${error.message}`);
+        }
+    }
+
     async get_categories() 
     {
         try 
@@ -671,6 +739,24 @@ class Post
             if(rows.length === 0) return null;
             
             const post = rows[0];
+            
+            // Get blueprints if post has Unreal Engine category
+            let blueprints = [];
+            const blueprints_query = `
+                SELECT id, blueprint_id, blueprint_title, blueprint_author, blueprint_url 
+                FROM post_blueprints 
+                WHERE post_id = ? 
+                ORDER BY created_at DESC
+            `;
+            try 
+            {
+                const blueprints_result = await DB_connect.make_request(blueprints_query, [post_id]);
+                blueprints = blueprints_result[0] || [];
+            } catch(err) 
+            {
+                console.error('Error getting blueprints:', err);
+            }
+            
             return {
                 id: post.id,
                 author_id: post.author_id,
@@ -701,7 +787,8 @@ class Post
                     view_count: post.view_count,
                     like_score: post.like_count - post.dislike_count
                 },
-                categories: post.categories ? post.categories.split(',') : []
+                categories: post.categories ? post.categories.split(',') : [],
+                blueprints: blueprints
             };
         } 
         catch(error) 

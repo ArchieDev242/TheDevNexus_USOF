@@ -25,14 +25,14 @@ import '../style/about.css';
 export default function AboutPage() 
 {
     const engines = [
-        { name: 'Unreal Engine', icon: <SiUnrealengine /> },
-        { name: 'Unity', icon: <SiUnity /> },
-        { name: 'Godot', icon: <SiGodotengine /> },
-        { name: "Ren'Py", icon: <SiPython /> },
-        { name: 'GameMaker', icon: <FiTarget /> },
-        { name: 'CryEngine', icon: <FiZap /> },
-        { name: 'Custom Engines', icon: <SiVulkan /> },
-        { name: 'OpenGL / Vulkan', icon: <FiLayers /> }
+        { name: 'Unreal Engine', icon: <SiUnrealengine />, description: 'Потужна AAA платформа для 3D ігор' },
+        { name: 'Unity', icon: <SiUnity />, description: 'Популярний кросплатформенний двигун' },
+        { name: 'Godot', icon: <SiGodotengine />, description: 'Безкоштовний open-source двигун' },
+        { name: "Ren'Py", icon: <SiPython />, description: 'Спеціалізований для візуальних новел' },
+        { name: 'GameMaker', icon: <FiTarget />, description: '2D ігри для багатьох платформ' },
+        { name: 'CryEngine', icon: <FiZap />, description: 'Професійний двигун для AAA проектів' },
+        { name: 'Custom Engines', icon: <SiVulkan />, description: 'Власні розробки розробників' },
+        { name: 'OpenGL / Vulkan', icon: <FiLayers />, description: 'Low-level графічні фреймворки' }
     ];
 
     const features = [
@@ -72,6 +72,7 @@ export default function AboutPage()
         <>
             <Header />
             <div className = "about-page">
+                <div className = "animated-background"></div>
                 <div className = "container">
                     {/* Hero Section */}
                     <section className = "about-hero">
@@ -160,6 +161,7 @@ export default function AboutPage()
                                 <div key = {index} className = "engine-card">
                                     <div className = "engine-icon">{engine.icon}</div>
                                     <h4>{engine.name}</h4>
+                                    {engine.description && <p className = "engine-description">{engine.description}</p>}
                                 </div>
                             ))}
                         </div>
