@@ -1,23 +1,14 @@
-.notification-dropdown-overlay
+.notification-wrapper
 {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 20px;
-    backdrop-filter: blur(4px);
+    position: relative;
 }
 
 .notification-dropdown
 {
-    width: 100%;
-    max-width: 500px;
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 360px;
     max-height: 70vh;
     background: linear-gradient(135deg, rgba(10, 10, 10, 0.95) 0%, rgba(20, 20, 40, 0.95) 100%);
     border: 1px solid rgba(108, 99, 255, 0.3);
@@ -27,6 +18,7 @@
     animation: slideInDown 0.3s ease-out;
     border-radius: 16px;
     overflow: hidden;
+    z-index: 1100;
 }
 
 @keyframes slideInDown
@@ -294,9 +286,10 @@
 {
     .notification-dropdown
     {
-        max-width: 95%;
-        width: 95%;
+        width: min(90vw, 360px);
         max-height: 80vh;
+        right: 0;
+        left: auto;
     }
 
     .notification-item

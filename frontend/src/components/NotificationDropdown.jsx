@@ -112,61 +112,59 @@ const NotificationDropdown = ({ isOpen, onClose, onUnreadChange }) => {
     if(!isOpen) return null;
 
     return (
-        <div className = "notification-dropdown-overlay" onClick = {onClose}>
-            <div className = "notification-dropdown" onClick = {e => e.stopPropagation()}>
-                <div className = "notification-header">
-                    <h3>Сповіщення {unread_count > 0 && <span className = "unread-badge">{unread_count}</span>}</h3>
-                    <button className = "close-btn" onClick = {onClose}>
-                        <FiX />
-                    </button>
-                </div>
+        <div className = "notification-dropdown" role = "dialog" aria-label = "Сповіщення">
+            <div className = "notification-header">
+                <h3>Сповіщення {unread_count > 0 && <span className = "unread-badge">{unread_count}</span>}</h3>
+                <button className = "close-btn" onClick = {onClose}>
+                    <FiX />
+                </button>
+            </div>
 
-                <div className = "notification-list">
-                    {loading ? (
-                        <div className = "notification-loading">Завантаження...</div>
-                    ) : notifications.length === 0 ? (
-                        <div className = "notification-empty">
-                            <FiBell size = {32} />
-                            <p>Немає сповіщень</p>
-                        </div>
-                    ) : (
-                        notifications.map(notification => (
-                            <div
-                                key = {notification.id}
-                                className = {`notification-item ${notification.is_read ? 'read' : 'unread'}`}
-                            >
-                                <div className = "notification-icon">
-                                    {get_notification_icon(notification)}
-                                </div>
-                                <div className = "notification-content">
-                                    <h4>{notification.title}</h4>
-                                    <p>{notification.message}</p>
-                                    <span className = "notification-time">
-                                        {new Date(notification.created_at).toLocaleDateString('uk-UA')}
-                                    </span>
-                                </div>
-                                <div className = "notification-actions">
-                                    {!notification.is_read && (
-                                        <button
-                                            className = "action-btn"
-                                            onClick = {() => handle_mark_as_read(notification.id)}
-                                            title = "Позначити як прочитано"
-                                        >
-                                            ✓
-                                        </button>
-                                    )}
-                                    <button
-                                        className = "action-btn delete"
-                                        onClick = {() => handle_delete(notification.id)}
-                                        title = "Видалити"
-                                    >
-                                        <FiTrash2 />
-                                    </button>
-                                </div>
+            <div className = "notification-list">
+                {loading ? (
+                    <div className = "notification-loading">Завантаження...</div>
+                ) : notifications.length === 0 ? (
+                    <div className = "notification-empty">
+                        <FiBell size = {32} />
+                        <p>Немає сповіщень</p>
+                    </div>
+                ) : (
+                    notifications.map(notification => (
+                        <div
+                            key = {notification.id}
+                            className = {`notification-item ${notification.is_read ? 'read' : 'unread'}`}
+                        >
+                            <div className = "notification-icon">
+                                {get_notification_icon(notification)}
                             </div>
-                        ))
-                    )}
-                </div>
+                            <div className = "notification-content">
+                                <h4>{notification.title}</h4>
+                                <p>{notification.message}</p>
+                                <span className = "notification-time">
+                                    {new Date(notification.created_at).toLocaleDateString('uk-UA')}
+                                </span>
+                            </div>
+                            <div className = "notification-actions">
+                                {!notification.is_read && (
+                                    <button
+                                        className = "action-btn"
+                                        onClick = {() => handle_mark_as_read(notification.id)}
+                                        title = "Позначити як прочитано"
+                                    >
+                                        ✓
+                                    </button>
+                                )}
+                                <button
+                                    className = "action-btn delete"
+                                    onClick = {() => handle_delete(notification.id)}
+                                    title = "Видалити"
+                                >
+                                    <FiTrash2 />
+                                </button>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );

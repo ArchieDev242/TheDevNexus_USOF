@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { logout } from '../redux/slices/authSlice';
@@ -37,6 +37,7 @@ export default function Header()
     const [search_query, set_search_query] = useState('');
     const [is_notifications_open, set_is_notifications_open] = useState(false);
     const [unread_count, set_unread_count] = useState(0);
+    const notification_wrapper_ref = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -74,6 +75,20 @@ export default function Header()
             set_unread_count(0);
         }
     }, [isAuthenticated]);
+
+    useEffect(() => {
+        if(!is_notifications_open) return;
+
+        const handle_click_outside = (event) => {
+            if(notification_wrapper_ref.current && !notification_wrapper_ref.current.contains(event.target))
+                {
+                set_is_notifications_open(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handle_click_outside);
+        return () => document.removeEventListener('mousedown', handle_click_outside);
+    }, [is_notifications_open]);
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -174,22 +189,24 @@ export default function Header()
                                     <Link to="/saved-posts" className = "icon-btn" aria-label = "Saved Posts" title="Збережені пости">
                                         <FiBookmark />
                                     </Link>
-                                    <button 
-                                        className = "icon-btn" 
-                                        aria-label = "Notifications"
-                                        onClick = {() => set_is_notifications_open(!is_notifications_open)}
-                                        title="Сповіщення"
-                                    >
-                                        <FiBell />
-                                        {unread_count > 0 && (
-                                            <span className = "notification-badge">{unread_count > 99 ? '99+' : unread_count}</span>
-                                        )}
-                                    </button>
-                                    <NotificationDropdown 
-                                        isOpen={is_notifications_open}
-                                        onClose={() => set_is_notifications_open(false)}
-                                        onUnreadChange={set_unread_count}
-                                    />
+                                    <div className = "notification-wrapper" ref = {notification_wrapper_ref}>
+                                        <button 
+                                            className = "icon-btn" 
+                                            aria-label = "Notifications"
+                                            onClick = {() => set_is_notifications_open(!is_notifications_open)}
+                                            title="Сповіщення"
+                                        >
+                                            <FiBell />
+                                            {unread_count > 0 && (
+                                                <span className = "notification-badge">{unread_count > 99 ? '99+' : unread_count}</span>
+                                            )}
+                                        </button>
+                                        <NotificationDropdown 
+                                            isOpen={is_notifications_open}
+                                            onClose={() => set_is_notifications_open(false)}
+                                            onUnreadChange={set_unread_count}
+                                        />
+                                    </div>
                                     <div className = "user-menu-wrapper">
                                         <button 
                                             className = "user-menu-btn"
