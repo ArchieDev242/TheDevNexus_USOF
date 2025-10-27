@@ -149,7 +149,7 @@ export default function SavedPostsPage() {
                                 {t('saved_posts.empty_description_line2')}
                             </p>
                             <button 
-                                className = "btn btn-gradient"
+                                className = "btn btn-gradient saved-posts-browse-btn"
                                 onClick = {() => navigate('/posts')}
                             >
                                 {t('saved_posts.browse_posts_button')}

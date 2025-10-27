@@ -1,0 +1,280 @@
+@startuml USOF_Deployment_Architecture
+!theme plain
+title TheDevNexus USOF - Complete Deployment Architecture
+skinparam backgroundColor #1a1a2e
+skinparam defaultFontColor #ffffff
+skinparam arrowColor #4db8ff
+skinparam packageBackgroundColor #0f1a3e
+skinparam databaseBackgroundColor #0f1a3e
+skinparam nodeBackgroundColor #1f2b4d
+
+' ============================================
+' CLIENTS
+' ============================================
+package "Client Layer" #1a2a3e {
+    actor "Web Browser\n(User)" as web_user
+    actor "Mobile Browser" as mobile_user
+    actor "Admin" as admin_user
+}
+
+' ============================================
+' FRONTEND DEPLOYMENT
+' ============================================
+node "FRONTEND SERVER\nNode.js Environment\nPort: 3000" as frontend_server #2d3e7f {
+    package "Frontend Application" #1f2b4d {
+        component "Static Assets\n(HTML/CSS/JS)" as static_assets
+        component "React Components\n(18.3)" as react_components
+        component "Redux Store\n(State Management)" as redux_store
+        component "React Router\n(Client-side Routing)" as client_router
+        component "i18n\n(Multi-language Support)" as i18n_lib
+        component "Webpack Dev Server\n(Build & Serve)" as webpack_server
+    }
+    
+    note right of webpack_server
+        - Mode: Development/Production
+        - Hot Module Reloading (HMR)
+        - Bundle optimization
+    end note
+    
+    webpack_server --> static_assets
+    webpack_server --> react_components
+    react_components --> redux_store
+    react_components --> client_router
+    react_components --> i18n_lib
+}
+
+' ============================================
+' CDN / STORAGE (Optional)
+' ============================================
+package "Content Delivery" #1a3e2e {
+    component "Avatar Images\n(User Avatars)" as cdn_avatars
+    component "Post Content\n(Media Files)" as cdn_media
+}
+
+' ============================================
+' BACKEND DEPLOYMENT
+' ============================================
+node "BACKEND SERVER\nNode.js + Express\nPort: 5000/3001" as backend_server #2d3e7f {
+    
+    package "HTTP Layer" #1f2b4d {
+        component "Express.js 5.1\n(HTTP Server)" as express_server
+        component "CORS\n(Cross-Origin)" as cors_middleware
+        component "Cookie-Parser" as cookie_middleware
+        component "Body-Parser" as body_middleware
+    }
+    
+    package "Security Layer" #1f2b4d {
+        component "JWT Authentication\n(jsonwebtoken 9.0)" as jwt_auth
+        component "Bcrypt\n(Password Hashing)" as bcrypt_hash
+        component "Rate Limiting\n(DDoS Protection)" as rate_limit_middleware
+        component "Session Manager" as session_manager
+    }
+    
+    package "API Routes" #1f2b4d {
+        component "POST /api/auth/*\n(Login/Register)" as auth_routes
+        component "GET/POST /api/users/*\n(User Management)" as users_routes
+        component "GET/POST /api/posts/*\n(Post Operations)" as posts_routes
+        component "GET/POST /api/comments/*\n(Comments)" as comments_routes
+        component "POST /api/likes/*\n(Like System)" as likes_routes
+        component "GET /api/categories/*\n(Categories)" as categories_routes
+        component "POST /api/reports\n(Reporting)" as reports_routes
+    }
+    
+    package "Business Logic" #1f2b4d {
+        component "UsersController" as users_logic
+        component "PostsController" as posts_logic
+        component "CommentsController" as comments_logic
+        component "LikesController" as likes_logic
+        component "AuthController" as auth_logic
+        component "CategoriesController" as categories_logic
+    }
+    
+    package "Data Models" #1f2b4d {
+        component "User Model" as user_model_impl
+        component "Post Model" as post_model_impl
+        component "Comment Model" as comment_model_impl
+        component "Like Model" as like_model_impl
+        component "Category Model" as category_model_impl
+        component "Permission Model" as permission_model_impl
+    }
+    
+    package "Utilities & Services" #1f2b4d {
+        component "Email Service\n(Nodemailer 7.0)" as email_service
+        component "File Upload\n(Multer 2.0 + Sharp)" as file_upload_svc
+        component "Avatar Handler" as avatar_handler
+        component "Error Handler" as error_handler
+        component "Validation Middleware" as validation_middleware
+    }
+    
+    package "Admin Panel" #1f2b4d {
+        component "AdminJS 7.8\n(Dashboard)" as adminjs_panel
+        component "Resource Adapters\n(SQL)" as adminjs_adapters
+    }
+    
+    ' HTTP Layer connections
+    express_server --> cors_middleware
+    express_server --> cookie_middleware
+    express_server --> body_middleware
+    express_server --> rate_limit_middleware
+    
+    ' Security connections
+    express_server --> jwt_auth
+    express_server --> bcrypt_hash
+    express_server --> session_manager
+    
+    ' Routes connections
+    express_server --> auth_routes
+    express_server --> users_routes
+    express_server --> posts_routes
+    express_server --> comments_routes
+    express_server --> likes_routes
+    express_server --> categories_routes
+    express_server --> reports_routes
+    
+    ' Controllers connections
+    auth_routes --> auth_logic
+    users_routes --> users_logic
+    posts_routes --> posts_logic
+    comments_routes --> comments_logic
+    likes_routes --> likes_logic
+    categories_routes --> categories_logic
+    
+    ' Business Logic to Models
+    users_logic --> user_model_impl
+    posts_logic --> post_model_impl
+    comments_logic --> comment_model_impl
+    likes_logic --> like_model_impl
+    categories_logic --> category_model_impl
+    
+    ' Utilities usage
+    auth_logic --> email_service
+    users_logic --> file_upload_svc
+    file_upload_svc --> avatar_handler
+    express_server --> error_handler
+    express_server --> validation_middleware
+    
+    ' Admin panel
+    express_server --> adminjs_panel
+    adminjs_panel --> adminjs_adapters
+}
+
+' ============================================
+' DATABASE LAYER
+' ============================================
+database "DATABASE SERVER\nMySQL/MariaDB\nPort: 3306" as mysql_db #2d3e7f {
+    package "Data Storage" #1f2b4d {
+        entity "users" {
+            * id
+            --
+            login
+            email
+            password (bcrypt)
+            profile_picture
+            bio
+            rating
+            role
+            created_at
+        }
+        
+        entity "posts" {
+            * id
+            --
+            author_id (FK)
+            title
+            content
+            status
+            created_at
+            updated_at
+        }
+        
+        entity "comments" {
+            * id
+            --
+            post_id (FK)
+            author_id (FK)
+            content
+            created_at
+        }
+        
+        entity "likes" {
+            * id
+            --
+            post_id (FK)
+            user_id (FK)
+            type (like/dislike)
+            created_at
+        }
+        
+        entity "categories" {
+            * id
+            --
+            title
+            description
+        }
+        
+        entity "post_categories" {
+            * post_id (FK)
+            * category_id (FK)
+        }
+        
+        entity "post_views" {
+            * id
+            --
+            post_id (FK)
+            viewer_id (FK/NULL)
+            created_at
+        }
+        
+        entity "permissions" {
+            * id
+            --
+            role
+            action
+            resource
+        }
+    }
+}
+
+' ============================================
+' EXTERNAL SERVICES
+' ============================================
+node "External Services" as external_services #2d3e7f {
+    component "Email Provider\n(SMTP)" as smtp_service
+    component "Image Processing\n(Sharp Library)" as image_processor
+    component "File System\n(Local/Cloud)" as file_system
+}
+
+' ============================================
+' CLIENT-FRONTEND CONNECTIONS
+' ============================================
+web_user --> frontend_server: HTTPS/HTTP
+mobile_user --> frontend_server: HTTPS/HTTP
+admin_user --> frontend_server: HTTPS/HTTP\n(Admin Routes)
+
+' ============================================
+' FRONTEND-BACKEND CONNECTIONS
+' ============================================
+frontend_server --> backend_server: REST API\n(Fetch/Axios)\nContent-Type: JSON
+
+note on link : Port 5000/3001\nCORS Enabled
+
+' ============================================
+' BACKEND-DATABASE CONNECTIONS
+' ============================================
+backend_server --> mysql_db: MySQL2 Protocol\n(Connection Pool)
+
+' ============================================
+' BACKEND-EXTERNAL CONNECTIONS
+' ============================================
+backend_server --> email_service: SMTP
+backend_service --> image_processor: Process\nImages
+file_upload_svc --> file_system: Read/Write\nFiles
+backend_server --> cdn_avatars: Store/Retrieve\nAvatars
+backend_server --> cdn_media: Store/Retrieve\nMedia
+
+' ============================================
+' ADMIN PANEL
+' ============================================
+admin_user --> adminjs_panel: Admin\nDashboard
+
+@enduml

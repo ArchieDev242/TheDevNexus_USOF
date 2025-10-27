@@ -635,6 +635,7 @@ class users_controller
                     COALESCE(l.likes_count, 0) as likes_count,
                     COALESCE(d.dislikes_count, 0) as dislikes_count,
                     COALESCE(c.comments_count, 0) as comments_count,
+                    COALESCE(v.views_count, 0) as view_count,
                     COALESCE(cat.categories, '') as categories
                 FROM posts p
                 LEFT JOIN users u ON p.author_id = u.id
@@ -655,6 +656,11 @@ class users_controller
                     FROM comments
                     GROUP BY post_id
                 ) c ON p.id = c.post_id
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as views_count
+                    FROM post_views
+                    GROUP BY post_id
+                ) v ON p.id = v.post_id
                 LEFT JOIN (
                     SELECT post_id, GROUP_CONCAT(DISTINCT cat.title) as categories
                     FROM post_categories pc

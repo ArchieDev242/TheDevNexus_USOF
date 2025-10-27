@@ -473,6 +473,7 @@ export default function PostDetailPage() {
                     }}
                     parent_comment = {parent}
                     depth = {depth}
+                    post_id = {post_id}
                 />
                 {node.replies && node.replies.length > 0 && (
                     <div className = "replies-container">
@@ -755,11 +756,14 @@ export default function PostDetailPage() {
     );
 }
 
-function Comment({ comment, on_reply, current_user, is_authenticated, on_comment_updated, on_comment_deleted, parent_comment, depth = 0 }) {
+function Comment({ comment, on_reply, current_user, is_authenticated, on_comment_updated, on_comment_deleted, parent_comment, depth = 0, post_id = null }) {
     const [show_menu, set_show_menu] = useState(false);
     const [is_editing, set_is_editing] = useState(false);
     const [edit_content, set_edit_content] = useState(comment.content);
     const [show_report_modal, set_show_report_modal] = useState(false);
+    const [show_reply_form, set_show_reply_form] = useState(false);
+    const [reply_content, set_reply_content] = useState('');
+    const [is_submitting_reply, set_is_submitting_reply] = useState(false);
     const [reaction, set_reaction] = useState({
         liked: comment.user_reaction === 'like',
         disliked: comment.user_reaction === 'dislike',
@@ -906,6 +910,46 @@ function Comment({ comment, on_reply, current_user, is_authenticated, on_comment
         set_show_menu(false);
     };
 
+    const handle_submit_reply = async (e) => {
+        e.preventDefault();
+
+        if (!reply_content.trim()) {
+            alert('Коментар не може бути порожнім');
+            return;
+        }
+
+        set_is_submitting_reply(true);
+
+        try {
+            const response = await fetch(`/api/posts/${post_id}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    content: reply_content,
+                    parent_id: comment.id
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                set_reply_content('');
+                set_show_reply_form(false);
+                if (on_comment_updated) on_comment_updated();
+            } else {
+                alert(data.message || 'Помилка створення коментаря');
+            }
+        } catch (error) {
+            console.error('Error submitting reply:', error);
+            alert('Помилка створення коментаря');
+        } finally {
+            set_is_submitting_reply(false);
+        }
+    };
+
     const format_date = (date_string) => {
         const date = new Date(date_string);
         const now = new Date();
@@ -1035,11 +1079,55 @@ function Comment({ comment, on_reply, current_user, is_authenticated, on_comment
                         {reaction.disliked ? <IoHeartDislike /> : <IoHeartDislikeOutline />} {reaction.dislikes_count}
                     </button>
                     {is_authenticated && (
-                        <button className = "comment-action reply-action" onClick={on_reply}>
+                        <button 
+                            className = "comment-action reply-action" 
+                            onClick={() => set_show_reply_form(!show_reply_form)}
+                        >
                             Відповісти
                         </button>
                     )}
                 </div>
+
+                {show_reply_form && is_authenticated && (
+                    <form className = "inline-reply-form" onSubmit={handle_submit_reply}>
+                        <div className = "reply-form-header">
+                            Відповідь для <strong>@{comment.author_login}</strong>
+                            <button 
+                                type = "button" 
+                                className = "close-reply-btn"
+                                onClick = {() => set_show_reply_form(false)}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <textarea
+                            className = "reply-textarea"
+                            placeholder = "Напишіть відповідь..."
+                            value = {reply_content}
+                            onChange = {(e) => set_reply_content(e.target.value)}
+                            rows = {3}
+                        />
+                        <div className = "reply-form-actions">
+                            <button 
+                                type = "submit" 
+                                className = "submit-reply-btn"
+                                disabled = {is_submitting_reply}
+                            >
+                                {is_submitting_reply ? 'Відправлення...' : 'Опублікувати'}
+                            </button>
+                            <button 
+                                type = "button" 
+                                className = "cancel-reply-btn"
+                                onClick = {() => {
+                                    set_show_reply_form(false);
+                                    set_reply_content('');
+                                }}
+                            >
+                                Скасувати
+                            </button>
+                        </div>
+                    </form>
+                )}
             </div>
             {show_report_modal && (
                 <ReportModal 

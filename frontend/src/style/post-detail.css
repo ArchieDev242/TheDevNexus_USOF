@@ -798,3 +798,134 @@
         justify-content: center;
     }
 }
+
+/* Inline Reply Form Styles */
+.inline-reply-form
+{
+    margin-top: 12px;
+    padding: 14px;
+    background: var(--hover-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+    }
+}
+
+.reply-form-header
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.reply-form-header strong
+{
+    color: var(--primary);
+    margin: 0 4px;
+}
+
+.close-reply-btn
+{
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.close-reply-btn:hover
+{
+    color: var(--text-primary);
+}
+
+.reply-textarea
+{
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s;
+}
+
+.reply-textarea:focus
+{
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 8px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.reply-form-actions
+{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.submit-reply-btn,
+.cancel-reply-btn
+{
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.submit-reply-btn
+{
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.submit-reply-btn:hover:not(:disabled)
+{
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.submit-reply-btn:disabled
+{
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.cancel-reply-btn
+{
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+
+.cancel-reply-btn:hover
+{
+    background: var(--border-color);
+    opacity: 0.8;
+}

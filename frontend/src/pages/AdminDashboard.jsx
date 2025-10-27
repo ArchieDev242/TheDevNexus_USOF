@@ -38,6 +38,12 @@ export default function AdminDashboard()
         email: '',
         role: 'user'
     });
+    const [show_create_category_modal, set_show_create_category_modal] = useState(false);
+    const [creating_category, set_creating_category] = useState(false);
+    const [category_form, set_category_form] = useState({
+        title: '',
+        description: ''
+    });
 
     const get_report_reason_label = (reason) => t(`admin_dashboard.report_reasons.${reason}`, { defaultValue: reason });
 
@@ -260,6 +266,54 @@ export default function AdminDashboard()
         {
             console.error('Error updating report:', error);
             alert(t('admin_dashboard.notifications.report_status_error'));
+        }
+    };
+
+    const handle_create_category = async (e) => {
+        e.preventDefault();
+
+        if(!category_form.title.trim()) 
+        {
+            alert(t('admin_dashboard.notifications.category_title_required', { defaultValue: 'Назва категорії не може бути порожною' }));
+            return;
+        }
+
+        set_creating_category(true);
+
+        try 
+        {
+            const response = await fetch('/api/categories', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    title: category_form.title.trim(),
+                    description: category_form.description.trim()
+                })
+            });
+
+            const data = await response.json();
+
+            if(response.ok && data.status === 'success') 
+            {
+                set_categories([...categories, data.data]);
+                set_category_form({ title: '', description: '' });
+                set_show_create_category_modal(false);
+                alert(t('admin_dashboard.notifications.category_created', { defaultValue: 'Категорія успішно створена' }));
+                fetch_dashboard_data();
+            } else 
+            {
+                alert(data.message || t('admin_dashboard.notifications.category_creation_error', { defaultValue: 'Помилка створення категорії' }));
+            }
+        } catch(error) 
+        {
+            console.error('Error creating category:', error);
+            alert(t('admin_dashboard.notifications.category_creation_error', { defaultValue: 'Помилка створення категорії' }));
+        } finally 
+        {
+            set_creating_category(false);
         }
     };
 
@@ -532,6 +586,12 @@ export default function AdminDashboard()
                             <div className = "section-categories">
                                 <div className = "section-header">
                                     <h1>{t('admin_dashboard.categories.title')}</h1>
+                                    <button 
+                                        className = "btn-add-category"
+                                        onClick = {() => set_show_create_category_modal(true)}
+                                    >
+                                        <FiPlus /> Додати категорію
+                                    </button>
                                 </div>
                                 <div className = "categories-grid">
                                     {Array.isArray(categories) && categories.map(cat => (
@@ -744,6 +804,65 @@ export default function AdminDashboard()
                                 {t('common.close')}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Create Category Modal */}
+            {show_create_category_modal && (
+                <div className = "admin-modal-overlay" onClick = {() => set_show_create_category_modal(false)}>
+                    <div className = "admin-modal-content" onClick = {(e) => e.stopPropagation()}>
+                        <div className = "admin-modal-header">
+                            <h2>Створити нову категорію</h2>
+                            <button 
+                                className = "admin-modal-close"
+                                onClick={() => set_show_create_category_modal(false)}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <form className = "admin-modal-body" onSubmit={handle_create_category}>
+                            <div className = "admin-edit-user-form">
+                                <label>
+                                    <span>Назва категорії *</span>
+                                    <input
+                                        type = "text"
+                                        value = {category_form.title}
+                                        onChange = {(e) => set_category_form({ ...category_form, title: e.target.value })}
+                                        placeholder = "Наприклад: GameMaker, Unreal Engine..."
+                                        required
+                                        style = {{ fontFamily: 'inherit', padding: '12px', borderRadius: '8px', border: '2px solid rgba(108, 99, 255, 0.3)' }}
+                                    />
+                                </label>
+                                <label>
+                                    <span>Опис (необов'язково)</span>
+                                    <textarea
+                                        value = {category_form.description}
+                                        onChange = {(e) => set_category_form({ ...category_form, description: e.target.value })}
+                                        placeholder = "Опишіть цю категорію..."
+                                        rows = {4}
+                                        style = {{ fontFamily: 'inherit', padding: '12px', borderRadius: '8px', border: '2px solid rgba(108, 99, 255, 0.3)', backgroundColor: 'rgba(10, 10, 16, 0.5)', color: '#e0e0e0', resize: 'vertical' }}
+                                    />
+                                </label>
+                            </div>
+                            <div className = "admin-modal-footer">
+                                <button 
+                                    type = "button"
+                                    className = "admin-btn-action admin-btn-cancel" 
+                                    onClick = {() => set_show_create_category_modal(false)}
+                                    disabled = {creating_category}
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button 
+                                    type = "submit"
+                                    className = "admin-btn-action admin-btn-approve"
+                                    disabled = {creating_category}
+                                >
+                                    {creating_category ? 'Створення...' : 'Створити'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

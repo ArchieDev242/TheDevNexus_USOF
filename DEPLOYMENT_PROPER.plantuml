@@ -1,0 +1,226 @@
+@startuml USOF_Complete_Deployment
+!theme plain
+title TheDevNexus USOF - Deployment Architecture Diagram
+
+' ============================================
+' USER ACTOR
+' ============================================
+actor User
+
+' ============================================
+' CLIENT DEVICE / BROWSER
+' ============================================
+node "Client Device\n(User Browser)" as client {
+    component "React 18.3\nRedux | Router\ni18n" as react_frontend
+    component "Webpack" as webpack_client
+}
+
+' ============================================
+' NETWORK
+' ============================================
+cloud "HTTPS/TCP\nInternet" as network
+
+' ============================================
+' FRONTEND SERVER - SEPARATE MACHINE
+' ============================================
+node "Frontend Server\n[192.168.1.100]\nNode.js" as frontend {
+    component "Webpack Dev Server\nPort :3000" as webpack_server
+    component "Static Files\n(HTML/CSS/JS)\nReact Bundle" as static_files
+    component "Hot Module\nReloading" as hmr
+    
+    webpack_server --> static_files
+    webpack_server --> hmr
+}
+
+' ============================================
+' BACKEND SERVER - SEPARATE MACHINE
+' ============================================
+node "Backend Server\n[192.168.1.101]\nNode.js + Express" as backend {
+    component "Express.js Server\nPort :5000" as express_server
+    
+    package "Security Layer" {
+        component "JWT\nAuthentication" as jwt_layer
+        component "Bcrypt\nPassword Hashing" as bcrypt_layer
+        component "Rate\nLimiter" as ratelimit
+    }
+    
+    package "API Controllers" {
+        component "AuthController" as ctrl_auth
+        component "UsersController" as ctrl_users
+        component "PostsController" as ctrl_posts
+        component "CommentsController" as ctrl_comments
+        component "LikesController" as ctrl_likes
+        component "CategoriesController" as ctrl_categories
+    }
+    
+    package "Data Models" {
+        component "User" as model_user
+        component "Post" as model_post
+        component "Comment" as model_comment
+        component "Like" as model_like
+        component "Category" as model_category
+    }
+    
+    package "Services" {
+        component "Email Service\n(Nodemailer)" as service_email
+        component "File Upload\n(Multer/Sharp)" as service_upload
+        component "AdminJS\nDashboard" as service_admin
+    }
+    
+    express_server --> jwt_layer
+    express_server --> bcrypt_layer
+    express_server --> ratelimit
+    express_server --> ctrl_auth
+    express_server --> ctrl_users
+    express_server --> ctrl_posts
+    express_server --> ctrl_comments
+    express_server --> ctrl_likes
+    express_server --> ctrl_categories
+    
+    ctrl_auth --> model_user
+    ctrl_users --> model_user
+    ctrl_posts --> model_post
+    ctrl_comments --> model_comment
+    ctrl_likes --> model_like
+    ctrl_categories --> model_category
+    
+    ctrl_users --> service_upload
+    ctrl_auth --> service_email
+}
+
+' ============================================
+' DATABASE SERVER - SEPARATE MACHINE
+' ============================================
+database "Database Server\n[192.168.1.102]\nMySQL/MariaDB\nPort :3306" as database {
+    folder "usof_db" {
+        storage "users" as tbl_users
+        storage "posts" as tbl_posts
+        storage "comments" as tbl_comments
+        storage "likes" as tbl_likes
+        storage "categories" as tbl_categories
+        storage "post_categories" as tbl_post_cat
+        storage "post_views" as tbl_views
+        storage "permissions" as tbl_permissions
+        storage "guest_sessions" as tbl_sessions
+    }
+}
+
+' ============================================
+' EXTERNAL SERVICES
+' ============================================
+node "External Services" as external {
+    component "Email Provider\n(SMTP Server)" as email_provider
+    component "File Storage\n(Cloud/Local)" as file_storage
+}
+
+' ============================================
+' USER INTERACTIONS
+' ============================================
+User --> client: Uses Browser
+
+' ============================================
+' CLIENT TO FRONTEND
+' ============================================
+client --> network: HTTP/HTTPS\nRequest
+network --> frontend: 1. GET /\n2. GET /bundle.js\n3. GET /styles.css
+
+frontend --> network: Serve React Bundle
+network --> client: HTML + JavaScript\nCSS Files
+
+client --> react_frontend: Browser Renders
+
+' ============================================
+' CLIENT TO BACKEND (API)
+' ============================================
+react_frontend --> network: 2. API Call\nGET /api/posts\nPOST /api/auth/login\nJSON Request
+
+network --> backend: REST API Requests\n(Port :5000)
+
+backend --> express_server: Route Handling
+
+express_server --> backend: Process Request
+
+' ============================================
+' BACKEND TO DATABASE
+' ============================================
+backend --> database: 3. SQL Queries\nConnection: mysql2\nPort :3306
+
+database --> tbl_users: User Data
+database --> tbl_posts: Posts Data
+database --> tbl_comments: Comments
+database --> tbl_likes: Likes
+database --> tbl_categories: Categories
+
+database --> backend: Query Results\nJSON Serialized
+
+' ============================================
+' BACKEND TO EXTERNAL
+' ============================================
+backend --> external: 4. Send Emails\nStore Files
+
+external --> backend: Confirmation
+
+' ============================================
+' BACKEND TO CLIENT
+' ============================================
+backend --> network: API Response\nJSON Data
+
+network --> client: 5. JSON Data\n(Port :3000)
+
+client --> react_frontend: Update State\nRe-render UI
+
+react_frontend --> User: Display Results
+
+' ============================================
+' ADMIN ACCESS
+' ============================================
+User --> backend: Admin Access\n(POST :5000/admin)
+
+backend --> service_admin: AdminJS Panel
+
+service_admin --> backend: Manage Content
+
+' ============================================
+' DEPLOYMENT NOTES
+' ============================================
+note top of frontend
+    Frontend Server Deployment
+    Server: Node.js Runtime
+    Port: 3000
+    Technology:
+    • Webpack Dev Server
+    • React 18.3
+    • Redux Toolkit
+    • React Router v7
+    • i18next (Translations)
+end note
+
+note top of backend
+    Backend Server Deployment
+    Server: Node.js + Express.js
+    Port: 5000
+    Technology:
+    • Express.js 5.1
+    • JWT (Authentication)
+    • Bcrypt (Security)
+    • Rate Limiting
+    • Multer (File Upload)
+    • Nodemailer (Email)
+    • AdminJS (Admin Panel)
+    • MySQL2 (Database Driver)
+end note
+
+note top of database
+    Database Server Deployment
+    DBMS: MySQL 5.7+ / MariaDB
+    Port: 3306
+    Features:
+    • Connection Pooling (mysql2)
+    • ACID Transactions
+    • Normalized Schema
+    • Strict GROUP BY Mode
+    • Foreign Keys
+    • Indexing
+end note
+
+@enduml

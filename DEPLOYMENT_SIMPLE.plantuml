@@ -1,0 +1,196 @@
+@startuml USOF_Monolithic_Deployment
+!theme plain
+title TheDevNexus USOF - Monolithic Deployment Diagram
+
+' ============================================
+' USERS / ACTORS
+' ============================================
+actor "End Users" as users
+actor "Admin Users" as admin
+
+' ============================================
+' INTERNET / NETWORK
+' ============================================
+cloud "Internet\n(HTTPS)" as internet
+
+' ============================================
+' PRODUCTION SERVER - MONOLITHIC
+' ============================================
+node "Production Server\n[Single Machine]\nUbuntu/Linux" as production_server {
+    
+    ' ========== FRONTEND LAYER ==========
+    package "Frontend Layer\nPort :3000" as frontend_layer {
+        component [Webpack\nDev Server] as webpack
+        component [React 18.3\nRedux\nRouter] as react_components
+        component [Static Files\nHTML/CSS/JS] as static_files
+        component [i18n\nTranslations] as i18n
+    }
+    
+    ' ========== BACKEND LAYER ==========
+    package "Backend Layer\nPort :5000" as backend_layer {
+        
+        package "Express.js Server" {
+            component [API Routes\n/api/*] as api_routes
+            component [Middleware\nCORS/Logger] as middleware
+        }
+        
+        package "Security Layer" {
+            component [JWT\nAuthentication] as jwt
+            component [Bcrypt\nPassword Hash] as bcrypt
+            component [Rate\nLimiter] as rate_limiter
+        }
+        
+        package "Controllers" {
+            component [Auth\nController] as ctrl_auth
+            component [Users\nController] as ctrl_users
+            component [Posts\nController] as ctrl_posts
+            component [Comments\nController] as ctrl_comments
+            component [Likes\nController] as ctrl_likes
+            component [Categories\nController] as ctrl_categories
+        }
+        
+        package "Models / Database Access" {
+            component [User\nModel] as model_user
+            component [Post\nModel] as model_post
+            component [Comment\nModel] as model_comment
+            component [Like\nModel] as model_like
+            component [Category\nModel] as model_category
+        }
+        
+        package "Services / Utilities" {
+            component [Email\nService] as service_email
+            component [File Upload\nMulter/Sharp] as service_upload
+            component [Admin Panel\nAdminJS] as service_admin
+            component [Error\nHandler] as error_handler
+        }
+        
+        ' Backend connections
+        api_routes --> middleware
+        api_routes --> jwt
+        api_routes --> rate_limiter
+        api_routes --> ctrl_auth
+        api_routes --> ctrl_users
+        api_routes --> ctrl_posts
+        api_routes --> ctrl_comments
+        api_routes --> ctrl_likes
+        api_routes --> ctrl_categories
+        
+        ctrl_auth --> model_user
+        ctrl_users --> model_user
+        ctrl_posts --> model_post
+        ctrl_comments --> model_comment
+        ctrl_likes --> model_like
+        ctrl_categories --> model_category
+        
+        ctrl_users --> service_upload
+        ctrl_auth --> service_email
+    }
+    
+    ' ========== DATABASE LAYER ==========
+    package "Database Layer\nMySQL/MariaDB\nPort :3306" as db_layer {
+        database "MySQL Database\nusof_db" as mysql_db
+        
+        component [users] as tbl_users
+        component [posts] as tbl_posts
+        component [comments] as tbl_comments
+        component [likes] as tbl_likes
+        component [categories] as tbl_categories
+        component [post_categories] as tbl_post_cat
+        component [post_views] as tbl_views
+        component [permissions] as tbl_perms
+        
+        mysql_db --> tbl_users
+        mysql_db --> tbl_posts
+        mysql_db --> tbl_comments
+        mysql_db --> tbl_likes
+        mysql_db --> tbl_categories
+        mysql_db --> tbl_post_cat
+        mysql_db --> tbl_views
+        mysql_db --> tbl_perms
+    }
+    
+    ' ========== EXTERNAL SERVICES ==========
+    package "External Services" {
+        component [SMTP Server\nEmail] as smtp
+        component [File Storage\nLocal/Cloud] as file_storage
+    }
+    
+    ' ========== INTERNAL CONNECTIONS ==========
+    frontend_layer --> backend_layer: Communication\nPort :5000
+    backend_layer --> db_layer: MySQL\nPort :3306
+    service_email --> smtp: Send Mail
+    service_upload --> file_storage: Store Files
+}
+
+' ============================================
+' EXTERNAL ACTORS TO SERVER
+' ============================================
+users --> internet: HTTPS\nBrowser Request
+admin --> internet: HTTPS\nBrowser Request
+
+internet --> production_server: HTTP/HTTPS\nPort :3000\nPort :5000
+
+production_server --> internet: Response\nHTML/CSS/JS\nJSON
+
+internet --> users: Web Page\nData
+internet --> admin: Admin Panel\nData
+
+' ============================================
+' DEPLOYMENT NOTES
+' ============================================
+note bottom of production_server
+    Single Monolithic Server Deployment
+    
+    Technology Stack:
+    • OS: Ubuntu/Linux
+    • Frontend: Node.js + Webpack + React 18.3
+    • Backend: Node.js + Express.js 5.1
+    • Database: MySQL 5.7+ / MariaDB
+    • Process Manager: PM2 (Production)
+    
+    Features:
+    • All services run on ONE machine
+    • Frontend and Backend share Node.js runtime
+    • Local MySQL database
+    • AdminJS admin panel
+    • Email service (Nodemailer)
+    • File upload handling (Multer/Sharp)
+    
+    Ports:
+    • Frontend: 3000
+    • Backend: 5000
+    • Database: 3306
+end note
+
+note right of frontend_layer
+    Frontend: React SPA
+    • React 18.3 components
+    • Redux state management
+    • React Router v7
+    • i18next localization
+    • Webpack bundling
+    • Hot Module Reload (dev)
+end note
+
+note right of backend_layer
+    Backend: Express API
+    • RESTful API endpoints
+    • JWT authentication
+    • Rate limiting
+    • CORS middleware
+    • Controller-Model pattern
+    • Service layer
+    • Error handling
+end note
+
+note right of db_layer
+    Database: MySQL
+    • Relational data storage
+    • 8 main tables
+    • Connection pooling
+    • ACID compliance
+    • Strict GROUP BY mode
+    • Foreign key constraints
+end note
+
+@enduml

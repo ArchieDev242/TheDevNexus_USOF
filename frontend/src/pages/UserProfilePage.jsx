@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { FaHeart, FaRegHeart } from 'react-icons/fa';
-import { IoHeartDislike, IoHeartDislikeOutline } from 'react-icons/io5';
+import { FaHeart } from 'react-icons/fa';
 import { BiLike, BiDislike } from 'react-icons/bi';
-import { FiMessageCircle, FiFlag } from 'react-icons/fi';
+import { FiMessageCircle, FiFlag, FiEye } from 'react-icons/fi';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ReportModal from '../components/ReportModal';
@@ -22,6 +21,7 @@ const UserProfilePage = () => {
     const [loading, set_loading] = useState(true);
     const [active_tab, set_active_tab] = useState('posts');
     const [show_report_modal, set_show_report_modal] = useState(false);
+    const [post_stats_modal, set_post_stats_modal] = useState(null);
 
     useEffect(() => {
         console.log('useEffect triggered with userId:', userId);
@@ -275,9 +275,54 @@ const UserProfilePage = () => {
                                                         </div>
                                                     )}
                                                     <div className = "post-meta">
-                                                        <span><FaHeart /> {post.likes_count || 0}</span>
-                                                        <span><IoHeartDislike /> {post.dislikes_count || 0}</span>
-                                                        <span><FiMessageCircle /> {post.comments_count || 0}</span>
+                                                        <button 
+                                                            className = "meta-stat-btn"
+                                                            onClick = {(e) => {
+                                                                e.stopPropagation();
+                                                                set_post_stats_modal({
+                                                                    post_id: post.id,
+                                                                    post_title: post.title,
+                                                                    likes: post.likes_count || 0,
+                                                                    comments: post.comments_count || 0,
+                                                                    views: post.view_count || 0
+                                                                });
+                                                            }}
+                                                            title = "Показати статистику"
+                                                        >
+                                                            <FaHeart /> {post.likes_count || 0}
+                                                        </button>
+                                                        <button 
+                                                            className = "meta-stat-btn"
+                                                            onClick = {(e) => {
+                                                                e.stopPropagation();
+                                                                set_post_stats_modal({
+                                                                    post_id: post.id,
+                                                                    post_title: post.title,
+                                                                    likes: post.likes_count || 0,
+                                                                    comments: post.comments_count || 0,
+                                                                    views: post.view_count || 0
+                                                                });
+                                                            }}
+                                                            title = "Показати статистику"
+                                                        >
+                                                            <FiMessageCircle /> {post.comments_count || 0}
+                                                        </button>
+                                                        <button 
+                                                            className = "meta-stat-btn"
+                                                            onClick = {(e) => {
+                                                                e.stopPropagation();
+                                                                set_post_stats_modal({
+                                                                    post_id: post.id,
+                                                                    post_title: post.title,
+                                                                    likes: post.likes_count || 0,
+                                                                    comments: post.comments_count || 0,
+                                                                    views: post.view_count || 0
+                                                                });
+                                                            }}
+                                                            title = "Показати статистику"
+                                                        >
+                                                            <FiEye /> {post.view_count || 0}
+                                                        </button>
                                                     </div>
                                                 </article>
                                             ))}
@@ -329,6 +374,63 @@ const UserProfilePage = () => {
                         set_show_report_modal(false);
                     }}
                 />
+            )}
+            
+            {post_stats_modal && (
+                <div className = "stats-modal-overlay" onClick = {() => set_post_stats_modal(null)}>
+                    <div className = "stats-modal" onClick = {(e) => e.stopPropagation()}>
+                        <div className = "stats-modal-header">
+                            <h3>{post_stats_modal.post_title}</h3>
+                            <button 
+                                className = "stats-modal-close"
+                                onClick = {() => set_post_stats_modal(null)}
+                                title = "Закрити"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <div className = "stats-modal-body">
+                            <div className = "stat-item">
+                                <div className = "stat-icon likes-icon">
+                                    <FaHeart />
+                                </div>
+                                <div className = "stat-info">
+                                    <div className = "stat-label">Лайків</div>
+                                    <div className = "stat-value">{post_stats_modal.likes}</div>
+                                </div>
+                            </div>
+                            <div className = "stat-item">
+                                <div className = "stat-icon comments-icon">
+                                    <FiMessageCircle />
+                                </div>
+                                <div className = "stat-info">
+                                    <div className = "stat-label">Коментарів</div>
+                                    <div className = "stat-value">{post_stats_modal.comments}</div>
+                                </div>
+                            </div>
+                            <div className = "stat-item">
+                                <div className = "stat-icon views-icon">
+                                    <FiEye />
+                                </div>
+                                <div className = "stat-info">
+                                    <div className = "stat-label">Переглядів</div>
+                                    <div className = "stat-value">{post_stats_modal.views}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className = "stats-modal-footer">
+                            <button 
+                                className = "btn-view-post"
+                                onClick = {() => {
+                                    navigate(`/posts/${post_stats_modal.post_id}`);
+                                    set_post_stats_modal(null);
+                                }}
+                            >
+                                Переглянути пост
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
             <Footer />
         </>
