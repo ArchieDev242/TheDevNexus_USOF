@@ -10,7 +10,7 @@ export default function TrendingPosts()
     
     if(loading) return <div className="loading-spinner">{t('common.loading')}</div>;
     
-    const display_posts = posts.slice(0, 6);
+    const display_posts = Array.isArray(posts) ? posts.slice(0, 6) : [];
     
     return (
         <section className = "trending-section">

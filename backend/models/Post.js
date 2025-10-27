@@ -575,14 +575,6 @@ class Post
         {
             const offset = (page - 1) * limit;
             
-            let count_query = `
-                SELECT COUNT(DISTINCT p.id) as total
-                FROM posts p
-                JOIN users u ON p.author_id = u.id
-                LEFT JOIN post_categories pc ON p.id = pc.post_id
-                LEFT JOIN categories c ON pc.category_id = c.id
-            `;
-            
             let query = `
                 SELECT 
                     p.id,
@@ -599,8 +591,6 @@ class Post
                     u.login as author_login,
                     u.full_name as author_name,
                     u.profile_picture as author_avatar,
-                    GROUP_CONCAT(DISTINCT c.title SEPARATOR ',') as categories,
-                    GROUP_CONCAT(DISTINCT c.title LIMIT 1) as category_title,
                     COALESCE(likes_data.likes_count, 0) as likes_count,
                     COALESCE(likes_data.dislikes_count, 0) as dislikes_count,
                     COALESCE(likes_data.likes_count, 0) - COALESCE(likes_data.dislikes_count, 0) as like_score,
@@ -608,8 +598,31 @@ class Post
                     COALESCE(views_data.view_count, 0) as view_count
                 FROM posts p
                 JOIN users u ON p.author_id = u.id
-                LEFT JOIN post_categories pc ON p.id = pc.post_id
-                LEFT JOIN categories c ON pc.category_id = c.id
+                LEFT JOIN (
+                    SELECT post_id,
+                           SUM(CASE WHEN type = 'like' THEN 1 ELSE 0 END) as likes_count,
+                           SUM(CASE WHEN type = 'dislike' THEN 1 ELSE 0 END) as dislikes_count
+                    FROM likes
+                    WHERE post_id IS NOT NULL
+                    GROUP BY post_id
+                ) likes_data ON p.id = likes_data.post_id
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as comments_count
+                    FROM comments
+                    WHERE status = 'active'
+                    GROUP BY post_id
+                ) comments_data ON p.id = comments_data.post_id
+                LEFT JOIN (
+                    SELECT post_id, COUNT(*) as view_count
+                    FROM post_views
+                    GROUP BY post_id
+                ) views_data ON p.id = views_data.post_id
+            `;
+            
+            // Build count query
+            let count_query = `
+                SELECT COUNT(DISTINCT p.id) as total
+                FROM posts p
                 LEFT JOIN (
                     SELECT post_id,
                            SUM(CASE WHEN type = 'like' THEN 1 ELSE 0 END) as likes_count,
@@ -683,10 +696,9 @@ class Post
                 count_query += ' WHERE ' + whereConditions.join(' AND ');
             }
             
+            // Get total count with same filters
             const count_result = await DB_connect.make_request(count_query, queryParams);
-            const total = count_result[0][0].total || 0;
-            
-            query += ' GROUP BY p.id';
+            const total = count_result[0][0]?.total || 0;
             
             // sorting
             if(sort === 'likes') 
@@ -710,7 +722,6 @@ class Post
                 post.author_login = row.author_login;
                 post.author_name = row.author_name;
                 post.author_avatar = normalize_avatar(row.author_avatar);
-                post.category_title = row.category_title;
                 post.likes_count = parseInt(row.likes_count) || 0;
                 post.dislikes_count = parseInt(row.dislikes_count) || 0;
                 post.like_score = parseInt(row.like_score) || 0;
