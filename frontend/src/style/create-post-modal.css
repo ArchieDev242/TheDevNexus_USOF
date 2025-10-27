@@ -477,6 +477,9 @@
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 0.95rem;
+    min-height: 50px;
+    flex-wrap: wrap;
+    align-content: center;
 }
 
 .category-checkbox:hover
@@ -484,6 +487,13 @@
     border-color: #6c63ff;
     background: rgba(108, 99, 255, 0.1);
     transform: translateX(3px);
+}
+
+.category-checkbox span
+{
+    white-space: normal;
+    word-break: break-word;
+    word-wrap: break-word;
 }
 
 .category-checkbox input[type = "checkbox"]
@@ -685,9 +695,9 @@
 {
     font-weight: 600;
     color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
+    word-wrap: break-word;
 }
 
 .blueprint-author

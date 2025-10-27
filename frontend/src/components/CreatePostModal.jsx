@@ -522,7 +522,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                             </label>
                             <div className = "categories-grid">
                                 {Array.isArray(categories_list) && categories_list.map(category => (
-                                    <label key = {category.id} className = "category-checkbox">
+                                    <label key = {category.id} className = "category-checkbox" title = {category.title}>
                                         <input
                                             type = "checkbox"
                                             checked = {post_data.categories.includes(category.id)}
@@ -616,7 +616,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
                                 {blueprint_results.length > 0 && (
                                     <div className = "blueprint-results">
                                         {blueprint_results.map(blueprint => (
-                                            <div key = {blueprint.id} className = "blueprint-result-item">
+                                            <div key = {blueprint.id} className = "blueprint-result-item" title = {blueprint.title}>
                                                 <div className = "blueprint-info">
                                                     <div className = "blueprint-name">{blueprint.title}</div>
                                                     <div className = "blueprint-author">{t('post_form.blueprints.by_author', { author: blueprint.author || t('post_form.blueprints.unknown_author') })}</div>
