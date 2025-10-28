@@ -30,6 +30,7 @@ import
 } from 'react-icons/si';
 
 import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
 import CreatePostModal from '../components/CreatePostModal/CreatePostModal';
 import ReportModal from '../components/ReportModal/ReportModal';
 import '../style/posts.css';
@@ -516,6 +517,8 @@ export default function PostsPage() {
                     fetch_posts();
                 }}
             />
+
+            <Footer />
         </>
     );
 }

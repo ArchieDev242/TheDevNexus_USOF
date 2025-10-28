@@ -4,9 +4,9 @@ import { useSelector } from 'react-redux';
 import { FaHeart } from 'react-icons/fa';
 import { BiLike, BiDislike } from 'react-icons/bi';
 import { FiMessageCircle, FiFlag, FiEye } from 'react-icons/fi';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import ReportModal from '../components/ReportModal';
+import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
+import ReportModal from '../components/ReportModal/ReportModal';
 import '../style/user-profile.css';
 
 const UserProfilePage = () => {
