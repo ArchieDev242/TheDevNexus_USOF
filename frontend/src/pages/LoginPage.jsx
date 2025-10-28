@@ -4,7 +4,8 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { login } from '../redux/slices/authSlice';
 import { FiUser, FiLock, FiEye, FiEyeOff, FiLogIn, FiUserPlus } from 'react-icons/fi';
-import Header from '../components/Header';
+import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
 import { useLanguage } from '../hooks/useLanguage';
 import '../style/auth.css';
 
@@ -214,6 +215,7 @@ export default function LoginPage()
                 </div>
             </div>
         </div>
+        <Footer />
         </>
     );
 }

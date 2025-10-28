@@ -29,7 +29,7 @@ import { GiAchievement } from 'react-icons/gi';
 import { GoBlocked } from 'react-icons/go';
 import { SiUnrealengine, SiUnity, SiGodotengine, SiPython, SiVulkan, SiCryengine, SiGamemaker, SiItchdotio, SiGamebanana, SiGamejolt } from 'react-icons/si';
 
-import Header from '../components/Header';
+import Header from '../components/Header/Header';
 import '../style/profile.css';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';

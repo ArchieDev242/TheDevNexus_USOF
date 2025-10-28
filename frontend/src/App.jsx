@@ -15,8 +15,8 @@ import CategoriesPage from './pages/CategoriesPage';
 import SavedPostsPage from './pages/SavedPostsPage';
 import AdminReportsPage from './pages/AdminReportsPage';
 import AdminDashboard from './pages/AdminDashboard';
-import PublicRoute from './components/PublicRoute';
-import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute/PublicRoute';
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 
 export default function App() 
 {

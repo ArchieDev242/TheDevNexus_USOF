@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiFilter, FiCheckCircle, FiXCircle, FiAlertCircle, FiTrash2, FiUserX } from 'react-icons/fi';
-import Header from '../components/Header';
+import Header from '../components/Header/Header';
 import '../style/admin-reports-page.css';
 
 export default function AdminReportsPage() 

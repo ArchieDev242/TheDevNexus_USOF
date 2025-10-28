@@ -15,7 +15,7 @@ import
     FiCheck
 } from 'react-icons/fi';
 
-import Header from '../components/Header';
+import Header from '../components/Header/Header';
 import '../style/settings.css';
 
 export default function SettingsPage() 

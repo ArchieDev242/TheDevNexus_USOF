@@ -5,8 +5,8 @@ import { FiSettings, FiHome, FiMoreVertical, FiEdit2, FiTrash2, FiPlus, FiFlag }
 import { FaUsers, FaComments } from 'react-icons/fa';
 import { BsFileEarmarkPost } from 'react-icons/bs';
 import { BiCategory } from 'react-icons/bi';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
 import '../style/admin-dashboard.css';
 
 export default function AdminDashboard() 

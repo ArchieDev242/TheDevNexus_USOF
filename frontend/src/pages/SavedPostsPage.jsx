@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { FiBookmark, FiClock, FiMessageCircle, FiX } from 'react-icons/fi';
 import { FaHeart } from 'react-icons/fa';
 import { IoHeartDislike } from 'react-icons/io5';
-import Header from '../components/Header';
+import Header from '../components/Header/Header';
 import '../style/saved-posts.css';
 import { useTranslation } from 'react-i18next';
 

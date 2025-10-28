@@ -7,10 +7,10 @@ import { FiMessageCircle, FiBookmark, FiArrowLeft, FiMoreVertical, FiEdit2, FiTr
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { IoHeartDislike, IoHeartDislikeOutline } from 'react-icons/io5';
 import { GoBlocked } from 'react-icons/go';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import EditPostModal from '../components/EditPostModal';
-import ReportModal from '../components/ReportModal';
+import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
+import EditPostModal from '../components/EditPostModal/EditPostModal';
+import ReportModal from '../components/ReportModal/ReportModal';
 import '../style/post-detail.css';
 
 export default function PostDetailPage() {

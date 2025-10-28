@@ -29,9 +29,9 @@ import
     SiGamemaker
 } from 'react-icons/si';
 
-import Header from '../components/Header';
-import CreatePostModal from '../components/CreatePostModal';
-import ReportModal from '../components/ReportModal';
+import Header from '../components/Header/Header';
+import CreatePostModal from '../components/CreatePostModal/CreatePostModal';
+import ReportModal from '../components/ReportModal/ReportModal';
 import '../style/posts.css';
 import { useTranslation } from 'react-i18next';
 

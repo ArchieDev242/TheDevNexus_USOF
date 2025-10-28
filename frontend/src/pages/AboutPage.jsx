@@ -19,8 +19,8 @@ import
 } from 'react-icons/fi';
 import { SiUnrealengine, SiUnity, SiGodotengine, SiPython, SiVulkan } from 'react-icons/si';
 
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
 import '../style/about.css';
 
 export default function AboutPage() 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FiLock, FiEye, FiEyeOff, FiArrowLeft, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
-import Header from '../components/Header';
+import Header from '../components/Header/Header';
 import { useLanguage } from '../hooks/useLanguage';
 import '../style/auth.css';
 

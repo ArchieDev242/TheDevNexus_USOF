@@ -4,7 +4,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { register } from '../redux/slices/authSlice';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiUserPlus, FiLogIn } from 'react-icons/fi';
-import Header from '../components/Header';
+import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
 import { useLanguage } from '../hooks/useLanguage';
 import '../style/auth.css';
 
@@ -259,8 +260,10 @@ export default function RegisterPage()
                         </p>
                     </div>
                 </div>
+                </div>
             </div>
-        </div>
+
+            <Footer />
         </>
     );
 }
