@@ -799,6 +799,20 @@
       "back_to_login": "Zurück zur Anmeldung",
       "resend_link": "Neuen Zurücksetzen-Link senden",
       "redirecting": "Weiterleitung zur Anmeldeseite..."
+    },
+    "verify_email": {
+      "title": "E-Mail bestätigen",
+      "subtitle": "Nur noch ein Schritt bis zum Nexus",
+      "verifying": "E-Mail wird überprüft...",
+      "success_title": "E-Mail bestätigt!",
+      "success_message": "Deine E-Mail wurde erfolgreich bestätigt. Du wirst zum Login weitergeleitet...",
+      "error_title": "Bestätigung fehlgeschlagen",
+      "missing_params": "Dieser Bestätigungslink ist ungültig oder unvollständig.",
+      "error_message": "Deine E-Mail konnte nicht bestätigt werden. Der Link ist möglicherweise ungültig oder abgelaufen.",
+      "network_error": "Beim Bestätigen deiner E-Mail ist ein Netzwerkfehler aufgetreten. Bitte versuche es erneut.",
+      "cta_login": "Zum Login",
+      "cta_home": "Zur Startseite",
+      "retry": "Erneut versuchen"
     }
   }
 }
