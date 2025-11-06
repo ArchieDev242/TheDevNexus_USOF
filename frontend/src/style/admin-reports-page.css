@@ -65,19 +65,6 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.filter-group
-{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.filter-group svg
-{
-    color: #667eea;
-    size: 20px;
-}
-
 .filter-select
 {
     background: transparent;

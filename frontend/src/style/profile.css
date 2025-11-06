@@ -3,6 +3,7 @@
     min-height: 100vh;
     background: var(--darker);
     padding: 100px 0 60px;
+    border-radius: 8px;
 }
 
 .profile-layout
@@ -1308,13 +1309,6 @@
     font-size: 0.95rem;
 }
 
-.posts-grid
-{
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-}
-
 .post-card
 {
     padding: 25px;
@@ -1331,24 +1325,6 @@
     background: rgba(108, 99, 255, 0.05);
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.post-header
-{
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.post-header h4
-{
-    font-family: var(--font-accent);
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-    color: var(--white);
-    flex: 1;
 }
 
 .post-status

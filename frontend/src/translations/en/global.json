@@ -22,6 +22,7 @@
     "by_author": "by {{author}}",
     "trending_comments_one": "{{count}} comment",
     "trending_comments_other": "{{count}} comments",
+    "trending_comments_short": "{{count}}",
     "trending_likes_one": "{{count}} like",
     "trending_likes_other": "{{count}} likes",
     "trending_recent_time": "2h ago",

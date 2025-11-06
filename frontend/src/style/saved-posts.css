@@ -137,21 +137,6 @@
     transform: scale(1.1);
 }
 
-.post-header
-{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.author-name
-{
-    font-weight: 600;
-    color: var(--primary);
-    font-size: 0.9rem;
-}
-
 .post-date
 {
     display: flex;
@@ -159,15 +144,6 @@
     gap: 5px;
     font-size: 0.85rem;
     color: var(--text-secondary);
-}
-
-.post-title
-{
-    font-family: var(--font-accent);
-    font-size: 1.3rem;
-    color: var(--white);
-    margin-bottom: 12px;
-    line-height: 1.4;
 }
 
 .post-excerpt

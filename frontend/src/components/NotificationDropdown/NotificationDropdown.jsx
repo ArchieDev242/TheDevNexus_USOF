@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FiBell, FiX, FiTrash2 } from 'react-icons/fi';
-import '../../style/notification-dropdown.css';
+import './notification-dropdown.css';
 
 const NotificationDropdown = ({ isOpen, onClose, onUnreadChange }) => {
     const [notifications, set_notifications] = useState([]);
@@ -115,7 +115,7 @@ const NotificationDropdown = ({ isOpen, onClose, onUnreadChange }) => {
         <div className = "notification-dropdown-overlay" onClick = {onClose}>
             <div className = "notification-dropdown" onClick = {e => e.stopPropagation()}>
                 <div className = "notification-header">
-                    <h3>Сповіщення {unread_count > 0 && <span className = "unread-badge">{unread_count}</span>}</h3>
+                    <h3>Повідомлення {unread_count > 0 && <span className = "unread-badge">{unread_count}</span>}</h3>
                     <button className = "close-btn" onClick = {onClose}>
                         <FiX />
                     </button>

@@ -320,6 +320,10 @@
     justify-content: flex-end;
 }
 
+.settings-footer .btn {
+    padding: 14px 18px;
+}
+
 .btn-success
 {
     background: linear-gradient(135deg, #10B981, #059669) !important;

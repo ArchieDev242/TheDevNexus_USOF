@@ -14,7 +14,7 @@ import
 import { SiUnrealengine, SiUnity, SiGodotengine, SiPython, SiVulkan, SiCryengine, SiGamemaker } from 'react-icons/si';
 
 import Header from '../components/Header/Header';
-import '../style/categories.css';
+import '../components/CategoriesGrid/categories.css';
 
 export default function CategoriesPage() 
 {

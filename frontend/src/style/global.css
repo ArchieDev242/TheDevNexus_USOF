@@ -1,0 +1,81 @@
+/* frontend/src/styles/global.css */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-primary);
+    color: var(--text-primary);
+    background: #0a0a0a; /* fallback */
+    position: relative;
+    min-height: 100vh;
+}
+
+/* Анимированный фон для всего приложения */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -3;
+    background: linear-gradient(-45deg, #0a0a0a, #1a1a2e, #16213e, #0f0f23);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -2;
+    background: radial-gradient(circle at 20% 50%, rgba(108, 99, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 101, 132, 0.15) 0%, transparent 50%);
+    animation: floatGlow 8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* Дополнительный слой свечения */
+.app-glow-layer {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    background:
+        radial-gradient(circle 800px at 20% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+        radial-gradient(circle 600px at 80% 20%, rgba(30, 144, 255, 0.1) 0%, transparent 50%);
+    animation: floatGlow2 12s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes floatGlow {
+    0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.8;
+    }
+    50% {
+        transform: translate(30px, -30px);
+        opacity: 1;
+    }
+}
+
+@keyframes floatGlow2 {
+    0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translate(-40px, 40px);
+        opacity: 0.9;
+    }
+}

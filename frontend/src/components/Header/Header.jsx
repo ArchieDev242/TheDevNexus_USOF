@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +35,8 @@ export default function Header() {
     const [unread_count, set_unread_count] = useState(0);
     const navigate = useNavigate();
     const location = useLocation();
+    const notificationRef = useRef(null);
+    const notificationBtnRef = useRef(null);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -69,12 +71,23 @@ export default function Header() {
 
     useEffect(() => {
         const handle_click_outside = (event) => {
-            if (is_menu_open && !event.target.closest('.user-menu-wrapper')) set_is_menu_open(false);
+            const clickedInMenu = event.target.closest('.user-menu-wrapper');
+            const clickedInNotifications = notificationRef.current?.contains(event.target);
+
+            if (is_menu_open && !clickedInMenu && !clickedInNotifications) {
+                set_is_menu_open(false);
+            }
+
+            if (is_notifications_open && !clickedInNotifications && !event.target.closest('.icon-btn[aria-label="Notifications"]')) {
+                set_is_notifications_open(false);
+            }
         };
 
-        if (is_menu_open) document.addEventListener('mousedown', handle_click_outside);
-        return () => document.removeEventListener('mousedown', handle_click_outside);
-    }, [is_menu_open]);
+        if (is_menu_open || is_notifications_open) {
+            document.addEventListener('mousedown', handle_click_outside);
+            return () => document.removeEventListener('mousedown', handle_click_outside);
+        }
+    }, [is_menu_open, is_notifications_open]);
 
     useEffect(() => {
         if (is_mobile_nav_open) set_is_mobile_nav_open(false);
@@ -152,25 +165,6 @@ export default function Header() {
                         <div className="header-actions">
                             {isAuthenticated ? (
                                 <>
-                                    <Link to="/saved-posts" className="icon-btn" aria-label="Saved Posts" title="Збережені пости">
-                                        <FiBookmark />
-                                    </Link>
-                                    <button
-                                        className="icon-btn"
-                                        aria-label="Notifications"
-                                        onClick={() => set_is_notifications_open(!is_notifications_open)}
-                                        title="Сповіщення"
-                                    >
-                                        <FiBell />
-                                        {unread_count > 0 && (
-                                            <span className="notification-badge">{unread_count > 99 ? '99+' : unread_count}</span>
-                                        )}
-                                    </button>
-                                    <NotificationDropdown
-                                        isOpen={is_notifications_open}
-                                        onClose={() => set_is_notifications_open(false)}
-                                        onUnreadChange={set_unread_count}
-                                    />
                                     <div className="user-menu-wrapper">
                                         <button
                                             className="user-menu-btn"
@@ -197,6 +191,44 @@ export default function Header() {
 
                                         {is_menu_open && (
                                             <div className="user-dropdown">
+
+                                                <Link to="/saved-posts" className="dropdown-item" aria-label="Saved Posts" title="Збережені пости">
+                                                    <FiBookmark />
+                                                    <span>Збережені</span>
+                                                </Link>
+                                                <div className="notification-button__wrapper">
+                                                    <button
+                                                        ref={notificationBtnRef}
+                                                        className="dropdown-item"
+                                                        aria-label="Notifications"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            set_is_notifications_open(!is_notifications_open);
+                                                        }}
+                                                        title="Повідомлення"
+                                                    >
+                                                        <FiBell />
+                                                        {unread_count > 0 && (
+                                                            <span className="notification-badge">{unread_count > 99 ? '99+' : unread_count}</span>
+                                                        )}
+                                                        <span>Повідомлення</span>
+                                                    </button>
+
+                                                    {is_notifications_open && notificationBtnRef.current && (
+                                                        <div
+                                                            ref={notificationRef}
+                                                            className="notification-dropdown-wrapper"
+                                                        >
+                                                            <NotificationDropdown
+                                                                isOpen={is_notifications_open}
+                                                                onClose={() => set_is_notifications_open(false)}
+                                                                onUnreadChange={set_unread_count}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+
+
                                                 <Link to="/profile" className="dropdown-item">
                                                     <FiUser />
                                                     <span>{t('header.profile')}</span>
@@ -245,6 +277,8 @@ export default function Header() {
                                 </div>
                             )}
                         </div>
+
+
 
                         <button
                             className="mobile-menu-btn"
@@ -301,28 +335,12 @@ export default function Header() {
                                         <span>{t('header.about')}</span>
                                     </Link>
                                 </li>
-                                {isAuthenticated && (
-                                    <li>
-                                        <Link to="/saved-posts" onClick={() => set_is_mobile_nav_open(false)}>
-                                            <FiBookmark />
-                                            <span>{t('header.saved_posts')}</span>
-                                        </Link>
-                                    </li>
-                                )}
                             </ul>
                         </nav>
 
                         <div className="mobile-drawer__auth">
                             {isAuthenticated ? (
                                 <>
-                                    <Link to="/profile" className="btn btn-outline" onClick={() => set_is_mobile_nav_open(false)}>
-                                        <FiUser />
-                                        <span>{t('header.profile')}</span>
-                                    </Link>
-                                    <Link to="/settings" className="btn btn-outline" onClick={() => set_is_mobile_nav_open(false)}>
-                                        <FiSettings />
-                                        <span>{t('header.settings')}</span>
-                                    </Link>
                                     <button className="btn btn-gradient" onClick={handle_logout}>
                                         <FiLogOut />
                                         <span>{t('header.logout')}</span>

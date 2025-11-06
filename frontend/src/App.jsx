@@ -18,10 +18,13 @@ import AdminDashboard from './pages/AdminDashboard';
 import PublicRoute from './components/PublicRoute/PublicRoute';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 
+import './style/global.css';
+
 export default function App() 
 {
     return (
         <Router>
+            <div className="app-glow-layer"/>
             <Routes>
                 <Route path = "/" element = {<HomePage />} />
                 <Route path = "/posts" element = {<PostsPage />} />

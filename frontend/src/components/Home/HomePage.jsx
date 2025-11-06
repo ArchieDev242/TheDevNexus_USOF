@@ -8,7 +8,7 @@ import TrendingPosts from '../TrendingPosts';
 import CategoriesGrid from '../CategoriesGrid';
 import CommunityHighlights from '../CommunityHighlights';
 import Footer from '../Footer';
-import '../../style/home.css';
+import './home.css';
 
 export default function HomePage() 
 {

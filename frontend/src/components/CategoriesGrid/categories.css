@@ -145,6 +145,11 @@
     transition: all 0.3s ease;
 }
 
+.category-icon svg{
+    width: 2.4rem;
+    height: 2.4rem;
+}
+
 .category-card:hover .category-icon-wrapper svg
 {
     color: var(--secondary);

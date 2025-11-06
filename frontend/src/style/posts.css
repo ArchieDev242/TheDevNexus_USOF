@@ -7,6 +7,8 @@
     padding-bottom: 60px;
     position: relative;
     overflow: hidden;
+    margin: 10px 0;
+    border-radius: 8px;
 }
 
 .posts-page .animated-background
@@ -63,16 +65,16 @@
 .posts-header h1
 {
     font-family: var(--font-accent);
-    font-size: 3rem;
+    font-size: 2rem;
     margin-bottom: 15px;
-    text-align: left;
+    text-align: center;
 }
 
 .posts-subtitle
 {
     font-size: 1.1rem;
     color: var(--text-muted);
-    text-align: left;
+    text-align: center;
 }
 
 .create-post-btn,
@@ -132,7 +134,10 @@
     box-shadow: 0 0 20px rgba(108, 99, 255, 0.3);
 }
 
-.posts-search svg { color: var(--text-muted); }
+.posts-search svg { 
+    color: var(--text-muted);
+    min-width: 24px; 
+}
 
 .posts-search input
 {
@@ -156,14 +161,16 @@
 {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 50px;
     padding: 10px 16px;
+    justify-content: space-around;
+    min-width: 304px;
 }
 
-.filter-group svg { color: var(--primary); }
+.filter-group svg { color: var(--primary); size: 20px; }
 
 .filter-select
 {
@@ -193,9 +200,11 @@
 {
     .posts-layout { grid-template-columns: 1fr; }
 
-    .categories-sidebar { order: 2; }
+    .categories-sidebar { order: 2; display: none; }
 
-    .posts-main { order: 1; }
+    .posts-main { order: 2; }
+
+
 }
 
 .categories-sidebar
@@ -231,6 +240,10 @@
     margin: 0;
 }
 
+.category-icon {
+    font-size: 3rem;
+}
+
 .categories-list li
 {
     display: flex;
@@ -250,8 +263,6 @@
     background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), rgba(255, 101, 132, 0.2));
     border: 2px solid var(--primary);
 }
-
-.category-icon { font-size: 1.5rem; }
 
 .category-count
 {
@@ -347,6 +358,7 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 20px;
+    gap: 10px;
 }
 
 .post-author
@@ -358,8 +370,8 @@
 
 .author-avatar
 {
-    width: 45px;
-    height: 45px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -389,9 +401,20 @@
 
 .author-name
 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 0;
+    transition: color 0.2s;
     font-family: var(--font-accent);
-    font-size: 0.95rem;
-    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.author-name:hover
+{
+    color: var(--primary-color);
 }
 
 .post-time
@@ -440,7 +463,7 @@
 .post-title
 {
     font-family: var(--font-accent);
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     margin-bottom: 12px;
     color: var(--text);
     line-height: 1.4;
@@ -456,7 +479,7 @@
 .post-footer
 {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     padding-top: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -525,6 +548,101 @@
     background: #ef4444;
     color: white;
     box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Mobile menu with three dots */
+.post-actions-mobile
+{
+    display: none;
+    position: relative;
+}
+
+.btn-more-actions
+{
+    background: inherit;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-more-actions svg
+{
+    rotate: 90deg;
+    width: 32px;
+    height: 32px;
+}
+
+.btn-more-actions:hover
+{
+    background: rgba(108, 99, 255, 0.1);
+    border-color: var(--primary);
+}
+
+.actions-dropdown
+{
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 8px);
+    background: rgba(18, 18, 18, 0.95);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(108, 99, 255, 0.3);
+    border-radius: 12px;
+    padding: 8px;
+    min-width: 200px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp
+{
+    from
+    {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to
+    {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-action
+{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font-accent);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.dropdown-action:hover
+{
+    background: rgba(108, 99, 255, 0.1);
+}
+
+.dropdown-action.danger
+{
+    color: #ef4444;
+}
+
+.dropdown-action.danger:hover
+{
+    background: rgba(239, 68, 68, 0.1);
 }
 
 .floating-create-btn
@@ -618,12 +736,23 @@
     border-color: rgba(255, 255, 255, 0.1);
 }
 
+@media (min-width: 769px) {
+    .floating-create-btn {
+        display: none;
+    }
+}
+
 @media (max-width: 768px)
 {
     .posts-header
     {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .post-author {
+        align-items: self-start;
+        justify-content: flex-start;
     }
 
     .create-post-btn,
@@ -637,9 +766,64 @@
 
     .floating-create-btn
     {
+        display: flex;
         width: 56px;
         height: 56px;
         bottom: 24px;
         right: 24px;
+    }
+}
+
+/* Mobile menu for posts at 630px */
+@media (max-width: 630px)
+{
+    .forum-post-card {
+        padding: 20px;
+    }
+
+    .post-actions-desktop
+    {
+        display: none !important;
+    }
+
+    .dropdown-action svg {
+        width: 24px;
+    }
+
+    .post-header {
+        gap: 8px;
+        align-items: start;
+    }
+
+    .post-actions-mobile
+    {
+        display: block;
+    }
+
+    .post-footer
+    {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .post-stats
+    {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .author-name {
+        font-size: 16px;
+        max-width: 160px;
+    }
+
+    .author-avatar {
+        width: 38px;
+        height: 38px;
+    }
+
+    .posts-page {
+        padding-bottom: 30px;
     }
 }

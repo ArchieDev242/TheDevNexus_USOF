@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import 
@@ -16,7 +16,9 @@ import
     FiLock,
     FiFlag,
     FiChevronLeft,
-    FiChevronRight
+    FiChevronRight,
+    FiMoreVertical,
+    FiBook
 } from 'react-icons/fi';
 import { GoBlocked } from 'react-icons/go';
 import 
@@ -59,6 +61,8 @@ export default function PostsPage() {
     const [show_report_modal, set_show_report_modal] = useState(false);
     const [report_target, set_report_target] = useState(null);
     const [current_page, set_current_page] = useState(1);
+    const [open_menu_id, set_open_menu_id] = useState(null);
+    const menu_ref = useRef(null);
 
     const PAGE_SIZE = 10;
 
@@ -69,6 +73,20 @@ export default function PostsPage() {
         if(category_from_url !== selected_category) set_selected_category(category_from_url);
 
     }, [location.search]);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handle_click_outside = (event) => {
+            if (menu_ref.current && !menu_ref.current.contains(event.target)) {
+                set_open_menu_id(null);
+            }
+        };
+
+        if (open_menu_id !== null) {
+            document.addEventListener('mousedown', handle_click_outside);
+            return () => document.removeEventListener('mousedown', handle_click_outside);
+        }
+    }, [open_menu_id]);
 
     useEffect(() => {
         fetch_categories();
@@ -399,6 +417,49 @@ export default function PostsPage() {
                                                         </span>
                                                     )}
                                                 </div>
+                                                {/* Mobile menu with three dots */}
+                                                <div 
+                                                    className = "post-actions-mobile"
+                                                    ref = {open_menu_id === post.id ? menu_ref : null}
+                                                >
+                                                    <button 
+                                                        className = "btn-more-actions"
+                                                        onClick = {(e) => {
+                                                            e.stopPropagation();
+                                                            set_open_menu_id(open_menu_id === post.id ? null : post.id);
+                                                        }}
+                                                        aria-label = "Більше дій"
+                                                    >
+                                                        <FiMoreVertical size={20} />
+                                                    </button>
+
+                                                    {open_menu_id === post.id && (
+                                                        <div className = "actions-dropdown">
+                                                            <button 
+                                                                className = "dropdown-action"
+                                                                onClick = {(e) => {
+                                                                    e.stopPropagation();
+                                                                    navigate(`/posts/${post.id}`);
+                                                                    set_open_menu_id(null);
+                                                                }}
+                                                            >
+                                                                <FiBook size={16} />
+                                                                <span>{t('posts_page.read_more')}</span>
+                                                            </button>
+                                                            <button 
+                                                                className = "dropdown-action danger"
+                                                                onClick = {(e) => {
+                                                                    e.stopPropagation();
+                                                                    handle_report_click(e, post);
+                                                                    set_open_menu_id(null);
+                                                                }}
+                                                            >
+                                                                <FiFlag size={16} />
+                                                                <span>{t('posts_page.report_tooltip')}</span>
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             <h3 className = "post-title">{post.title}</h3>
@@ -422,7 +483,9 @@ export default function PostsPage() {
                                                         {t('posts.views', { count: post.view_count || 0 })}
                                                     </span>
                                                 </div>
-                                                <div className = "post-actions">
+
+                                                {/* Desktop actions */}
+                                                <div className = "post-actions post-actions-desktop">
                                                     <button 
                                                         className = "btn-read-more"
                                                         onClick = {(e) => {

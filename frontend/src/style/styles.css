@@ -1,5 +1,4 @@
-:root
-{
+:root {
     color-scheme: light dark;
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
     --border-radius: 14px;
@@ -17,36 +16,38 @@
     --danger-color: #EF4444;
 }
 
-.container
-{
+.container {
     max-width: calc(var(--container-width) + var(--container-padding-x) * 2);
     margin-inline: auto;
     padding-inline: var(--container-padding-x);
 }
 
-body
-{
+body {
     margin: 0;
     padding: 2rem;
+    font-family: var(--font-primary);
+    background-color: var(--darker);
+    color: var(--white);
+    line-height: 1.6;
+    overflow-x: hidden;
 }
 
-.app
-{
+.app {
     max-width: 800px;
     margin: 0 auto;
 }
 
-h1 { line-height: 1.1; }
+h1 {
+    line-height: 1.1;
+}
 
-code
-{
+code {
     background: rgba(127, 127, 127, 0.15);
     padding: 0.2rem 0.35rem;
     border-radius: 4px;
 }
 
-.status-bar
-{
+.status-bar {
     padding: 0.5rem 0.75rem;
     margin-bottom: 1rem;
     border: 1px solid rgba(127, 127, 127, 0.3);
@@ -54,39 +55,43 @@ code
     font-size: 0.95rem;
 }
 
-@media (max-width: 767px)
-{
-    .post-author
-    {
-        align-items: self-start;
-        flex-direction: column;
-        justify-content: flex-start;
-    }
+@media (max-width: 767px) {
 
-    .footer-col
-    {
+    .footer-col {
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
     }
 
-    .community-section { padding: 40px 0; }
+    .community-section {
+        padding: 40px 0;
+    }
 
-    .categories-section
-    {
+    .categories-section {
         margin-bottom: 40px;
         padding: 40px 0;
     }
 
-    .cta-section { padding: 30px 0; }
+    .cta-section {
+        padding: 30px 0;
+    }
 }
 
-@media (max-width: 430px)
-{
-    .author-info h3 { font-size: 0.8rem; }
+@media (max-width: 430px) {
+    .author-info h3 {
+        font-size: 0.8rem;
+    }
 
-    .featured-title { font-size: 1.2rem; }
+    .featured-title {
+        font-size: 1.2rem;
+    }
 
-    .cta-section .btn-gradient { padding: 16px 28px; }
+    .cta-section .btn-gradient {
+        padding: 16px 28px;
+    }
+
+    body {
+        padding: 1rem;
+    }
 }

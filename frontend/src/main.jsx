@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import App from './App.jsx';
 import './style/styles.css';
-import './style/home.css';
+import './components/Home/home.css';
 import './i18n/i18n.js';
 
 import { store } from './redux/store.js';
