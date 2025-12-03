@@ -790,7 +790,6 @@
     text-shadow: 0 0 10px var(--secondary);
 }
 
-/* Success Container Styles */
 .success-container
 {
     text-align: center;
@@ -820,7 +819,6 @@
     margin: 10px 0;
 }
 
-/* Error Container Styles */
 .error-container
 {
     text-align: center;
@@ -850,7 +848,6 @@
     margin: 10px 0 30px 0;
 }
 
-/* Loading Container Styles */
 .loading-container
 {
     text-align: center;
@@ -863,7 +860,6 @@
     margin-top: 15px;
 }
 
-/* Back Link Style */
 .back-link
 {
     display: inline-flex;
@@ -883,7 +879,6 @@
     transform: translateX(-5px);
 }
 
-/* Form Description */
 .form-description
 {
     color: #8b949e;
@@ -893,7 +888,6 @@
     text-align: center;
 }
 
-/* Form Hint */
 .form-hint
 {
     display: block;
@@ -903,7 +897,6 @@
     font-style: italic;
 }
 
-/* Animations */
 @keyframes slideInUp
 {
     from
@@ -948,7 +941,6 @@
     }
 }
 
-/* Success and Error Containers */
 .success-container
 {
     display: flex;
@@ -1032,7 +1024,6 @@
     color: #8b949e;
 }
 
-/* Form Description */
 .form-description
 {
     color: #8b949e;
@@ -1050,7 +1041,6 @@
     margin-top: 8px;
 }
 
-/* Back Link */
 .back-link
 {
     display: inline-flex;

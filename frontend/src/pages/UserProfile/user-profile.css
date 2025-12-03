@@ -24,13 +24,6 @@
     gap: 40px;
 }
 
-/* .profile-sidebar
-{
-    position: sticky;
-    top: 100px;
-    height: fit-content;
-} */
-
 .profile-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
@@ -66,14 +59,6 @@
     color: var(--text-secondary);
     margin-bottom: 20px;
 }
-
-/* .stats-grid
-{
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
-} */
 
 .stat-box {
     display: flex;
@@ -288,14 +273,6 @@
     font-weight: 500;
 }
 
-/* .post-meta
-{
-    display: flex;
-    gap: 16px;
-    font-size: 13px;
-    color: var(--text-secondary);
-} */
-
 .post-meta .meta-stat-btn {
     display: flex;
     align-items: center;
@@ -408,18 +385,10 @@
         gap: 24px;
     }
 
-    /* .profile-sidebar
-    {
-        position: static;
-        top: auto;
-    } */
-
     .avatar {
         width: 120px;
         height: 120px;
     }
-
-    /* .stats-grid { grid-template-columns: 1fr 1fr 1fr; } */
 
     .profile-content-section {
         padding: 20px;
@@ -464,12 +433,6 @@
         font-size: 13px;
     }
 
-    /* .stats-grid
-    {
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 8px;
-    } */
-
     .stat-box {
         padding: 10px;
     }
@@ -501,8 +464,6 @@
         font-size: 13px;
     }
 
-    /* .post-item { padding: 12px; } */
-
     .achievement-row {
         gap: 12px;
         padding: 12px;
@@ -518,7 +479,6 @@
     }
 }
 
-/* Stats Modal Styles */
 .stats-modal-overlay {
     position: fixed;
     top: 0;

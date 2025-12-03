@@ -436,24 +436,6 @@
     }
 }
 
-/* .section-header
-{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid rgba(108, 99, 255, 0.2);
-} */
-
-/* .section-header h2
-{
-    font-family: var(--font-accent);
-    font-size: 1.8rem;
-    letter-spacing: 3px;
-    color: var(--white);
-} */
-
 .btn-edit {
     padding: 10px 20px;
     background: transparent;
@@ -506,18 +488,6 @@
     width: 14px;
     height: 14px;
 }
-
-/* .form-input, .form-textarea
-{
-    padding: 14px 18px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(108, 99, 255, 0.3);
-    border-radius: 10px;
-    color: var(--white);
-    font-size: 1rem;
-    font-family: var(--font-primary);
-    transition: all 0.3s ease;
-} */
 
 .form-input:focus,
 .form-textarea:focus {
@@ -772,15 +742,6 @@
     gap: 32px;
     backdrop-filter: blur(10px);
 }
-
-/* 
-.modal-content.edit-modal .modal-header h2
-{
-    font-size: 1.75rem;
-    letter-spacing: 3px;
-    color: #ffffff;
-    text-transform: uppercase;
-} */
 
 .modal-content.edit-modal .modal-header .btn-icon {
     background: rgba(255, 255, 255, 0.06);
@@ -1355,12 +1316,6 @@
 }
 
 @media (max-width: 900px) {
-    /* .modal-content.edit-modal
-    {
-        padding: 32px 28px;
-        gap: 24px;
-    } */
-
     .modal-content.edit-modal .form-grid {
         grid-template-columns: 1fr;
     }
@@ -1379,13 +1334,6 @@
     .profile-content {
         padding: 25px;
     }
-
-    /* .section-header
-    {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    } */
 
     .achievements-grid {
         grid-template-columns: 1fr;

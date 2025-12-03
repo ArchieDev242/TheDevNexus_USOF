@@ -70,7 +70,6 @@
     gap: 25px;
     padding: 0 20px;
     grid-auto-rows: 1fr;
-    /* Все строки одинаковой высоты */
 }
 
 .categories-grid.additional {

@@ -108,17 +108,6 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* .section-title
-{
-    font-family: var(--font-accent);
-    font-size: 2rem;
-    letter-spacing: 3px;
-    color: var(--white);
-    margin-bottom: 30px;
-    padding: 40px;
-    border-bottom: 2px solid rgba(108, 99, 255, 0.2);
-} */
-
 .settings-group { margin-bottom: 40px; }
 
 .group-title
@@ -442,10 +431,4 @@
     .language-selector {
         justify-content: center;
     }
-}
-
-@media (max-width: 430px) {
-    /* .section-title {
-        padding: 0;
-    } */
 }
