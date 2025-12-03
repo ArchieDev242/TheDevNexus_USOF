@@ -15,7 +15,7 @@ import
     FiSave
 } from 'react-icons/fi';
 
-import '../../style/create-post-modal.css';
+import '../CreatePostModal/create-post-modal.css';
 
 const EMOJI_LIST = [
     '😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂',
@@ -222,7 +222,7 @@ export default function EditPostModal({ show, onClose, post, onPostUpdated }) {
         <div className = "modal-overlay" onClick = {onClose}>
             <div className = "create-post-modal" onClick = {(e) => e.stopPropagation()}>
                 <div className = "modal-header">
-                    <h2>✨ {t('post_form.edit.title')}</h2>
+                    <h2>✨{t('post_form.edit.title')}</h2>
                     <button className = "close-btn" onClick = {onClose}>
                         <FiX />
                     </button>

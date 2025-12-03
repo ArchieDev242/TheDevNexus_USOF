@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetch_posts } from '../../redux/slices/postsSlice';
 
+import '../PostsList/PostList.css';
+
 export default function posts_list() 
 {
     const dispatch = useDispatch();

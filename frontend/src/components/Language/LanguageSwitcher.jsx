@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '../../hooks/useLanguage';
 import { FiGlobe } from 'react-icons/fi';
-import '../../style/language-switcher.css';
+import '../Language/language-switcher.css';
 
 export default function LanguageSwitcher() 
 {

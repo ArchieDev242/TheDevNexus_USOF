@@ -17,7 +17,7 @@ import
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import '../../style/create-post-modal.css';
+import '../CreatePostModal/create-post-modal.css';
 
 const EMOJI_LIST = [
     '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃',
@@ -349,7 +349,7 @@ export default function CreatePostModal({ show, onClose, onPostCreated })
         <div className = "modal-overlay" onClick = {onClose}>
             <div className = "create-post-modal" onClick = {(e) => e.stopPropagation()}>
                 <div className = "modal-header">
-                    <h2>✨ {t('post_form.create.title')}</h2>
+                    <h2>✨{t('post_form.create.title')}</h2>
                     <button className = "close-btn" onClick = {onClose}>
                         <FiX />
                     </button>

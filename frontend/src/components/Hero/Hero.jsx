@@ -3,6 +3,8 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
+import '../Hero/Hero.css';
+
 export default function Hero({ isAuthenticated }) 
 {
     const navigate = useNavigate();

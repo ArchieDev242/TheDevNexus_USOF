@@ -1,6 +1,7 @@
 import React from 'react';
 import { FiTwitter, FiGithub, FiYoutube, FiMessageCircle } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
+import './Footer.css'
 
 export default function Footer() 
 {
@@ -30,16 +31,16 @@ export default function Footer()
                     <div className = "footer-col">
                         <h4 className = "footer-heading">{t('footer.categories')}</h4>
                         <ul className = "footer-links">
-                            <li><a href = "/category/gamedev">{t('footer.category_gamedev')}</a></li>
-                            <li><a href = "/category/programming">{t('footer.category_programming')}</a></li>
-                            <li><a href = "/category/design">{t('footer.category_design')}</a></li>
-                            <li><a href = "/category/career">{t('footer.category_career')}</a></li>
+                            <li><a href = "/about">{t('footer.category_gamedev')}</a></li>
+                            <li><a href = "/about">{t('footer.category_programming')}</a></li>
+                            <li><a href = "/about">{t('footer.category_design')}</a></li>
+                            <li><a href = "/about">{t('footer.category_career')}</a></li>
                         </ul>
                     </div>
                     
                     <div className = "footer-col">
                         <h4 className = "footer-heading">{t('footer.connect')}</h4>
-                        <div className = "social-links">
+                        <div className = "footer-social-links">
                             <a href = "#" className = "social-link" aria-label = {t('footer.twitter')}>
                                 <FiTwitter />
                             </a>

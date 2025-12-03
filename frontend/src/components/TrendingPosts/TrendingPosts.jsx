@@ -3,6 +3,8 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { FiMessageSquare, FiHeart, FiClock, FiChevronRight } from 'react-icons/fi';
 
+import '../TrendingPosts/TrendingPosts.css';
+
 function useMediaQuery(query) {
     const [matches, setMatches] = useState(
         () => window.matchMedia(query).matches
@@ -75,14 +77,14 @@ export default function TrendingPosts() {
                                 <div className="post-meta">
                                     <div className="meta-item">
                                         <FiMessageSquare />
-                                        {isMobile 
+                                        {isMobile
                                             ? t('home.trending_comments_short', { count: post.comments_count || 0 })
                                             : t('home.trending_comments', { count: post.comments_count || 0 })
                                         }
                                     </div>
                                     <div className="meta-item">
                                         <FiHeart />
-                                        {isMobile 
+                                        {isMobile
                                             ? t('home.trending_comments_short', { count: post.comments_count || 0 })
                                             : t('home.trending_likes', { count: post.comments_count || 0 })
                                         }

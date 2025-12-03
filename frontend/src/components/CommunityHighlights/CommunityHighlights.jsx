@@ -1,6 +1,7 @@
 import React from 'react';
 import { FiStar, FiAward, FiFileText, FiPackage, FiDownload, FiUserPlus, FiClock } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
+import './CommunityHighlights.css'
 
 export default function CommunityHighlights() 
 {

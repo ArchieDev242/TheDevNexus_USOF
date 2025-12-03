@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FiX, FiAlertCircle } from 'react-icons/fi';
-import '../../style/report-modal.css';
+import '../ReportModal/report-modal.css';
 
 const REPORT_REASONS = {
 	spam: 'Спам',

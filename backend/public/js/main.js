@@ -289,7 +289,7 @@ function show_admin_panel() {
                     👥 Управління користувачами
                 </button>
                 <button class="btn btn-admin" onclick="moderate_content()">
-                    🛡️ Модерація контенту
+                    Модерація контенту
                 </button>
                 <button class="btn btn-admin" onclick="system_settings()">
                     ⚙️ Налаштування системи
