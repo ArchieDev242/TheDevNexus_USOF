@@ -2,9 +2,10 @@ import express from 'express';
 import AdminJS from 'adminjs';
 import AdminJSExpress from '@adminjs/express';
 import session from 'express-session';
+import config from '../config.js';
 import { adminJs, adminRouter } from './admin.js';
 
-const PORT = 4001;
+const PORT = config.admin.port;
 
 const start = async () => {
     const app = express();
@@ -25,11 +26,11 @@ const start = async () => {
         console.log(`AdminJS server running on http://localhost:${PORT}${adminJs.options.rootPath}`);
         console.log(`Login: admin@usof.com`);
         console.log(`Password: admin123`);
-        console.log('✅ AdminJS is now running without ORM dependency');
+        console.log('AdminJS is now running without ORM dependency');
     });
 };
 
 start().catch((error) => {
-    console.error('❌ Error starting AdminJS server:', error);
+    console.error('Error starting AdminJS server:', error);
     process.exit(1);
 });

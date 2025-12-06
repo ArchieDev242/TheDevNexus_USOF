@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard Selector</title>
+    <link rel="stylesheet" href="/admin/custom/assets/dashboard.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Dev Nexus Admin Dashboard</h1>
+
+        <div class="dashboard-grid">
+            <a href="/admin-panel" class="dashboard-card">
+                <div class="icon">🛠️</div>
+                <h2>Custom Admin Panel</h2>
+                <p>Кастомна адмін-панель для управління контентом, користувачами та модерації.</p>
+                <span class="status active">Active on :3000</span>
+            </a>
+
+            <a href="http://localhost:4001/admin" class="dashboard-card" target="_blank">
+                <div class="icon">⚙️</div>
+                <h2>AdminJS Panel</h2>
+                <p>Повнофункціональна адмін-панель на базі AdminJS для роботи з базою даних.</p>
+                <span class="status external">Separate :4001</span>
+            </a>
+        </div>
+
+        <div class="note">
+            <strong>Примітка:</strong>
+            AdminJS запускається на окремому сервері (порт 4001). Переконайтесь, що він запущений командою:
+            <pre><code class="language-bash">
+            node admin/server.js or npm run dev
+            </code></pre>
+
+        </div>
+    </div>
+</body>
+
+</html>

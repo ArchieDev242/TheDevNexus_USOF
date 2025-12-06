@@ -1,21 +1,17 @@
-class admin_dashboard 
-{
-    constructor() 
-    {
+class admin_dashboard {
+    constructor() {
         this.currentSection = 'dashboard';
         this.apiBase = '/api';
         this.init();
     }
 
-    init() 
-    {
+    init() {
         this.bind_events();
         this.load_dashboard_data();
         this.check_mobile_view();
     }
 
-    bind_events() 
-    {
+    bind_events() {
         document.querySelectorAll('.sidebar-menu a').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -33,7 +29,7 @@ class admin_dashboard
         });
 
         document.getElementById('modal').addEventListener('click', (e) => {
-            if(e.target.id === 'modal') this.closeModal();
+            if (e.target.id === 'modal') this.closeModal();
         });
 
         document.getElementById('userSearch')?.addEventListener('input', (e) => {
@@ -77,8 +73,7 @@ class admin_dashboard
         });
     }
 
-    show_section(sectionName) 
-    {
+    show_section(sectionName) {
         document.querySelectorAll('.content-section').forEach(section => {
             section.classList.remove('active');
         });
@@ -105,84 +100,73 @@ class admin_dashboard
         this.load_section_data(sectionName);
     }
 
-    toggle_sidebar() 
-    {
+    toggle_sidebar() {
         const sidebar = document.querySelector('.sidebar');
         sidebar.classList.toggle('active');
     }
 
-    check_mobile_view() 
-    {
+    check_mobile_view() {
         const is_mobile = window.innerWidth <= 768;
         const sidebar = document.querySelector('.sidebar');
-        
-        if(is_mobile) sidebar.classList.remove('active');
+
+        if (is_mobile) sidebar.classList.remove('active');
     }
 
-    showLoading() 
-    {
+    showLoading() {
         document.getElementById('loadingSpinner').style.display = 'block';
     }
 
-    hideLoading() 
-    {
+    hideLoading() {
         document.getElementById('loadingSpinner').style.display = 'none';
     }
 
-    showModal(content) 
-    {
+    showModal(content) {
         document.getElementById('modalBody').innerHTML = content;
         document.getElementById('modal').style.display = 'block';
     }
 
-    closeModal() 
-    {
+    closeModal() {
         document.getElementById('modal').style.display = 'none';
     }
 
-    async api_call(endpoint, method = 'GET', data = null) 
-    {
-        try 
-        {
+    async api_call(endpoint, method = 'GET', data = null) {
+        try {
             const options = {
                 method,
-                headers: 
+                headers:
                 {
                     'Content-Type': 'application/json',
                 }
             };
 
-            if(!options.headers['Content-Type']) delete options.headers['Content-Type'];
+            if (!options.headers['Content-Type']) delete options.headers['Content-Type'];
 
             options.credentials = 'include';
 
-            if(data) options.body = JSON.stringify(data);
+            if (data) options.body = JSON.stringify(data);
 
             const response = await fetch(`${this.apiBase}${endpoint}`, options);
 
-            if(response.status === 401 || response.status === 403)
-            {
+            if (response.status === 401 || response.status === 403) {
                 this.handleAuthError(response.status);
                 return null;
             }
-            
-            if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
             const result = await response.json();
-            
-            if(result && result.status === 'success' && result.data) return result.data;
-            
+
+            if (result && result.status === 'success' && result.data) return result.data;
+
             return result;
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('API call failed:', error);
             this.showNotification('Error loading data', 'error');
             return null;
         }
     }
 
-    handleAuthError(status)
-    {
+    handleAuthError(status) {
         const message = status === 401
             ? 'Session expired. Please log in again.'
             : 'Insufficient permissions.';
@@ -194,14 +178,12 @@ class admin_dashboard
         }, 1500);
     }
 
-    async load_dashboard_data() 
-    {
+    async load_dashboard_data() {
         this.showLoading();
-        
-        try 
-        {
+
+        try {
             console.log('Loading dashboard data...');
-            
+
             const [users, posts, comments, categories] = await Promise.all([
                 this.api_call('/users').catch(e => { console.error('Users API failed:', e); return []; }),
                 this.api_call('/posts?status=all&limit=100').catch(e => { console.error('Posts API failed:', e); return []; }),
@@ -209,11 +191,11 @@ class admin_dashboard
                 this.api_call('/categories').catch(e => { console.error('Categories API failed:', e); return []; })
             ]);
 
-            console.log('Dashboard data loaded:', { 
-                users: users?.length, 
-                posts: posts?.length, 
-                comments: comments?.length, 
-                categories: categories?.length 
+            console.log('Dashboard data loaded:', {
+                users: users?.length,
+                posts: posts?.length,
+                comments: comments?.length,
+                categories: categories?.length
             });
 
             document.getElementById('totalUsers').textContent = users?.length || 0;
@@ -221,20 +203,16 @@ class admin_dashboard
             document.getElementById('totalComments').textContent = comments?.length || 0;
             document.getElementById('totalCategories').textContent = categories?.length || 0;
 
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('Failed to load dashboard data:', error);
             this.showNotification('Error loading statistics', 'error');
-        } finally 
-        {
+        } finally {
             this.hideLoading();
         }
     }
 
-    async load_section_data(section) 
-    {
-        switch(section) 
-        {
+    async load_section_data(section) {
+        switch (section) {
             case 'users': await this.load_users(); break;
             case 'posts': await this.load_posts(); break;
             case 'comments': await this.load_comments(); break;
@@ -242,40 +220,34 @@ class admin_dashboard
         }
     }
 
-    async load_users() 
-    {
+    async load_users() {
         this.showLoading();
-        
-        try 
-        {
+
+        try {
             console.log('Loading users...');
             const users = await this.api_call('/users');
             console.log('Users loaded:', users?.length, users);
             this.renderUsersTable(users || []);
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('Failed to load users:', error);
             this.showNotification('Error loading users', 'error');
-        } finally 
-        {
+        } finally {
             this.hideLoading();
         }
     }
 
-    translateRole(role) 
-    {
+    translateRole(role) {
         const role_translations = {
             'guest': 'Guest',
-            'user': 'User', 
+            'user': 'User',
             'admin': 'Administrator'
         };
         return role_translations[role] || role;
     }
 
-    renderUsersTable(users) 
-    {
+    renderUsersTable(users) {
         const tbody = document.getElementById('usersTableBody');
-        if(!tbody) return;
+        if (!tbody) return;
 
         tbody.innerHTML = users.map(user => `
             <tr>
@@ -300,28 +272,23 @@ class admin_dashboard
         `).join('');
     }
 
-    async load_posts() 
-    {
+    async load_posts() {
         this.showLoading();
-        
-        try 
-        {
+
+        try {
             const posts = await this.api_call('/posts?status=all&limit=100');
 
             this.renderPostsTable(posts || []);
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('Failed to load posts:', error);
-        } finally 
-        {
+        } finally {
             this.hideLoading();
         }
     }
 
-    renderPostsTable(posts) 
-    {
+    renderPostsTable(posts) {
         const tbody = document.getElementById('postsTableBody');
-        if(!tbody) return;
+        if (!tbody) return;
 
         tbody.innerHTML = posts.map(post => `
             <tr>
@@ -344,28 +311,23 @@ class admin_dashboard
         `).join('');
     }
 
-    async load_comments() 
-    {
+    async load_comments() {
         this.showLoading();
-        
-        try 
-        {
+
+        try {
             const comments = await this.api_call('/posts/all/comments');
 
             this.renderCommentsTable(comments || []);
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('Failed to load comments:', error);
-        } finally 
-        {
+        } finally {
             this.hideLoading();
         }
     }
 
-    renderCommentsTable(comments) 
-    {
+    renderCommentsTable(comments) {
         const tbody = document.getElementById('commentsTableBody');
-        if(!tbody) return;
+        if (!tbody) return;
 
         tbody.innerHTML = comments.map(comment => `
             <tr>
@@ -387,28 +349,23 @@ class admin_dashboard
         `).join('');
     }
 
-    async load_categories() 
-    {
+    async load_categories() {
         this.showLoading();
-        
-        try 
-        {
+
+        try {
             const categories = await this.api_call('/categories');
 
             this.renderCategoriesTable(categories || []);
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('Failed to load categories:', error);
-        } finally 
-        {
+        } finally {
             this.hideLoading();
         }
     }
 
-    renderCategoriesTable(categories) 
-    {
+    renderCategoriesTable(categories) {
         const tbody = document.getElementById('categoriesTableBody');
-        if(!tbody) return;
+        if (!tbody) return;
 
         tbody.innerHTML = categories.map(category => `
             <tr>
@@ -428,8 +385,7 @@ class admin_dashboard
         `).join('');
     }
 
-    searchUsers(query) 
-    {
+    searchUsers(query) {
         const rows = document.querySelectorAll('#usersTableBody tr');
 
         rows.forEach(row => {
@@ -438,8 +394,7 @@ class admin_dashboard
         });
     }
 
-    searchPosts(query) 
-    {
+    searchPosts(query) {
         const rows = document.querySelectorAll('#postsTableBody tr');
 
         rows.forEach(row => {
@@ -448,8 +403,7 @@ class admin_dashboard
         });
     }
 
-    searchComments(query) 
-    {
+    searchComments(query) {
         const rows = document.querySelectorAll('#commentsTableBody tr');
 
         rows.forEach(row => {
@@ -458,59 +412,52 @@ class admin_dashboard
         });
     }
 
-    filterUsers(type, value) 
-    {
+    filterUsers(type, value) {
         const rows = document.querySelectorAll('#usersTableBody tr');
 
         rows.forEach(row => {
-            if(!value) 
-                {
+            if (!value) {
                 row.style.display = '';
                 return;
             }
-            
+
             const role_cell = row.cells[4];
             const role_text = role_cell.textContent.toLowerCase();
             row.style.display = role_text.includes(value.toLowerCase()) ? '' : 'none';
         });
     }
 
-    filterPosts(type, value) 
-    {
+    filterPosts(type, value) {
         const rows = document.querySelectorAll('#postsTableBody tr');
 
         rows.forEach(row => {
-            if(!value) 
-                {
+            if (!value) {
                 row.style.display = '';
                 return;
             }
-            
+
             const status_cell = row.cells[3];
             const status_text = status_cell.textContent.toLowerCase();
             row.style.display = status_text.includes(value.toLowerCase()) ? '' : 'none';
         });
     }
 
-    filterComments(type, value) 
-    {
+    filterComments(type, value) {
         const rows = document.querySelectorAll('#commentsTableBody tr');
 
         rows.forEach(row => {
-            if(!value) 
-                {
+            if (!value) {
                 row.style.display = '';
                 return;
             }
-            
+
             const status_cell = row.cells[4];
             const status_text = status_cell.textContent.toLowerCase();
             row.style.display = status_text.includes(value.toLowerCase()) ? '' : 'none';
         });
     }
 
-    showAddUserModal() 
-    {
+    showAddUserModal() {
         const modal_content = `
             <h2>Add new user</h2>
             <form id = "addUserForm">
@@ -541,30 +488,29 @@ class admin_dashboard
                 <button type = "submit" class = "btn btn-primary">Create User</button>
             </form>
         `;
-        
+
         this.showModal(modal_content);
-        
+
         document.getElementById('addUserForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             await this.create_user(new FormData(e.target));
         });
     }
 
-    async showAddPostModal() 
-    {
+    async showAddPostModal() {
         const [users, categories] = await Promise.all([
             this.api_call('/users'),
             this.api_call('/categories')
         ]);
-        
-        const user_options = users?.map(user => 
+
+        const user_options = users?.map(user =>
             `<option value="${user.id}">${user.login} (${user.full_name})</option>`
         ).join('') || '';
-        
-        const category_options = categories?.map(category => 
+
+        const category_options = categories?.map(category =>
             `<option value="${category.id}">${category.title}</option>`
         ).join('') || '';
-        
+
         const modal_content = `
             <h2>Add new post</h2>
             <form id = "addPostForm">
@@ -600,17 +546,16 @@ class admin_dashboard
                 <button type = "submit" class = "btn btn-primary">Create post</button>
             </form>
         `;
-        
+
         this.showModal(modal_content);
-        
+
         document.getElementById('addPostForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             await this.create_post(new FormData(e.target));
         });
     }
 
-    showAddCategoryModal() 
-    {
+    showAddCategoryModal() {
         const modal_content = `
             <h2>Add new category</h2>
             <form id = "addCategoryForm">
@@ -625,173 +570,148 @@ class admin_dashboard
                 <button type = "submit" class = "btn btn-primary">Create category</button>
             </form>
         `;
-        
+
         this.showModal(modal_content);
-        
+
         document.getElementById('addCategoryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             await this.create_category(new FormData(e.target));
         });
     }
 
-    async create_user(formData) 
-    {
+    async create_user(formData) {
         const user_data = Object.fromEntries(formData);
         const result = await this.api_call('/auth/register', 'POST', user_data);
-        
-        if(result) 
-            {
+
+        if (result) {
             this.showNotification('User successfully created', 'success');
             this.closeModal();
             this.load_users();
         }
     }
 
-    async updateUser(id, formData) 
-    {
+    async updateUser(id, formData) {
         try {
             const user_data = Object.fromEntries(formData);
-            
-            if(!user_data.password) delete user_data.password;
-            
+
+            if (!user_data.password) delete user_data.password;
+
             user_data.email_verified = user_data.email_verified === 'on';
-            
+
             const result = await this.api_call(`/users/${id}`, 'PATCH', user_data);
-            
-            if(result) 
-                {
+
+            if (result) {
                 this.showNotification('User successfully updated', 'success');
                 this.closeModal();
                 this.load_users();
             }
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('Failed to update user:', error);
             this.showNotification('Error updating user', 'error');
         }
     }
 
-    async create_post(formData) 
-    {
+    async create_post(formData) {
         const post_data = Object.fromEntries(formData);
-        
+
         const categories_select = document.querySelector('select[name="categories"]');
-        if(categories_select) 
-            {
+        if (categories_select) {
             const selected_categories = Array.from(categories_select.selectedOptions)
                 .map(option => parseInt(option.value))
                 .filter(value => !isNaN(value) && value > 0);
-            
+
             post_data.categories = selected_categories.length > 0 ? selected_categories : [];
-        } else 
-            {
+        } else {
             post_data.categories = [];
         }
-        
+
         console.log('Creating post with data:', post_data);
-        
+
         const result = await this.api_call('/posts', 'POST', post_data);
-        
-        if(result) 
-            {
+
+        if (result) {
             this.showNotification('Post successfully created', 'success');
             this.closeModal();
             this.load_posts();
         }
     }
 
-    async update_post(id, formData) 
-    {
-        try 
-        {
+    async update_post(id, formData) {
+        try {
             const post_data = Object.fromEntries(formData);
             delete post_data.id;
-            
+
             console.log('Updating post with data:', post_data);
-            
+
             const result = await this.api_call(`/posts/${id}`, 'PATCH', post_data);
-            
-            if(result) 
-                {
+
+            if (result) {
                 this.showNotification('Post successfully updated', 'success');
                 this.closeModal();
                 this.load_posts();
             }
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('Failed to update post:', error);
             this.showNotification('Error updating post', 'error');
         }
     }
 
-    async create_category(formData) 
-    {
+    async create_category(formData) {
         const category_data = Object.fromEntries(formData);
         const result = await this.api_call('/categories', 'POST', category_data);
-        
-        if(result) 
-        {
+
+        if (result) {
             this.showNotification('Category successfully created', 'success');
             this.closeModal();
             this.load_categories();
         }
     }
 
-    async update_comment(id, formData) 
-    {
+    async update_comment(id, formData) {
         try {
             const comment_data = Object.fromEntries(formData);
             delete comment_data.id;
-            
+
             const result = await this.api_call(`/comments/${id}`, 'PUT', comment_data);
-            
-            if(result) 
-                {
+
+            if (result) {
                 this.showNotification('Comment successfully updated', 'success');
                 this.closeModal();
                 this.load_comments();
             }
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('Failed to update comment:', error);
             this.showNotification('Error updating comment', 'error');
         }
     }
 
-    async update_category(id, formData) 
-    {
-        try 
-        {
+    async update_category(id, formData) {
+        try {
             const category_data = Object.fromEntries(formData);
             delete category_data.id;
-            
+
             const result = await this.api_call(`/categories/${id}`, 'PATCH', category_data);
-            
-            if(result) 
-                {
+
+            if (result) {
                 this.showNotification('Category successfully updated', 'success');
                 this.closeModal();
                 this.load_categories();
             }
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('Failed to update category:', error);
             this.showNotification('Error updating category', 'error');
         }
     }
 
-    async edit_user(id) 
-    {
-        try 
-        {
+    async edit_user(id) {
+        try {
             console.log('Loading user data for editing:', id);
-            
+
             const response = await this.api_call(`/users/${id}`);
             console.log('User data loaded:', response);
-            
+
             const user = response;
-            if(!user) 
-                {
+            if (!user) {
                 this.showNotification('Failed to load user data', 'error');
                 return;
             }
@@ -841,33 +761,27 @@ class admin_dashboard
                 await this.updateUser(id, new FormData(e.target));
             });
 
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('Failed to load user for editing:', error);
             this.showNotification('Error loading user data', 'error');
         }
     }
 
-    async delete_user(id) 
-    {
-        if(confirm('Are you sure you want to delete this user?')) 
-            {
+    async delete_user(id) {
+        if (confirm('Are you sure you want to delete this user?')) {
             const result = await this.api_call(`/users/${id}`, 'DELETE');
-            
-            if(result) 
-                {
+
+            if (result) {
                 this.showNotification('User deleted', 'success');
                 this.load_users();
             }
         }
     }
 
-    async edit_post(id) 
-    {
-        try 
-        {
+    async edit_post(id) {
+        try {
             const post = await this.api_call(`/posts/${id}`);
-            if(!post) return;
+            if (!post) return;
 
             const modal_content = `
                 <h2>Edit Post</h2>
@@ -900,33 +814,27 @@ class admin_dashboard
                 await this.update_post(id, new FormData(e.target));
             });
 
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('Failed to load post for editing:', error);
             this.showNotification('Error loading post data', 'error');
         }
     }
 
-    async delete_post(id) 
-    {
-        if(confirm('Are you sure you want to delete this post?')) 
-            {
+    async delete_post(id) {
+        if (confirm('Are you sure you want to delete this post?')) {
             const result = await this.api_call(`/posts/${id}`, 'DELETE');
-            
-            if(result) 
-                {
+
+            if (result) {
                 this.showNotification('Post deleted', 'success');
                 this.load_posts();
             }
         }
     }
 
-    async edit_comment(id) 
-    {
-        try 
-        {
+    async edit_comment(id) {
+        try {
             const comment = await this.api_call(`/comments/${id}`);
-            if(!comment) return;
+            if (!comment) return;
 
             const modal_content = `
                 <h2>Edit Comment</h2>
@@ -955,33 +863,27 @@ class admin_dashboard
                 await this.update_comment(id, new FormData(e.target));
             });
 
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('Failed to load comment for editing:', error);
             this.showNotification('Error loading comment data', 'error');
         }
     }
 
-    async delete_comment(id) 
-    {
-        if(confirm('Are you sure you want to delete this comment?')) 
-            {
+    async delete_comment(id) {
+        if (confirm('Are you sure you want to delete this comment?')) {
             const result = await this.api_call(`/comments/${id}`, 'DELETE');
-            
-            if(result) 
-                {
+
+            if (result) {
                 this.showNotification('Comment deleted', 'success');
                 this.load_comments();
             }
         }
     }
 
-    async edit_category(id) 
-    {
-        try 
-        {
+    async edit_category(id) {
+        try {
             const category = await this.api_call(`/categories/${id}`);
-            if(!category) return;
+            if (!category) return;
 
             const modal_content = `
                 <h2>Edit Category</h2>
@@ -1007,33 +909,28 @@ class admin_dashboard
                 await this.update_category(id, new FormData(e.target));
             });
 
-        } catch(error) 
-        {
+        } catch (error) {
             console.error('Failed to load category for editing:', error);
             this.showNotification('Error loading category data', 'error');
         }
     }
 
-    async delete_category(id) 
-    {
-        if(confirm('Are you sure you want to delete this category?')) 
-            {
+    async delete_category(id) {
+        if (confirm('Are you sure you want to delete this category?')) {
             const result = await this.api_call(`/categories/${id}`, 'DELETE');
-            
-            if(result) 
-                {
+
+            if (result) {
                 this.showNotification('Category deleted', 'success');
                 this.load_categories();
             }
         }
     }
 
-    showNotification(message, type = 'info') 
-    {
+    showNotification(message, type = 'info') {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
-        
+
         notification.style.cssText = `
             position: fixed;
             top: 20px;
@@ -1047,7 +944,7 @@ class admin_dashboard
             transform: translateX(100%);
             transition: all 0.3s ease;
         `;
-        
+
         const colors = {
             success: '#27ae60',
             error: '#e74c3c',
@@ -1055,14 +952,14 @@ class admin_dashboard
             info: '#3498db'
         };
         notification.style.backgroundColor = colors[type];
-        
+
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
             notification.style.opacity = '1';
             notification.style.transform = 'translateX(0)';
         }, 100);
-        
+
         setTimeout(() => {
             notification.style.opacity = '0';
             notification.style.transform = 'translateX(100%)';
@@ -1075,7 +972,7 @@ class admin_dashboard
 
 document.addEventListener('DOMContentLoaded', () => {
     window.dashboard = new admin_dashboard();
-    
+
     window.editUser = (id) => window.dashboard.edit_user(id);
     window.deleteUser = (id) => window.dashboard.delete_user(id);
     window.editPost = (id) => window.dashboard.edit_post(id);

@@ -2,14 +2,14 @@ import fetch from 'node-fetch';
 
 async function testAdminLogin() {
     try {
-        console.log('🧪 Testing admin login...');
+        console.log('Testing admin login...');
         
         const loginData = {
             loginOrEmail: 'admin',
             password: 'admin123'
         };
         
-        console.log('📤 Sending login request:', { 
+        console.log('Sending login request:', { 
             loginOrEmail: loginData.loginOrEmail, 
             passwordLength: loginData.password.length 
         });
@@ -22,21 +22,21 @@ async function testAdminLogin() {
             body: JSON.stringify(loginData)
         });
         
-        console.log('📥 Response status:', response.status);
-        console.log('📥 Response headers:', Object.fromEntries(response.headers));
+        console.log('Response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers));
         
         const result = await response.json();
-        console.log('📥 Response body:', result);
+        console.log('Response body:', result);
         
         if (response.ok) {
-            console.log('✅ Login successful!');
-            console.log('🍪 Token present:', !!result.token);
+            console.log('Login successful!');
+            console.log('Token present:', !!result.token);
         } else {
-            console.log('❌ Login failed:', result.message || result.error);
+            console.log('Login failed:', result.message || result.error);
         }
         
     } catch (error) {
-        console.error('💥 Test failed:', error.message);
+        console.error('Test failed:', error.message);
     }
 }
 

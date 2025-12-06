@@ -16,7 +16,6 @@ import blueprintsRouter from './routes/blueprints.js';
 import error_handler from './middleware/errorHandler.js';
 import auth_middleware from './middleware/auth.js';
 import RateLimit from './middleware/rateLimit.js';
-import { adminJs, adminRouter } from './admin/admin.js';
 import customAdminRouter from './admin/routes/customAdmin.js';
 
 
@@ -36,12 +35,12 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-    origin: config.frontend?.url || 'http://localhost:5173',
-    credentials: true
+  origin: config.frontend?.url || 'http://localhost:5173',
+  credentials: true
 }));
 
 app.use('/api/users/me', (req, res, next) => {
-    next();
+  next();
 });
 
 app.use('/api', RateLimit.api());
@@ -53,7 +52,7 @@ app.use(auth_middleware.identify_user);
 app.use((req, res, next) => {
   const url = new URL(req.protocol + '://' + req.get('host') + req.originalUrl);
 
-  if(url.searchParams.has('token')) url.searchParams.set('token', '***');
+  if (url.searchParams.has('token')) url.searchParams.set('token', '***');
 
   console.log('Запрос:', req.method, url.pathname + (url.search ? url.search : ''));
   next();
@@ -61,6 +60,7 @@ app.use((req, res, next) => {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/admin/custom', express.static(path.join(__dirname, 'admin/custom')));
 
 app.get('/reset-password', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
@@ -104,23 +104,21 @@ app.use("/api/notifications", notificationsRouter);
 app.use("/api/achievements", achievementsRouter);
 app.use("/api/reports", reportsRouter);
 app.use("/api/admin/stats", adminStatsRouter);
+app.use("/api/admin/stats", adminStatsRouter);
 app.use("/api/code", codeExecutionRouter);
-
-// AdminJS routes
-app.use(adminJs.options.rootPath, adminRouter);
 
 // custom Admin Panel
 app.use('/admin-panel', customAdminRouter);
 
 // Admin Dashboard Selector
 app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin/views/dashboard.html'));
+  res.sendFile(path.join(__dirname, 'admin/custom/dashboard.html'));
 });
 
 if (has_frontend_build) {
   app.use((req, res, next) => {
     if (req.method !== 'GET') return next();
-    if (req.path.startsWith('/api') || req.path.startsWith('/admin') || req.path.startsWith('/admin-panel')) {
+    if (req.path.startsWith('/api') || req.path.startsWith('/admin-panel')) {
       return next();
     }
 
@@ -132,10 +130,10 @@ app.use(error_handler.not_found);
 app.use(error_handler.handler);
 
 app.listen(port, () => {
-    console.log(`Server started at http://127.0.0.1:${port}`);
-    console.log(`Main site available at http://127.0.0.1:${port}`);
-    console.log(`Admin Dashboard Selector: http://127.0.0.1:${port}/dashboard`);
-    console.log(`Custom Admin Panel: http://127.0.0.1:${port}/admin-panel`);
-    console.log(`AdminJS panel: http://127.0.0.1:${port}/admin`);
-    console.log(`AdminJS credentials: admin@usof.com / admin123`);
+  console.log(`Server started at http://127.0.0.1:${port}`);
+  console.log(`Main site available at http://127.0.0.1:${port}`);
+  console.log(`Admin Dashboard Selector: http://127.0.0.1:${port}/dashboard`);
+  console.log(`Custom Admin Panel: http://127.0.0.1:${port}/admin-panel`);
+  console.log(`\nNote: AdminJS runs on separate server (port ${config.admin.port})`);
+  console.log(`To start AdminJS: node admin/server.js`);
 });
