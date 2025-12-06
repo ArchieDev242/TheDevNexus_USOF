@@ -2,7 +2,7 @@ import express from 'express';
 import AdminJS from 'adminjs';
 import AdminJSExpress from '@adminjs/express';
 import session from 'express-session';
-import { adminJs, adminRouter } from './adminjs.js';
+import { adminJs, adminRouter } from './admin.js';
 
 const PORT = 4001;
 

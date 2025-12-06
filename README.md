@@ -18,8 +18,7 @@ Screenshots are stored under `frontend/docs/screenshots/`.
 | Forums – Post Listing | ![Forums](frontend/docs/screenshots/forums.png) |
 | Post Detail – Discussion Thread | ![Post Detail](frontend/docs/screenshots/post-detail.png) |
 | Admin Dashboard | ![Admin](frontend/docs/screenshots/admin-dashboard.png) |
-
-> Tip: capture fresh screenshots after major UI updates to keep the gallery current.
+| Admin Dashboar USOF | ![Admin](frontend/docs/screenshots/admin-dashboard-USOF.png) |
 
 ## Requirements & Dependencies
 
@@ -122,9 +121,8 @@ npm run build
    - i18next federates translations in `frontend/src/translations/{en,de,ua}`; language preference managed via custom hook + context.
    - Backend surfaces localized content metadata for categories and posts where available.
 
-## Contributing
-1. Fork the repo and create a feature branch (`git checkout -b feature/amazing`).
-2. Follow existing lint/style conventions (Prettier-style spacing, BEM-like CSS modules).
-3. Run `npm run build --prefix frontend` and `npm start --prefix backend` to validate changes.
-4. Submit a pull request with concise summary and screenshots if UI changes are involved.
+## Created by
+
+   -  lavanios (frontend/backend): [@lavanios](https://github.com/lavanios)
+   -  ArchieDev242 (frontend/backend): [@Archie242](https://github.com/ArchieDev242)
 
